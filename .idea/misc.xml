@@ -3,8 +3,24 @@
   <component name="ProjectResources">
     <default-html-doctype>jar:file:\C:\Program Files (x86)\JetBrains\PyCharm 2.6.2\lib\pycharm.jar!\resources\html5-schema\html5.rnc</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.7.2 (C:/Python27/python.exe)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.6.7 (C:/Python26/python.exe)" project-jdk-type="Python SDK" />
   <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="http://patil-vm.embl.de/svn/utils/branches" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="http://patil-vm.embl.de/svn/utils/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
 </project>

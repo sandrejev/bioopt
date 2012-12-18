@@ -1,7 +1,245 @@
 #!/usr/bin/env python
 import sys,re
-from sets import Set
-import dis
+import thread
+
+class Bounds(object):
+    def __init__(self, lb=float("-inf"), ub=float("inf")):
+        self.__assert_valid(lb, ub)
+        self.__lb = lb
+        self.__ub = ub
+
+    @property
+    def lb(self):
+        return self.__lb
+
+    @lb.setter
+    def lb(self, lb):
+        self.__assert_valid(lb, self.ub)
+        self.__lb = float(lb)
+
+    @property
+    def ub(self):
+        return self.__ub
+
+    @ub.setter
+    def ub(self, value):
+        self.__assert_valid(self.lb, value)
+        self.__ub = float(value)
+
+    def __assert_valid(self, lb, ub):
+        if not isinstance(ub, (int, float)):
+            raise TypeError("Upper bound is not a number")
+
+        if not isinstance(ub, (int, float)):
+            raise TypeError("Upper bound is not a number")
+
+        if not isinstance(lb, (int, float)):
+            raise TypeError("Lower bound is not a number")
+
+        if lb > ub:
+            raise ValueError("Lower bound is greater than upper bound")
+
+    def __repr__(self):
+        return "[{0}, {1}]".format(self.lb, self.ub)
+
+
+class Metabolite(object):
+    def __init__(self, name):
+        self.__assert_valid(name)
+        self.__name = name
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name):
+        self.__assert_valid(name)
+        self.__name = name
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __assert_valid(self, name):
+        if not isinstance(name, str):
+            raise TypeError("Metabolite name is not a string")
+        if not len(name):
+            raise ValueError("Metabolite name is empty string")
+
+    def __repr__(self):
+        return self.name
+
+class ReactionMember(object):
+    def __init__(self, metabolite, coefficient):
+        self.__assert_valid_metabolite(metabolite)
+        self.__assert_valid_coefficient(coefficient)
+
+        self.__metabolite = metabolite
+        self.__coefficient = float(coefficient)
+
+    @property
+    def metabolite(self):
+        return self.__metabolite
+
+    @metabolite.setter
+    def metabolite(self, metabolite):
+        self.__assert_valid_metabolite(metabolite)
+        self.__metabolite = float(metabolite)
+
+    @property
+    def coefficient(self):
+        return self.__coefficient
+
+    @coefficient.setter
+    def coefficient(self, coefficient):
+        self.__assert_valid_coefficient(coefficient)
+        self.__coefficient = float(coefficient)
+
+    def __repr__(self):
+        return "{0:.5g} {1}".format(self.coefficient, self.metabolite)
+
+    def __assert_valid_metabolite(self, metabolite):
+        if not isinstance(metabolite, Metabolite):
+            raise TypeError("Reaction member is not of type <Metabolite>")
+
+    def __assert_valid_coefficient(self, coefficient):
+        if not isinstance(coefficient, (int, float)):
+            raise TypeError("Reaction member coefficient is not a number")
+        if coefficient <= 0:
+            raise ValueError("Reaction member coefficient is not strictly positive")
+
+class ReactionDirection(object):
+    __lockObj = thread.allocate_lock()
+    __forward = None
+    __reversible = None
+
+    def __init__(self, type):
+        if not type in ["f", "r"]:
+            raise ValueError("Invalid reaction direction type")
+
+        self.__type = type
+
+    @staticmethod
+    def forward():
+        ReactionDirection.__lockObj.acquire()
+        try:
+            if ReactionDirection.__forward is None:
+                ReactionDirection.__forward = ReactionDirection("f")
+        finally:
+            ReactionDirection.__lockObj.release()
+
+        return ReactionDirection.__forward
+
+    @staticmethod
+    def reversible():
+        ReactionDirection.__lockObj.acquire()
+        try:
+            if ReactionDirection.__reversible is None:
+                ReactionDirection.__reversible = ReactionDirection("r")
+        finally:
+            ReactionDirection.__lockObj.release()
+
+        return ReactionDirection.__reversible
+
+    def __repr__(self):
+        if self.__type == "f":
+            return "->"
+        if self.__type == "r":
+            return "<->"
+
+class ReactionMemberSet(set):
+    def __repr__(self):
+        return " + ".join(m.__repr__() for m in self)
+
+class Reaction(object):
+    def __init__(self, name, reactants, products, direction, bounds):
+        self.__assert_name(name)
+        self.__assert_reactants(reactants)
+        self.__assert_products(products)
+        self.__assert_direction(direction)
+        self.__assert_bounds(bounds)
+
+        self.__name = name
+        self.__reactants = reactants
+        self.__products = products
+        self.__direction = direction
+        self.__bounds = bounds
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name):
+        self.__assert_name(name)
+        self.__name = name
+
+    @property
+    def reactants(self):
+        return self.__reactants
+
+    @reactants.setter
+    def reactants(self, reactants):
+        self.__assert_reactants(reactants)
+        self.__reactants = reactants
+
+    @property
+    def products(self):
+        return self.__products
+
+    @products.setter
+    def products(self, products):
+        self.__assert_products(self, products)
+        self.__products = products
+
+    @property
+    def direction(self):
+        return self.__direction
+
+    @direction.setter
+    def direction(self, direction):
+        self.__assert_direction(self, direction)
+        self.direction = direction
+
+    @property
+    def bounds(self):
+        return self.__bounds
+
+    @bounds.setter
+    def bounds(self, bounds):
+        self.__assert_bounds(self, bounds)
+        self.__bounds = bounds
+
+    def __assert_name(self, name):
+        if not isinstance(name, str):
+            raise TypeError("Reaction name is not a string")
+
+    def __assert_reactants(self, reactants):
+        if not isinstance(reactants, ReactionMemberSet):
+            raise TypeError("Reaction reactants is not of type ReactionMemberSet")
+
+    def __assert_products(self, products):
+        if not isinstance(products, ReactionMemberSet):
+            raise TypeError("Reaction products is not of type ReactionMemberSet")
+
+    def __assert_direction(self, direction):
+        if not isinstance(direction, ReactionDirection):
+            raise TypeError("Reaction direction is not of type ReactionDirection")
+
+    def __assert_bounds(self, bounds):
+        if not isinstance(bounds, Bounds):
+            raise TypeError("Reaction bounds is not of type bounds")
+
+    def __repr__(self):
+        return "{name} : {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
+
+
+
+
+
+
+
+
 
 
 
@@ -19,112 +257,8 @@ def error(code):
 
 
 
-class Metabolite:
-    def __init__(self, name, coefficient):
-        if not isinstance(name, basestring):
-            raise TypeError("Name is not a string")
-
-        if not isinstance(coefficient, (int, float)):
-            raise TypeError("Coefficient is not a number")
-
-        coefficient = float(coefficient)
-
-        if coefficient <= 0:
-            raise ValueError("Coefficient value is zero or negative")
-
-        self.__name = name
-        self.__coefficient = coefficient
-
-    def __eq__(self, other):
-        return self.get_name() == other.get_name()
-
-    def get_name(self):
-        return self.__name
-    def get_coefficient(self):
-        return self.__coefficient
-
-class Direction:
-    forward = 0
-    reversible = 1
-
-    def is_valid(self, d):
-        return d in [self.forward, self.reversible]
-
-class Bounds:
-    def ___init__
-    lb =
 
 
-class Reaction:
-    def __init__(self, name = None, SubstrateList = None, ProductList = None, direction = None, bounds = None):
-        """Creates object representing a reaction
-
-        Args:
-            name (str): Reaction name
-            Substrates (Metabolite): List of metabolites with coeficients
-        """
-        if not isinstance(name, basestring):
-            raise TypeError("Name is not a string")
-
-        if not isinstance(SubstrateList, list):
-            raise TypeError("SubstrateList is not a list")
-
-        if not isinstance(SubstrateList, list):
-            raise TypeError("SubstrateList is not a list")
-
-        if not Direction.is_valid(direction):
-            raise ValueError("Wrong direction were specified, can only be f,r")
-
-        if not isinstance(bounds, tuple):
-            raise TypeError("Bounds is not a tuple")
-
-        self.__name       = name          if name          else ""
-        self.__substrates = SubstrateList if SubstrateList else []
-        self.__products   = ProductList   if ProductList   else []
-        self.__direction  = direction     if direction     else Direction.reversible
-
-        if bounds is None:
-            if self.__direction == Direction.forward:
-                self.__lb = 0
-                self.__ub = float("inf")
-            elif self.__direction == Direction.reversible:
-                self.__lb = float("-inf")
-                self.__ub = float("inf")
-        else:
-
-
-
-        self.check();
-
-    def check(self):
-        if bool(self.__substrates.get_all()) and bool(self.__products.get_all()):
-            a = Set(self.__substrates.get_all().keys())
-            b = Set(self.__products.get_all().keys())
-            if a.intersection(b):
-                print "Error: cannot be same metabolites in substrates/products, reaction: {reaction_name}".format(reaction_name=self.__name)
-
-
-    #SET methods
-    def set_name(self, name):
-        self.__name = name
-    def set_direction(self, direction):
-        dirs = ['f','b','r']
-        if direction in dirs:
-            self.__direction = direction
-        else:
-            print "Check direction!","current:", direction
-            exit(-1)
-    #GET methods
-    def get_name(self):
-        return self.__name
-
-    def get_substrates(self):
-        return self.__substrates.get_all()
-
-    def get_products(self):
-        return self.__products.get_all()
-    def get_direction(self):
-        return self.__direction
 
 
 

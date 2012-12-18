@@ -1,83 +1,129 @@
 from unittest import TestCase
-from test_partse import *
+from bioopt import *
 __author__ = 'Aleksej'
 
 def power(a, b):
     return a**b
 
-class TestParse(TestCase):
-    def test_parse3(self):
-        model = """
--REACTIONS
-R1: A + B -> 3 c
--CONSTRAINTS
-R1[0, 100]
--EXTERNAL METABOLITES
-C
--OBJ
-R1 1 1
--DESIGNOBJ
-R1 1 1
-"""
-        r = parse(model)
+#class TestParse(TestCase):
+#    def test_parse3(self):
+#        model = """
+#-REACTIONS
+#R1: A + B -> 3 c
+#-CONSTRAINTS
+#R1[0, 100]
+#-EXTERNAL METABOLITES
+#C
+#-OBJ
+#R1 1 1
+#-DESIGNOBJ
+#R1 1 1
+#"""
+#        r = parse(model)
 
-class Metabolite:
-    def __init__(self, name, coefficient):
-        if not isinstance(name, basestring):
-            raise TypeError("Name is not a string")
+#class TestMetabolite(TestCase):
+#    def test_new(self):
+#        m = Metabolite("H2O", 3)
+#
+#        self.assertTrue(m.name == "H2O")
+#        self.assertTrue(m.coefficient == 3)
+#
+#    def test_invalid_coef(self):
+#        with self.assertRaises(TypeError, message="Providing not string name should rise TypeError"):
+#            Metabolite(15, "a")
+#
+#        with self.assertRaises(TypeError, message="Providing character coefficient should raise TypeError"):
+#            Metabolite("H2O", "a")
+#
+#        with self.assertRaises(ValueError, message="Providing zero or negative coefficient coefficient should rise ValueError"):
+#            Metabolite("H2O", 0)
+#
+#        with self.assertRaises(ValueError, message="Providing zero or negative coefficient coefficient should rise ValueError"):
+#            Metabolite("H2O", -1)
 
-        if not isinstance(coefficient, (int, float)):
-            raise TypeError("Coefficient is not a number")
+class TestBounds(TestCase):
+    def test_new(self):
+        self.assertRaises(TypeError, Bounds, "a", 1)
+        self.assertRaises(TypeError, Bounds, 1, "a")
+        self.assertRaises(ValueError, Bounds, 2, 1)
 
-        coefficient = float(coefficient)
+        try:
+            Bounds(1, 2)
+        except:
+            self.fail("Creating Bounds object failed")
 
-        if coefficient <= 0:
-            raise ValueError("Coefficient value is zero or negative")
+        self.assertEquals(Bounds(1, 2).lb, 1)
+        self.assertEquals(Bounds(1, 2).ub, 2)
 
-        self.__name = name
-        self.__coefficient = coefficient
+    def test_setters(self):
+        b = Bounds(0, 0)
+        self.assertRaises(TypeError, b.lb, "a")
+        self.assertRaises(TypeError, b.ub, "a")
+        self.assertRaises(ValueError, b.__setattr__, "ub", -1)
+        self.assertRaises(ValueError, b.__setattr__, "lb", 1)
+        b.lb = -1
+        self.assertEquals(b.lb, -1)
+        b.ub = 2
+        self.assertEquals(b.ub, 2)
 
-    def __eq__(self, other):
-        return self.get_name() == other.get_name()
-
-    def get_name(self):
-        return self.__name
-    def get_coefficient(self):
-        return self.__coefficient
-
-
-
-
-
-a = Metabolite("bla", 1)
-b = Metabolite("bla", 1)
-
-test = [a,b]
-
-c = Metabolite("bla", 1)
-
-if c in test:
-    print True
-
-print a==b
 class TestMetabolite(TestCase):
     def test_new(self):
-        m = Metabolite("H2O", 3)
+        self.assertRaises(TypeError, Metabolite, 1)
+        self.assertRaises(TypeError, Metabolite, None)
+        self.assertRaises(ValueError, Metabolite, "")
 
-        self.assertTrue(m.name == "H2O")
-        self.assertTrue(m.coefficient == 3)
+        try:
+            m = Metabolite("H2O")
+        except:
+            self.fail("Creating Metabolite object failed")
 
-    def test_invalid_coef(self):
-        with self.assertRaises(TypeError, message="Providing not string name should rise TypeError"):
-            Metabolite(15, "a")
+        self.assertEquals(m.name, "H2O")
 
-        with self.assertRaises(TypeError, message="Providing character coefficient should raise TypeError"):
-            Metabolite("H2O", "a")
+class TestReactionMember(TestCase):
+    def test_new(self):
+        m = Metabolite("H2O")
+        self.assertRaises(TypeError, ReactionMember, m, m)
+        self.assertRaises(TypeError, ReactionMember, m, None)
+        self.assertRaises(ValueError, ReactionMember, m, 0)
+        self.assertRaises(ValueError, ReactionMember, m, -1)
 
-        with self.assertRaises(ValueError, message="Providing zero or negative coefficient coefficient should rise ValueError"):
-            Metabolite("H2O", 0)
+        try:
+            rm = ReactionMember(m, 2)
+        except:
+            self.fail("Creating ReactionMember object failed")
 
-        with self.assertRaises(ValueError, message="Providing zero or negative coefficient coefficient should rise ValueError"):
-            Metabolite("H2O", -1)
+        self.assertEquals(rm.coefficient, 2)
 
 
+class TestReaction(TestCase):
+    def test_new(self):
+        name = "Burn"
+        bounds = Bounds(0, float("Inf"))
+        direction = ReactionDirection.forward()
+
+        m_2_Na = ReactionMember(Metabolite("Na"), 2)
+        m_2_H2O = ReactionMember(Metabolite("H2O"), 2)
+        m_2_NaOH = ReactionMember(Metabolite("NaOH"), 2)
+        m_1_H2 = ReactionMember(Metabolite("H2"), 1)
+        reactants = ReactionMemberSet([m_2_Na, m_2_H2O])
+        products = ReactionMemberSet([m_2_NaOH, m_1_H2])
+
+        self.assertRaises(TypeError, Reaction, 1, reactants, products, direction, bounds)
+        self.assertRaises(TypeError, Reaction, name, 1, products, direction, bounds)
+        self.assertRaises(TypeError, Reaction, name, reactants, 1, direction, bounds)
+        self.assertRaises(TypeError, Reaction, name, reactants, products, 1, bounds)
+        self.assertRaises(TypeError, Reaction, name, reactants, products, direction, 1)
+
+        try:
+            r = Reaction(name, reactants, products, direction, bounds)
+        except Exception, ex:
+            self.fail("Creating Reaction object failed {0}".format(ex))
+
+        self.assertEquals(r.name, name)
+        self.assertEquals(r.reactants, reactants)
+        self.assertEquals(r.products, products)
+        self.assertEquals(r.direction, direction)
+        self.assertEquals(r.bounds, bounds)
+
+        print bounds
+        print r
