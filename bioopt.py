@@ -4,6 +4,7 @@ from sets import Set
 import dis
 
 
+
 path="./Scere_master_Kiran.txt"
 
 def error(code):
@@ -49,7 +50,9 @@ class Direction:
     def is_valid(self, d):
         return d in [self.forward, self.reversible]
 
-
+class Bounds:
+    def ___init__
+    lb =
 
 
 class Reaction:
@@ -78,12 +81,16 @@ class Reaction:
         self.__name       = name          if name          else ""
         self.__substrates = SubstrateList if SubstrateList else []
         self.__products   = ProductList   if ProductList   else []
-        self.__direction  = direction     if direction     else "f"
+        self.__direction  = direction     if direction     else Direction.reversible
 
         if bounds is None:
             if self.__direction == Direction.forward:
                 self.__lb = 0
                 self.__ub = float("inf")
+            elif self.__direction == Direction.reversible:
+                self.__lb = float("-inf")
+                self.__ub = float("inf")
+        else:
 
 
 
