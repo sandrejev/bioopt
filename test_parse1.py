@@ -70,14 +70,38 @@ class TestMetabolite(TestCase):
     def test_new(self):
         self.assertRaises(TypeError, Metabolite, 1)
         self.assertRaises(TypeError, Metabolite, None)
+        self.assertRaises(TypeError, Metabolite, "name", 2)
         self.assertRaises(ValueError, Metabolite, "")
 
         try:
-            m = Metabolite("H2O")
+            m = Metabolite("H2O", True)
         except:
             self.fail("Creating Metabolite object failed")
 
         self.assertEquals(m.name, "H2O")
+        self.assertEquals(m.boundary, True)
+
+    def test_arithmetics(self):
+        try:
+            -1*Metabolite("Na")
+            self.fail("Multiplying metabolite by negative coefficient should rise ValueError")
+        except ValueError:
+            pass
+        except Exception:
+            self.fail("Multiplying metabolite by negative coefficient should rise ValueError")
+
+        try:
+            "test"*Metabolite("Na")
+            self.fail("Multiplying metabolite by anything else than a number should rise TypeError")
+        except TypeError:
+            pass
+        except Exception, ex:
+            print ex
+            self.fail("Multiplying metabolite by anything else than a number should rise TypeError")
+
+        self.assertEquals(type(2*Metabolite("Na")), ReactionMember)
+        self.assertEquals((2*Metabolite("Na")).coefficient, 2)
+
 
 class TestReactionMember(TestCase):
     def test_new(self):
@@ -94,19 +118,53 @@ class TestReactionMember(TestCase):
 
         self.assertEquals(rm.coefficient, 2)
 
+    def test_arithmetics(self):
+        Na = 1*Metabolite("Na")
+        H2O = 2*Metabolite("H2O")
+        H2O_2 = 2*Metabolite("H2O")
+
+        try:
+            Na + 2
+            self.fail("Adding number to ReactionMember should raise an error")
+        except TypeError:
+            pass
+        except Exception:
+            self.fail("Adding number to ReactionMember should raise an error")
+
+        try:
+            2 + Na
+            self.fail("Adding number to ReactionMember should raise an error")
+        except TypeError:
+            pass
+        except Exception:
+            self.fail("Adding number to ReactionMember should raise an error")
+
+
+        self.assertEquals(type(Na + H2O), ReactionMemberList)
+        self.assertEquals((Na + H2O)[0], Na)
+        self.assertEquals((Na + H2O)[1], H2O)
+
+        reactants = Na + H2O
+        self.assertEquals(len(reactants + Na), 3)
+        self.assertEquals(len(reactants + H2O), 3)
+        self.assertEquals(len(Na + reactants), 3)
+        self.assertEquals(len(H2O + reactants), 3)
+
+        self.assertTrue((H2O + reactants)[0] is H2O)
+        self.assertTrue((reactants + Na)[0] is Na)
 
 class TestReaction(TestCase):
     def test_new(self):
         name = "Burn"
-        bounds = Bounds(0, float("Inf"))
-        direction = ReactionDirection.forward()
+        bounds = Bounds(-10, float("Inf"))
+        direction = Direction.forward()
 
         m_2_Na = ReactionMember(Metabolite("Na"), 2)
         m_2_H2O = ReactionMember(Metabolite("H2O"), 2)
         m_2_NaOH = ReactionMember(Metabolite("NaOH"), 2)
         m_1_H2 = ReactionMember(Metabolite("H2"), 1)
-        reactants = ReactionMemberSet([m_2_Na, m_2_H2O])
-        products = ReactionMemberSet([m_2_NaOH, m_1_H2])
+        reactants = ReactionMemberList([m_2_Na, m_2_H2O])
+        products = ReactionMemberList([m_2_NaOH, m_1_H2])
 
         self.assertRaises(TypeError, Reaction, 1, reactants, products, direction, bounds)
         self.assertRaises(TypeError, Reaction, name, 1, products, direction, bounds)
@@ -124,6 +182,34 @@ class TestReaction(TestCase):
         self.assertEquals(r.products, products)
         self.assertEquals(r.direction, direction)
         self.assertEquals(r.bounds, bounds)
+        self.assertEquals(r.find_effective_bounds().lb, 0)
+        self.assertEquals(r.find_effective_bounds().ub, float("Inf"))
 
-        print bounds
-        print r
+class TestArithmetic(TestCase):
+    def test_reaction_member(self):
+        self.assertEquals((2*Metabolite("Na")).coefficient, 2)
+
+
+
+class TestModel(TestCase):
+    def test_new(self):
+        Na = Metabolite("Na")
+        H2O = Metabolite("H2O", True)
+        NaOH = Metabolite("NaOH")
+        H2 = Metabolite("H2")
+
+        NH3_H4N = Metabolite("NH3_H4N")
+        Homocysteine = Metabolite("Homocysteine")
+        Oxobutyrate = Metabolite("2-Oxobutyrate")
+        H2S = Metabolite("H2S")
+
+
+        r1 = Reaction("Burn", 2*Na + 2*H2O, 2*NaOH + 1*H2, Direction.forward(), Bounds())
+        r2 = Reaction("L-Methionine methanethiol-lyase", 1*H2O + 1*Homocysteine, 1*NH3_H4N + 1*Oxobutyrate + 1*H2S, Direction.reversible(), Bounds())
+
+        model = Model()
+        model.reactions.add(r1)
+        model.reactions.add(r2)
+
+        #print ReactionMember(Homocysteine, 1) + ReactionMember(Oxobutyrate, 1)
+        #print model

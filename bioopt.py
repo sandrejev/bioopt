@@ -44,9 +44,11 @@ class Bounds(object):
 
 
 class Metabolite(object):
-    def __init__(self, name):
-        self.__assert_valid(name)
+    def __init__(self, name, boundary=False):
+        self.__assert_name(name)
+        self.__assert_boundary(boundary)
         self.__name = name
+        self.__boundary = boundary
 
     @property
     def name(self):
@@ -54,17 +56,36 @@ class Metabolite(object):
 
     @name.setter
     def name(self, name):
-        self.__assert_valid(name)
+        self.__assert_name(name)
         self.__name = name
+
+    @property
+    def boundary(self):
+        return self.__boundary
+
+    @boundary.setter
+    def boundary(self, boundary):
+        self.__assert_boundary(boundary)
+        self.__boundary = boundary
 
     def __eq__(self, other):
         return self.name == other.name
 
-    def __assert_valid(self, name):
+    def __assert_name(self, name):
         if not isinstance(name, str):
             raise TypeError("Metabolite name is not a string")
         if not len(name):
             raise ValueError("Metabolite name is empty string")
+
+    def __assert_boundary(self, boundary):
+        if not isinstance(boundary, bool):
+            raise TypeError("Metabolite boundary condition is not a boolean")
+
+    def __rmul__(self, other):
+        if isinstance(other, (float, int)):
+            return ReactionMember(metabolite=self, coefficient=other)
+
+        raise TypeError("Can only multiply by numeric coefficient")
 
     def __repr__(self):
         return self.name
@@ -95,6 +116,16 @@ class ReactionMember(object):
         self.__assert_valid_coefficient(coefficient)
         self.__coefficient = float(coefficient)
 
+    def __add__(self, other):
+        if isinstance(other, ReactionMember):
+            return ReactionMemberList([self, other])
+        elif isinstance(other, ReactionMemberList):
+            rml = ReactionMemberList(other)
+            rml.insert(0, self)
+            return rml
+        else:
+            raise TypeError("Can only join ReactionMember objects")
+
     def __repr__(self):
         return "{0:.5g} {1}".format(self.coefficient, self.metabolite)
 
@@ -108,7 +139,7 @@ class ReactionMember(object):
         if coefficient <= 0:
             raise ValueError("Reaction member coefficient is not strictly positive")
 
-class ReactionDirection(object):
+class Direction(object):
     __lockObj = thread.allocate_lock()
     __forward = None
     __reversible = None
@@ -121,25 +152,25 @@ class ReactionDirection(object):
 
     @staticmethod
     def forward():
-        ReactionDirection.__lockObj.acquire()
+        Direction.__lockObj.acquire()
         try:
-            if ReactionDirection.__forward is None:
-                ReactionDirection.__forward = ReactionDirection("f")
+            if Direction.__forward is None:
+                Direction.__forward = Direction("f")
         finally:
-            ReactionDirection.__lockObj.release()
+            Direction.__lockObj.release()
 
-        return ReactionDirection.__forward
+        return Direction.__forward
 
     @staticmethod
     def reversible():
-        ReactionDirection.__lockObj.acquire()
+        Direction.__lockObj.acquire()
         try:
-            if ReactionDirection.__reversible is None:
-                ReactionDirection.__reversible = ReactionDirection("r")
+            if Direction.__reversible is None:
+                Direction.__reversible = Direction("r")
         finally:
-            ReactionDirection.__lockObj.release()
+            Direction.__lockObj.release()
 
-        return ReactionDirection.__reversible
+        return Direction.__reversible
 
     def __repr__(self):
         if self.__type == "f":
@@ -147,7 +178,35 @@ class ReactionDirection(object):
         if self.__type == "r":
             return "<->"
 
-class ReactionMemberSet(set):
+class ReactionMemberList(list):
+    def __radd__(self, other):
+        if isinstance(other, ReactionMember):
+            rml = ReactionMemberList()
+            rml.append(other)
+            rml.extend(self)
+            return rml
+
+        return super(ReactionMemberList, self).__radd__(other)
+
+    def __add__(self, other):
+        if isinstance(other, ReactionMember):
+            rml = ReactionMemberList()
+            rml.extend(self)
+            rml.append(other)
+            return rml
+
+        return super(ReactionMemberList, self).__add__(other)
+
+    def __iadd__(self, other):
+        if isinstance(other, ReactionMember):
+            self.append(other)
+            return self
+        elif isinstance(other, ReactionMemberList):
+            self.extend(other)
+            return self
+
+        return super(ReactionMemberList, self).__iadd__(other)
+
     def __repr__(self):
         return " + ".join(m.__repr__() for m in self)
 
@@ -210,20 +269,26 @@ class Reaction(object):
         self.__assert_bounds(self, bounds)
         self.__bounds = bounds
 
+    def find_effective_bounds(self):
+        lb = 0 if self.__direction == Direction.forward() and self.__bounds.lb < 0 else self.__bounds.lb
+        ub = self.__bounds.ub
+
+        return Bounds(lb, ub)
+
     def __assert_name(self, name):
         if not isinstance(name, str):
             raise TypeError("Reaction name is not a string")
 
     def __assert_reactants(self, reactants):
-        if not isinstance(reactants, ReactionMemberSet):
+        if not isinstance(reactants, ReactionMemberList):
             raise TypeError("Reaction reactants is not of type ReactionMemberSet")
 
     def __assert_products(self, products):
-        if not isinstance(products, ReactionMemberSet):
+        if not isinstance(products, ReactionMemberList):
             raise TypeError("Reaction products is not of type ReactionMemberSet")
 
     def __assert_direction(self, direction):
-        if not isinstance(direction, ReactionDirection):
+        if not isinstance(direction, Direction):
             raise TypeError("Reaction direction is not of type ReactionDirection")
 
     def __assert_bounds(self, bounds):
@@ -231,13 +296,30 @@ class Reaction(object):
             raise TypeError("Reaction bounds is not of type bounds")
 
     def __repr__(self):
-        return "{name} : {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
+        return "{name}\t:\t{lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
 
+class Model(object):
+    def __init__(self):
+        self.__reactions = set()
 
+    @property
+    def reactions(self):
+        return self.__reactions
 
+    def find_metabolites(self):
+        #print type(self.reactions[0].reactants)
+        #exit(0)
+        return set(rm.metabolite for r in self.reactions for rm in r.reactants + r.products)
 
+    def find_boundary_metabolites(self):
+        return set(m for m in self.find_metabolites() if m.boundary)
 
+    def __repr__(self):
+        ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
+        ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.find_effective_bounds()) for r in self.reactions))
+        ret += "-EXTERNAL METABOLITES\n{0}".format("\n".join(m.name for m in self.find_boundary_metabolites()))
 
+        return ret
 
 
 
@@ -254,11 +336,6 @@ def error(code):
         return error_map[code]
     else:
         return "wrong code"
-
-
-
-
-
 
 
 
