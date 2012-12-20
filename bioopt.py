@@ -333,15 +333,24 @@ class BiooptParser(object):
             yield self.parse_reaction(line)
 
     def parse_reaction_member(self, member_str):
-        re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
-        number = re.compile("[\(]?\s?"+"("+re_number+")"+"\s?[\)]?\s+")
+        if not isinstance(member_str, str):
+            raise TypeError("Reaction member string is not of type string")
 
-        member_str = member_str.strip()
-        n = re.search(number, member_str)
-        coef = float(n.groups()[0]) if n else 1
+        member_str = self.strip_comments(member_str)
+        if not len(member_str):
+            raise ValueError("Reaction member string is empty")
 
-        mname = re.sub(number, "", member_str)
-        return ReactionMember(Metabolite(mname), coef)
+        re_number = r"(?:[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)|(?:[-+]?(?:[0-9]*\.[0-9]+|[0-9]+))"
+        re_member = r"(\(?(" + re_number + r") *\)? +)?(.*)"
+
+        m = re.match(re_member, member_str)
+        if m is None:
+            raise SyntaxError("Could not parse reaction member: {0}".format(member_str))
+
+        tmp, coef, name = m.groups()
+        coef = float(coef) if coef else 1
+
+        return ReactionMember(Metabolite(name), coef)
 
     def parse_reaction_member_list(self, list_str):
         list_str_split = re.split(r"\s+\+\s+", list_str)
@@ -351,8 +360,18 @@ class BiooptParser(object):
 
         return members
 
-    def parse_reaction(self, line, sep = ":"):
-        line = line.strip()
+    def parse_reaction(self, line):
+        if line is None:
+            return None
+
+        if not isinstance(line, str):
+            raise TypeError("Reaction line was not a string")
+
+        line = self.strip_comments(line)
+        if not len(line):
+            return None
+
+        sep = ":"
         parts = line.split(sep)
 
         if len(parts) > 2:
@@ -382,6 +401,11 @@ class BiooptParser(object):
         else:
             raise Exception("Unknown direction ({0})".format(direction))
 
+    def strip_comments(self, line):
+        line = line.strip()
+        line = re.sub("[#\n\r].*", "", line)
+
+        return line
 
     def parse_constraints_section(self, section_text):
         print "Parse constraints"
@@ -410,32 +434,11 @@ class BiooptParser(object):
 
         return sections2
 
-    def __remove_comments(self, line):
-        a = """test
-test
-#test_comment
-test
-#test_comment
-test
-test
-#test_comment
-#test_comment
-test
-test # test_comment
-# test comment
-test
-"""
-        c = re.compile(r"#.*")
-        for l in a.split("\n"):
-            print "Original:", l
-            print "Modified:", c.sub("", l)
 
 
     def __parse(self, text, force=1):
         #self.__remove_comments(text)
         sections = self.__find_sections(text)
-
-        self.__remove_comments("")
 
         model = Model()
 
@@ -458,8 +461,8 @@ test
         pass
 
 
-p = BiooptParser()
-p.parse_file("d:/Users/sandrejev/Desktop/iAG612.bioopt")
+#p = BiooptParser()
+#p.parse_file("d:/Users/sandrejev/Desktop/iAG612.bioopt")
 
 #        skip_flag     = 0
 #        reactions_flag = 0
