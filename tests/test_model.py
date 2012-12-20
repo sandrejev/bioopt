@@ -1,6 +1,12 @@
+from __future__ import absolute_import
+from ..src import BiooptParser
 from unittest import TestCase
-from model import *
-from model import Metabolite as M
+
+#import sys
+#print sys.modules["model"]
+#print sys.modules["parser"]
+#from src.model import *
+#from src.model import Metabolite as M
 
 def power(a, b):
     return a**b

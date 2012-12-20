@@ -1,13 +1,6 @@
 from unittest import TestCase
-import os
-
-parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-os.sys.path.insert(0,parentdir)
-
-from model import *
-from parser import *
-print sys.modules["parser"]
-
+from src.model import *
+from src.parser import *
 class TestBiooptParser(TestCase):
     model = """-REACTIONS
 R1: A + B -> 3 C
