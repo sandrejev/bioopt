@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="17af2f7c-6622-43bd-8a30-50b467d8af53" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bioopt.py" afterPath="$PROJECT_DIR$/bioopt.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_parse1.py" afterPath="$PROJECT_DIR$/test_parse1.py" />
     </list>
@@ -23,10 +24,10 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="bioopt.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="bioopt.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bioopt.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="199" column="14" selection-start="5613" selection-end="5619" vertical-scroll-proportion="-14.16">
+            <state line="429" column="32" selection-start="12961" selection-end="12961" vertical-scroll-proportion="0.58478606">
               <folding>
                 <element signature="e#22#35#0" expanded="true" />
               </folding>
@@ -34,13 +35,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_parse1.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="re.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://C:/Python26/Lib/re.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="166" column="0" selection-start="8055" selection-end="8055" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_parse1.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test_parse1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="147" column="46" selection-start="4669" selection-end="4669" vertical-scroll-proportion="0.92834395">
-              <folding>
-                <element signature="e#0#29#0" expanded="true" />
-              </folding>
+            <state line="213" column="0" selection-start="7290" selection-end="7290" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -76,10 +84,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1928" />
+    <option name="x" value="-8" />
     <option name="y" value="-8" />
     <option name="width" value="1936" />
-    <option name="height" value="1096" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -97,7 +105,7 @@
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
       <flattenPackages />
-      <showMembers />
+      <showMembers ProjectPane="true" />
       <showModules />
       <showLibraryContents />
       <hideEmptyPackages />
@@ -169,12 +177,12 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="recentsLimit" value="5" />
     <property name="options.lastSelected" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="recentsLimit" value="5" />
     <property name="restartRequiresConfirmation" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -189,7 +197,7 @@
       <recent name="C:\Users\Aleksej\workspace\python\testing\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python's test.Test">
+  <component name="RunManager" selected="Python.bioopt">
     <configuration default="false" name="bioopt" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -304,9 +312,9 @@
       <method />
     </configuration>
     <list size="3">
-      <item index="0" class="java.lang.String" itemvalue="Python.bioopt" />
-      <item index="1" class="java.lang.String" itemvalue="Python.Enum" />
-      <item index="2" class="java.lang.String" itemvalue="Python's test.Test" />
+      <item index="0" class="java.lang.String" itemvalue="Python.Enum" />
+      <item index="1" class="java.lang.String" itemvalue="Python's test.Test" />
+      <item index="2" class="java.lang.String" itemvalue="Python.bioopt" />
     </list>
     <recent_temporary>
       <list size="1">
@@ -315,6 +323,9 @@
     </recent_temporary>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="StructureViewFactory">
+    <option name="ACTIVE_ACTIONS" value="SHOW_INHERITED" />
+  </component>
   <component name="SvnConfiguration" maxAnnotateRevisions="500" myUseAcceleration="nothing" myAutoUpdateAfterCommit="false" cleanupOnStartRun="true">
     <option name="USER" value="" />
     <option name="PASSWORD" value="" />
@@ -386,24 +397,24 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1928" y="-8" width="1936" height="1096" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3297244" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.15314835" sideWeight="0.71304345" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16221985" sideWeight="0.6802083" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16221985" sideWeight="0.26875" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39895833" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.31979167" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.28695652" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32916668" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -466,6 +477,36 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/bioopt.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state line="327" column="25" selection-start="9628" selection-end="9628" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#22#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python26/Lib/re.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="166" column="0" selection-start="8055" selection-end="8055" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_parse1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="213" column="0" selection-start="7290" selection-end="7290" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python26/Lib/unittest.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="335" column="0" selection-start="11807" selection-end="11807" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bioopt.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state line="69" column="14" selection-start="1690" selection-end="1690" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#22#35#0" expanded="true" />
@@ -511,25 +552,30 @@
     </entry>
     <entry file="file://$USER_HOME$/.PyCharm10/system/python_stubs/-891257481/__builtin__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3204" column="13" selection-start="109311" selection-end="109316" vertical-scroll-proportion="-1.2013888">
+        <state line="452" column="4" selection-start="13535" selection-end="13626" vertical-scroll-proportion="0.33333334">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python26/Lib/re.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="166" column="0" selection-start="8055" selection-end="8055" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_parse1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="213" column="0" selection-start="7290" selection-end="7290" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="199" column="14" selection-start="5613" selection-end="5619" vertical-scroll-proportion="-14.16">
+        <state line="429" column="32" selection-start="12961" selection-end="12961" vertical-scroll-proportion="0.58478606">
           <folding>
             <element signature="e#22#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_parse1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="147" column="46" selection-start="4669" selection-end="4669" vertical-scroll-proportion="0.92834395">
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from bioopt import *
-__author__ = 'Aleksej'
+from bioopt import Metabolite as M
 
 def power(a, b):
     return a**b
@@ -99,8 +99,8 @@ class TestMetabolite(TestCase):
             print ex
             self.fail("Multiplying metabolite by anything else than a number should rise TypeError")
 
-        self.assertEquals(type(2*Metabolite("Na")), ReactionMember)
-        self.assertEquals((2*Metabolite("Na")).coefficient, 2)
+        self.assertEquals(type(2*M("Na")), ReactionMember)
+        self.assertEquals((2*M("Na")).coefficient, 2)
 
 
 class TestReactionMember(TestCase):
@@ -121,7 +121,6 @@ class TestReactionMember(TestCase):
     def test_arithmetics(self):
         Na = 1*Metabolite("Na")
         H2O = 2*Metabolite("H2O")
-        H2O_2 = 2*Metabolite("H2O")
 
         try:
             Na + 2
@@ -202,7 +201,6 @@ class TestModel(TestCase):
         Homocysteine = Metabolite("Homocysteine")
         Oxobutyrate = Metabolite("2-Oxobutyrate")
         H2S = Metabolite("H2S")
-
 
         r1 = Reaction("Burn", 2*Na + 2*H2O, 2*NaOH + 1*H2, Direction.forward(), Bounds())
         r2 = Reaction("L-Methionine methanethiol-lyase", 1*H2O + 1*Homocysteine, 1*NH3_H4N + 1*Oxobutyrate + 1*H2S, Direction.reversible(), Bounds())

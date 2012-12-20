@@ -211,7 +211,7 @@ class ReactionMemberList(list):
         return " + ".join(m.__repr__() for m in self)
 
 class Reaction(object):
-    def __init__(self, name, reactants, products, direction, bounds):
+    def __init__(self, name, reactants, products, direction, bounds=Bounds()):
         self.__assert_name(name)
         self.__assert_reactants(reactants)
         self.__assert_products(products)
@@ -300,15 +300,13 @@ class Reaction(object):
 
 class Model(object):
     def __init__(self):
-        self.__reactions = set()
+        self.__reactions = list()
 
     @property
     def reactions(self):
         return self.__reactions
 
     def find_metabolites(self):
-        #print type(self.reactions[0].reactants)
-        #exit(0)
         return set(rm.metabolite for r in self.reactions for rm in r.reactants + r.products)
 
     def find_boundary_metabolites(self):
@@ -321,7 +319,294 @@ class Model(object):
 
         return ret
 
+class BiooptParser(object):
+    def parse_file(self, path, force = 1):
+        f = open(path, "r")
+        self.__parse(f.read(), force)
 
+    def parse_reactions_section(self, section_text):
+        print "Parse reactions"
+
+        nl = re.compile("[\n\r]")
+        rstrings = nl.split(section_text)
+        for line in rstrings:
+            yield self.parse_reaction(line)
+
+    def parse_reaction_member(self, member_str):
+        re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
+        number = re.compile("[\(]?\s?"+"("+re_number+")"+"\s?[\)]?\s+")
+
+        member_str = member_str.strip()
+        n = re.search(number, member_str)
+        coef = float(n.groups()[0]) if n else 1
+
+        mname = re.sub(number, "", member_str)
+        return ReactionMember(Metabolite(mname), coef)
+
+    def parse_reaction_member_list(self, list_str):
+        list_str_split = re.split(r"\s+\+\s+", list_str)
+        members = ReactionMemberList()
+        for member_str in list_str_split:
+            members.append(self.parse_reaction_member(member_str))
+
+        return members
+
+    def parse_reaction(self, line, sep = ":"):
+        line = line.strip()
+        parts = line.split(sep)
+
+        if len(parts) > 2:
+            raise SyntaxError("{0} separator split reaction line into more than two parts [{1}]".format(sep, line))
+        if len(parts) < 2:
+            raise SyntaxError("Could not split reaction line using {0} separator [{1}]".format(sep, line))
+
+        reaction_name = parts[0].strip()
+
+        d = re.search("(\s+<\->|<\-|\->\s+)", line)
+        direction = d.groups()[0]
+        parts = parts[1].split(direction)
+        direction = direction.strip() #removing white space after splitting into parts
+
+        if len(parts) != 2:
+            raise SyntaxError("Reaction doesn't consist of exactly two parts (reactants & products)")
+
+        reactants = self.parse_reaction_member_list(parts[0])
+        products = self.parse_reaction_member_list(parts[1])
+
+        if direction == "<-":
+            return Reaction(reaction_name, products, reactants, Direction.forward())
+        elif direction == "->":
+            return Reaction(reaction_name, reactants, products, Direction.forward())
+        elif direction == "<->":
+            return Reaction(reaction_name, reactants, products, Direction.reversible())
+        else:
+            raise Exception("Unknown direction ({0})".format(direction))
+
+
+    def parse_constraints_section(self, section_text):
+        print "Parse constraints"
+        pass
+
+    def parse_objective_section(self, section_text):
+        print "Parse objective"
+        pass
+
+    def parse_external_metabolites_section(self, section_text):
+        print "Parse external metabolites"
+        pass
+
+    def __find_sections(self, text):
+        s = re.compile(r"^-[\w ]+$", re.MULTILINE)
+        #return dict((m.group(), text.count("\n", 0, m.start())) for m in re.finditer(s, text))
+        sections1 = [(m.group(), m.start(), m.end()) for m in re.finditer(s, text)]
+
+        sections2 = dict()
+        for i, s in enumerate(sections1):
+            name = s[0]
+            start = s[2]+1
+            end = sections1[i+1][1]-1 if i+1 < len(sections1) else len(text)
+
+            sections2[name] = (start, end)
+
+        return sections2
+
+    def __remove_comments(self, line):
+        a = """test
+test
+#test_comment
+test
+#test_comment
+test
+test
+#test_comment
+#test_comment
+test
+test # test_comment
+# test comment
+test
+"""
+        c = re.compile(r"#.*")
+        for l in a.split("\n"):
+            print "Original:", l
+            print "Modified:", c.sub("", l)
+
+
+    def __parse(self, text, force=1):
+        #self.__remove_comments(text)
+        sections = self.__find_sections(text)
+
+        self.__remove_comments("")
+
+        model = Model()
+
+        react_section = sections["-REACTIONS"]
+        reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
+
+        model.reactions.extend(reactions)
+
+#        ext_m_section = sections["-EXTERNAL METABOLITES"]
+#        self.parse_external_metabolites(text[ext_m_section[0]:ext_m_section[1]])
+#
+#        const_section = sections["-CONSTRAINTS"]
+#        self.parse_constraints(text[const_section[0]:const_section[1]])
+#
+#        obj_section = sections["-OBJ"]
+#        self.parse_objective(text[obj_section[0]:obj_section[1]])
+
+
+
+        pass
+
+
+p = BiooptParser()
+p.parse_file("d:/Users/sandrejev/Desktop/iAG612.bioopt")
+
+#        skip_flag     = 0
+#        reactions_flag = 0
+#        constraints_flag = 0
+#        external_metabolites_flag = 0
+#        obj_flag = 0
+#        designobj_flag = 0
+#
+#        fails = 0
+#        minor_fails = 0
+#
+#        reactions = {}
+#        constraints = {}
+#        external_metabolites = {}
+#        obj = {}
+#        design_obj = {}
+#
+#
+#        for nr, line in enumerate(f):
+#            line = line.strip()
+#            c = nr + 1
+#
+#            #checking flags
+#            if not line:
+#                continue
+#            if re.match('^#',line):
+#                continue
+#            if re.match('^%',line) and skip_flag == 0:
+#                skip_flag = 1
+#            elif re.match('^%',line) and skip_flag == 1:
+#                skip_flag = 0
+#                continue
+#            if skip_flag == 1:
+#                continue
+#
+#            if re.match('^-REACTIONS', line):
+#                reactions_flag = 1
+#                continue
+#            if re.match('^-CONSTRAINTS', line) and reactions_flag == 1:
+#                reactions_flag = 0
+#                constraints_flag = 1
+#                continue
+#
+#            elif re.match('^-CONSTRAINTS', line) and reactions_flag == 0:
+#                print parse.__name__, "at line {}, check if -REACTIONS flag was defined before. {}".format(c, error(1))
+#                fails += 1
+#                continue
+#
+#            if re.match('^-EXTERNAL METABOLITES', line) and constraints_flag == 1:
+#                constraints_flag = 0
+#                external_metabolites_flag = 1
+#                continue
+#            elif re.match('^-EXTERNAL METABOLITES', line) and constraints_flag == 0:
+#                print parse.__name__, "at line {}, check if -CONSTRAINTS flag was defined before. {}".format(c, error(1))
+#                fails += 1
+#                continue
+#
+#            if re.match('^-OBJ', line) and external_metabolites_flag == 1:
+#                external_metabolites_flag = 0
+#                obj_flag = 1
+#                continue
+#            elif re.match('^-OBJ', line) and external_metabolites_flag == 0:
+#                print parse.__name__, "at line {}, check if -EXTERNAL METABOLITES flag was defined before. {}".format(c, error(1))
+#                fails += 1
+#                continue
+#
+#            if re.match('^-DESIGNOBJ', line) and obj_flag == 1:
+#                obj_flag = 0
+#                designobj_flag = 1
+#                continue
+#            elif re.match('^-OBJ', line) and external_metabolites_flag == 0:
+#                print parse.__name__, "at line {}, check if -OBJ flag was defined before. {}".format(c, error(1))
+#                fails += 1
+#                continue
+#
+#            #colecting data
+#            if reactions_flag == 1:
+#                #print c, line
+#                name, substrates, products, direction = make_reaction(line)
+#                if name in reactions:
+#                    print "Such reaction {} exists at {}".format(name,c)
+#                    fails += 1
+#                else:
+#                    reactions[name] = [substrates,products,direction]
+#                continue
+#
+#            if constraints_flag == 1:
+#                re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
+#                m = re.match(r'(\w+)\s?\[\s?'+'('+re_number+')'+'\s?,\s?'+'('+re_number+')'+'\s?\]', line)
+#                if m:
+#                    #re_number if matched returns 3 elements tuple
+#                    #m will contain total 7 elements in 0th element will be name +3 for lb and 3 for ub
+#                    name = m.groups()[0]
+#                    lb   = m.groups()[1]
+#                    ub   = m.groups()[4]
+#                    if name in reactions:
+#                        constraints[name] = [lb,ub]
+#                    else:
+#                        print "No such reaction {} for constraint {} at line {}".format(name,line,c)
+#                else:
+#                    print "Wrong format at {}, expected constraints format: reaction[number, number]".format(c)
+#                    fails +=1
+#                continue
+#
+#            if external_metabolites_flag == 1:
+#                if line in external_metabolites:
+#                    print "Duplicate found of external metabolite at {}".format(c)
+#                    minor_fails += 1
+#                else:
+#                    external_metabolites[line] = 1
+#                continue
+#
+#            if obj_flag == 1:
+#                re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
+#                m = re.match(r'(\w+)\s+'+'('+re_number+')'+'\s+'+'('+re_number+')', line)
+#                if m:
+#                    name = m.groups()[0]
+#                    c1   = m.groups()[1]
+#                    c2  = m.groups()[4]
+#                    obj[name] = [c1,c2]
+#                else:
+#                    print "Wrong format at {}, expected objective format: reaction number number".format(c)
+#                    fails +=1
+#                continue
+#            if designobj_flag == 1:
+#                re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
+#                m = re.match(r'(\w+)\s+'+'('+re_number+')'+'\s+'+'('+re_number+')', line)
+#                if m:
+#                    name = m.groups()[0]
+#                    c1   = m.groups()[1]
+#                    c2  = m.groups()[4]
+#                    design_obj[name] = [c1,c2]
+#                else:
+#                    print "Wrong format at {}, expected design objective format: reaction number number".format(c)
+#                    fails +=1
+#                continue
+#
+#        if force == 1:
+#
+#            if fails:
+#                print "There were critical {} fails found and {}".format(fails, minor_fails)
+#                quit (-1)
+#            else:
+#
+#                return reactions, constraints, external_metabolites, obj, design_obj
+#        else:
+#            return reactions, constraints, external_metabolites, obj, design_obj
 
 
 
@@ -402,172 +687,12 @@ def make_reaction (line, sep = ":"):
     else:
         return reaction_name, substrates, products, direction
 
-def parse_file(path, force = 1):
-    try:
-        f = open(path)
-    except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)
-        exit(-1)
-    parse(f, force)
-
-
-def parse(f, force=1):
-
-    skip_flag     = 0
-    reactions_flag = 0
-    constraints_flag = 0
-    external_metabolites_flag = 0
-    obj_flag = 0
-    designobj_flag = 0
-
-    fails = 0
-    minor_fails = 0
-
-    reactions = {}
-    constraints = {}
-    external_metabolites = {}
-    obj = {}
-    design_obj = {}
-
-
-    for nr, line in enumerate(f):
-        line = line.strip()
-        c = nr + 1
-
-        #checking flags
-        if not line:
-            continue
-        if re.match('^#',line):
-            continue
-        if re.match('^%',line) and skip_flag == 0:
-            skip_flag = 1
-        elif re.match('^%',line) and skip_flag == 1:
-            skip_flag = 0
-            continue
-        if skip_flag == 1:
-            continue
-
-        if re.match('^-REACTIONS', line):
-            reactions_flag = 1
-            continue
-        if re.match('^-CONSTRAINTS', line) and reactions_flag == 1:
-            reactions_flag = 0
-            constraints_flag = 1
-            continue
-
-        elif re.match('^-CONSTRAINTS', line) and reactions_flag == 0:
-            print parse.__name__, "at line {}, check if -REACTIONS flag was defined before. {}".format(c, error(1))
-            fails += 1
-            continue
-
-        if re.match('^-EXTERNAL METABOLITES', line) and constraints_flag == 1:
-            constraints_flag = 0
-            external_metabolites_flag = 1
-            continue
-        elif re.match('^-EXTERNAL METABOLITES', line) and constraints_flag == 0:
-            print parse.__name__, "at line {}, check if -CONSTRAINTS flag was defined before. {}".format(c, error(1))
-            fails += 1
-            continue
-
-        if re.match('^-OBJ', line) and external_metabolites_flag == 1:
-            external_metabolites_flag = 0
-            obj_flag = 1
-            continue
-        elif re.match('^-OBJ', line) and external_metabolites_flag == 0:
-            print parse.__name__, "at line {}, check if -EXTERNAL METABOLITES flag was defined before. {}".format(c, error(1))
-            fails += 1
-            continue
-
-        if re.match('^-DESIGNOBJ', line) and obj_flag == 1:
-            obj_flag = 0
-            designobj_flag = 1
-            continue
-        elif re.match('^-OBJ', line) and external_metabolites_flag == 0:
-            print parse.__name__, "at line {}, check if -OBJ flag was defined before. {}".format(c, error(1))
-            fails += 1
-            continue
-
-        #colecting data
-        if reactions_flag == 1:
-            #print c, line
-            name, substrates, products, direction = make_reaction(line)
-            if name in reactions:
-                print "Such reaction {} exists at {}".format(name,c)
-                fails += 1
-            else:
-                reactions[name] = [substrates,products,direction]
-            continue
-
-        if constraints_flag == 1:
-            re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
-            m = re.match(r'(\w+)\s?\[\s?'+'('+re_number+')'+'\s?,\s?'+'('+re_number+')'+'\s?\]', line)
-            if m:
-                #re_number if matched returns 3 elements tuple
-                #m will contain total 7 elements in 0th element will be name +3 for lb and 3 for ub
-                name = m.groups()[0]
-                lb   = m.groups()[1]
-                ub   = m.groups()[4]
-                if name in reactions:
-                    constraints[name] = [lb,ub]
-                else:
-                    print "No such reaction {} for constraint {} at line {}".format(name,line,c)
-            else:
-                print "Wrong format at {}, expected constraints format: reaction[number, number]".format(c)
-                fails +=1
-            continue
-
-        if external_metabolites_flag == 1:
-            if line in external_metabolites:
-                print "Duplicate found of external metabolite at {}".format(c)
-                minor_fails += 1
-            else:
-                external_metabolites[line] = 1
-            continue
-
-        if obj_flag == 1:
-            re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
-            m = re.match(r'(\w+)\s+'+'('+re_number+')'+'\s+'+'('+re_number+')', line)
-            if m:
-                name = m.groups()[0]
-                c1   = m.groups()[1]
-                c2  = m.groups()[4]
-                obj[name] = [c1,c2]
-            else:
-                print "Wrong format at {}, expected objective format: reaction number number".format(c)
-                fails +=1
-            continue
-        if designobj_flag == 1:
-            re_number = r"(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?"
-            m = re.match(r'(\w+)\s+'+'('+re_number+')'+'\s+'+'('+re_number+')', line)
-            if m:
-                name = m.groups()[0]
-                c1   = m.groups()[1]
-                c2  = m.groups()[4]
-                design_obj[name] = [c1,c2]
-            else:
-                print "Wrong format at {}, expected design objective format: reaction number number".format(c)
-                fails +=1
-            continue
-
-    if force == 1:
-
-        if fails:
-            print "There were critical {} fails found and {}".format(fails, minor_fails)
-            quit (-1)
-        else:
-
-            return reactions, constraints, external_metabolites, obj, design_obj
-    else:
-        return reactions, constraints, external_metabolites, obj, design_obj
 
 
 
 
 
 
-
-if __name__ == "__main__":
-    print "asdasdasd"
 
 
 
