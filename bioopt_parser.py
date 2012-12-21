@@ -10,12 +10,20 @@ class BiooptParser(object):
         self.__parse(f.read(), force)
 
     def parse_reactions_section(self, section_text):
-        print "Parse reactions"
+        if not isinstance(section_text, str):
+            raise TypeError("Reactions section test is not of type string")
 
-        nl = re.compile("[\n\r]")
+        nl = re.compile("\n\r|\r\n|\n")
         rstrings = nl.split(section_text)
+        reactions = []
         for line in rstrings:
-            yield self.parse_reaction(line)
+            line = self.strip_comments(line)
+            if not len(line):
+                continue
+
+            reactions.append(self.parse_reaction(line))
+
+        return reactions
 
     def parse_reaction_member(self, member_str):
         if not isinstance(member_str, str):
@@ -38,23 +46,25 @@ class BiooptParser(object):
         return ReactionMember(Metabolite(name), coef)
 
     def parse_reaction_member_list(self, list_str):
-        list_str_split = re.split(r"\s+\+\s+", list_str)
-        members = ReactionMemberList()
-        for member_str in list_str_split:
-            members.append(self.parse_reaction_member(member_str))
+        if not isinstance(list_str, str):
+            raise TypeError("Reaction member list string is not of type string")
+
+        list_str = self.strip_comments(list_str)
+        if not len(list_str):
+            raise ValueError("Reaction member list string is empty")
+
+        parts = re.split(r"\s+\+\s+", list_str)
+        members = ReactionMemberList([self.parse_reaction_member(s) for s in parts])
 
         return members
 
     def parse_reaction(self, line):
-        if line is None:
-            return None
-
         if not isinstance(line, str):
             raise TypeError("Reaction line was not a string")
 
         line = self.strip_comments(line)
         if not len(line):
-            return None
+            raise ValueError("Reaction string is empty")
 
         sep = ":"
         parts = line.split(sep)
@@ -104,9 +114,8 @@ class BiooptParser(object):
         print "Parse external metabolites"
         pass
 
-    def __find_sections(self, text):
+    def find_sections(self, text):
         s = re.compile(r"^-[\w ]+$", re.MULTILINE)
-        #return dict((m.group(), text.count("\n", 0, m.start())) for m in re.finditer(s, text))
         sections1 = [(m.group(), m.start(), m.end()) for m in re.finditer(s, text)]
 
         sections2 = dict()
@@ -123,7 +132,7 @@ class BiooptParser(object):
 
     def __parse(self, text, force=1):
         #self.__remove_comments(text)
-        sections = self.__find_sections(text)
+        sections = self.find_sections(text)
 
         model = Model()
 

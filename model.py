@@ -69,7 +69,7 @@ class Metabolite(object):
         self.__boundary = boundary
 
     def __eq__(self, other):
-        return self.name == other.name
+        return self.name == other.name and self.boundary == other.boundary
 
     def __assert_name(self, name):
         if not isinstance(name, str):
@@ -128,6 +128,9 @@ class ReactionMember(object):
 
     def __repr__(self):
         return "{0:.5g} {1}".format(self.coefficient, self.metabolite)
+
+    def __eq__(self, other):
+        return self.metabolite == other.metabolite and self.coefficient == other.coefficient
 
     def __assert_valid_metabolite(self, metabolite):
         if not isinstance(metabolite, Metabolite):
@@ -296,7 +299,7 @@ class Reaction(object):
             raise TypeError("Reaction bounds is not of type bounds")
 
     def __repr__(self):
-        return "{name}\t:\t{lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
+        return "{name}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
 
 class Model(object):
     def __init__(self):
