@@ -1,8 +1,7 @@
-from __future__ import absolute_import
-from model import *
-from model import Metabolite as M
-from bioopt import *
 from unittest import TestCase
+from bioopt_parser import *
+from model import *
+
 
 #import sys
 #print sys.modules["model"]
@@ -107,8 +106,8 @@ class TestMetabolite(TestCase):
             print ex
             self.fail("Multiplying metabolite by anything else than a number should rise TypeError")
 
-        self.assertEquals(type(2*M("Na")), ReactionMember)
-        self.assertEquals((2*M("Na")).coefficient, 2)
+        self.assertEquals(type(2*Metabolite("Na")), ReactionMember)
+        self.assertEquals((2*Metabolite("Na")).coefficient, 2)
 
 
 class TestReactionMember(TestCase):

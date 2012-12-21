@@ -1,6 +1,9 @@
 from unittest import TestCase
+from bioopt_parser import *
 from model import *
-from bioopt import *
+
+
+
 class TestBiooptParser(TestCase):
     model = """-REACTIONS
 R1: A + B -> 3 C
