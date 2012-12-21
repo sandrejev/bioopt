@@ -1,5 +1,7 @@
 from __future__ import absolute_import
-from ..src import BiooptParser
+from model import *
+from model import Metabolite as M
+from bioopt import *
 from unittest import TestCase
 
 #import sys
