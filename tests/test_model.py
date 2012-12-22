@@ -2,52 +2,6 @@ from unittest import TestCase
 from bioopt_parser import *
 from model import *
 
-
-#import sys
-#print sys.modules["model"]
-#print sys.modules["parser"]
-#from src.model import *
-#from src.model import Metabolite as M
-
-def power(a, b):
-    return a**b
-
-#class TestParse(TestCase):
-#    def test_parse3(self):
-#        model = """
-#-REACTIONS
-#R1: A + B -> 3 c
-#-CONSTRAINTS
-#R1[0, 100]
-#-EXTERNAL METABOLITES
-#C
-#-OBJ
-#R1 1 1
-#-DESIGNOBJ
-#R1 1 1
-#"""
-#        r = parse(model)
-
-#class TestMetabolite(TestCase):
-#    def test_new(self):
-#        m = Metabolite("H2O", 3)
-#
-#        self.assertTrue(m.name == "H2O")
-#        self.assertTrue(m.coefficient == 3)
-#
-#    def test_invalid_coef(self):
-#        with self.assertRaises(TypeError, message="Providing not string name should rise TypeError"):
-#            Metabolite(15, "a")
-#
-#        with self.assertRaises(TypeError, message="Providing character coefficient should raise TypeError"):
-#            Metabolite("H2O", "a")
-#
-#        with self.assertRaises(ValueError, message="Providing zero or negative coefficient coefficient should rise ValueError"):
-#            Metabolite("H2O", 0)
-#
-#        with self.assertRaises(ValueError, message="Providing zero or negative coefficient coefficient should rise ValueError"):
-#            Metabolite("H2O", -1)
-
 class TestBounds(TestCase):
     def test_new(self):
         self.assertRaises(TypeError, Bounds, "a", 1)
@@ -56,8 +10,8 @@ class TestBounds(TestCase):
 
         try:
             Bounds(1, 2)
-        except:
-            self.fail("Creating Bounds object failed")
+        except Exception, ex:
+            self.fail("Creating Bounds object failed: {0}".format(ex))
 
         self.assertEquals(Bounds(1, 2).lb, 1)
         self.assertEquals(Bounds(1, 2).ub, 2)
@@ -210,7 +164,7 @@ class TestModel(TestCase):
         H2S = Metabolite("H2S")
 
         r1 = Reaction("Burn", 2*Na + 2*H2O, 2*NaOH + 1*H2, Direction.forward(), Bounds())
-        r2 = Reaction("L-Methionine methanethiol-lyase", 1*H2O + 1*Homocysteine, 1*NH3_H4N + 1*Oxobutyrate + 1*H2S, Direction.reversible(), Bounds())
+        r2 = Reaction("L-Methionine methanethiol-lyase", 1*H2O + 1*Homocysteine, 1*NH3_H4N + 1*Oxobutyrate + 1*H2S)
 
         model = Model()
         model.reactions.append(r1)

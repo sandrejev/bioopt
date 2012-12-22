@@ -1,29 +1,20 @@
 import re
 from model import *
-class Test(object):
-    def run(self):
-        return True
 
 class BiooptParser(object):
+    def __init__(self):
+        self.re_number = r"(?:[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)|(?:[-+]?(?:[0-9]*\.[0-9]+|[0-9]+))"
+        self.re_member = r"(\(?(" + self.re_number + r") *\)? +)?(.*)"
+
     def parse_file(self, path, force = 1):
         f = open(path, "r")
         self.__parse(f.read(), force)
 
     def parse_reactions_section(self, section_text):
         if not isinstance(section_text, str):
-            raise TypeError("Reactions section test is not of type string")
+            raise TypeError("Reactions section text is not of type string")
 
-        nl = re.compile("\n\r|\r\n|\n")
-        rstrings = nl.split(section_text)
-        reactions = []
-        for line in rstrings:
-            line = self.strip_comments(line)
-            if not len(line):
-                continue
-
-            reactions.append(self.parse_reaction(line))
-
-        return reactions
+        return list(self.__parse_section(section_text, self.parse_reaction))
 
     def parse_reaction_member(self, member_str):
         if not isinstance(member_str, str):
@@ -33,11 +24,8 @@ class BiooptParser(object):
         if not len(member_str):
             raise ValueError("Reaction member string is empty")
 
-        re_number = r"(?:[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)|(?:[-+]?(?:[0-9]*\.[0-9]+|[0-9]+))"
-        re_member = r"(\(?(" + re_number + r") *\)? +)?(.*)"
-
-        m = re.match(re_member, member_str)
-        if m is None:
+        m = re.match(self.re_member, member_str)
+        if not m:
             raise SyntaxError("Could not parse reaction member: {0}".format(member_str))
 
         tmp, coef, name = m.groups()
@@ -98,21 +86,48 @@ class BiooptParser(object):
 
     def strip_comments(self, line):
         line = line.strip()
-        line = re.sub("[#\n\r].*", "", line)
+        line = re.sub("\s*[#\n\r].*", "", line)
 
         return line
 
+    def parse_constraint(self, constraint_text):
+        constraint_text = self.strip_comments(constraint_text)
+
+        re_bounds = "\[\s*(" + self.re_number + r")\s*,\s*(" + self.re_number + r")\s*\]"
+        re_constraint = r"(.*)\s*" + re_bounds
+        m = re.match(re_constraint, constraint_text)
+
+        if m is None:
+            raise SyntaxError("Could parse reaction constraint: {0}".format(constraint_text))
+
+        reaction_name, lb, ub =  m.groups()
+        reaction_name = reaction_name.strip()
+        bounds = Bounds(float(lb), float(ub))
+
+        return Reaction(reaction_name, ReactionMemberList(), ReactionMemberList(), bounds.direction, bounds)
+
     def parse_constraints_section(self, section_text):
-        print "Parse constraints"
-        pass
+        if not isinstance(section_text, str):
+            raise TypeError("External metabolites section text is not of type string")
+
+        return list(self.__parse_section(section_text, self.parse_constraint))
 
     def parse_objective_section(self, section_text):
+        section_text = self.strip_comments(section_text)
+        m = re.match(r"(.*)\s+("+self.re_number+r")\s+("+self.re_number+r")", section_text)
+        if not m:
+            raise SyntaxError("Could not parse (design) objective section: {0}".format(section_text))
+
+        print m.groups()
+
         print "Parse objective"
         pass
 
     def parse_external_metabolites_section(self, section_text):
-        print "Parse external metabolites"
-        pass
+        if not isinstance(section_text, str):
+            raise TypeError("External metabolites section text is not of type string")
+
+        return list(self.__parse_section(section_text, Metabolite))
 
     def find_sections(self, text):
         s = re.compile(r"^-[\w ]+$", re.MULTILINE)
@@ -128,7 +143,15 @@ class BiooptParser(object):
 
         return sections2
 
+    def __parse_section(self, section_text, method):
+        nl = re.compile("\n\r|\r\n|\n")
+        lines = nl.split(section_text)
+        for i, line in enumerate(lines):
+            line = self.strip_comments(line)
+            if not len(line):
+                continue
 
+            yield method(line)
 
     def __parse(self, text, force=1):
         #self.__remove_comments(text)
@@ -136,16 +159,20 @@ class BiooptParser(object):
 
         model = Model()
 
-        react_section = sections["-REACTIONS"]
-        reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
+#        react_section = sections["-REACTIONS"]
+#        reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
+#
+        #model.reactions.extend(reactions)
 
-        model.reactions.extend(reactions)
+#        const_section = sections["-CONSTRAINTS"]
+#        self.parse_constraints_section(text[const_section[0]:const_section[1]])
 
 #        ext_m_section = sections["-EXTERNAL METABOLITES"]
-#        self.parse_external_metabolites(text[ext_m_section[0]:ext_m_section[1]])
-#
-#        const_section = sections["-CONSTRAINTS"]
-#        self.parse_constraints(text[const_section[0]:const_section[1]])
-#
-#        obj_section = sections["-OBJ"]
-#        self.parse_objective(text[obj_section[0]:obj_section[1]])
+#        self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])
+
+        obj_section = sections["-OBJ"]
+        self.parse_objective_section(text[obj_section[0]:obj_section[1]])
+
+
+parser = BiooptParser()
+parser.parse_file("Respiro_ferm_prep.bioopt")
