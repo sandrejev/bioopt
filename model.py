@@ -99,8 +99,8 @@ class Metabolite(object):
 
 class ReactionMember(object):
     def __init__(self, metabolite, coefficient):
-        self.__assert_valid_metabolite(metabolite)
-        self.__assert_valid_coefficient(coefficient)
+        self.__assert_metabolite(metabolite)
+        self.__assert_coefficient(coefficient)
 
         self.__metabolite = metabolite
         self.__coefficient = float(coefficient)
@@ -111,7 +111,7 @@ class ReactionMember(object):
 
     @metabolite.setter
     def metabolite(self, metabolite):
-        self.__assert_valid_metabolite(metabolite)
+        self.__assert_metabolite(metabolite)
         self.__metabolite = float(metabolite)
 
     @property
@@ -120,7 +120,7 @@ class ReactionMember(object):
 
     @coefficient.setter
     def coefficient(self, coefficient):
-        self.__assert_valid_coefficient(coefficient)
+        self.__assert_coefficient(coefficient)
         self.__coefficient = float(coefficient)
 
     def __add__(self, other):
@@ -139,11 +139,11 @@ class ReactionMember(object):
     def __eq__(self, other):
         return self.metabolite == other.metabolite and self.coefficient == other.coefficient
 
-    def __assert_valid_metabolite(self, metabolite):
+    def __assert_metabolite(self, metabolite):
         if not isinstance(metabolite, Metabolite):
             raise TypeError("Reaction member is not of type <Metabolite>")
 
-    def __assert_valid_coefficient(self, coefficient):
+    def __assert_coefficient(self, coefficient):
         if not isinstance(coefficient, (int, float)):
             raise TypeError("Reaction member coefficient is not a number")
         if coefficient <= 0:
@@ -328,8 +328,147 @@ class Reaction(object):
                self.bounds == other.bounds and \
                self.direction == other.direction
 
-class Objective(object):
-    def __init__(self, metabolites):
+
+class Operation(object):
+    __lockObj = thread.allocate_lock()
+    __addition = None
+    __subtraction = None
+    __negation = None
+    __multiplication = None
+    __division = None
+
+    __unary_priority = ["-"]
+    __binary_priority = ["*", "/", "+", "-"]
+
+    def __init__(self, operation, is_unary):
+        if not isinstance(is_unary, bool):
+            raise TypeError("Parameter is_unary is not of type bool")
+        if not is_unary and operation not in Operation.__binary_priority:
+            raise ValueError("Invalid binary operation: {0}".format(operation))
+        if is_unary and operation not in Operation.__unary_priority:
+            raise ValueError("Invalid unary operation: {0}".format(operation))
+
+        self.__is_unary = is_unary
+        self.__operation = operation
+
+        priority = 0
+        if is_unary:
+            priority = Operation.__unary_priority.index(operation)
+        else:
+            priority = len(Operation.__unary_priority)
+            priority += Operation.__binary_priority.index(operation)
+
+        self.__priority = priority
+
+    @staticmethod
+    def __create_singleton(type, operation, instance, lock):
+        lock.acquire()
+        try:
+            if instance is None:
+                instance = Operation(operation, type)
+        finally:
+            lock.release()
+
+        return instance
+
+    @property
+    def is_unary(self):
+        return self.__is_unary
+
+    @property
+    def symbol(self):
+        return self.__operation
+
+    @property
+    def priority(self):
+        return self.__priority
+
+    @staticmethod
+    def addition():
+        return Operation.__create_singleton(False, "+", Operation.__addition, Operation.__lockObj)
+
+    @staticmethod
+    def subtraction():
+        return Operation.__create_singleton(False, "-", Operation.__subtraction, Operation.__lockObj)
+
+    @staticmethod
+    def multiplication():
+        return Operation.__create_singleton(False, "*", Operation.__multiplication, Operation.__lockObj)
+
+    @staticmethod
+    def division():
+        return Operation.__create_singleton(False, "/", Operation.__division, Operation.__lockObj)
+
+    @staticmethod
+    def __negation():
+        return Operation.__create_singleton(True, "-", Operation.__negation, Operation.__lockObj)
+
+    def __repr__(self):
+        return self.symbol
+
+
+class MathExpression(object):
+    def __init__(self, lhs, rhs, operation):
+        self.__assert_valid(lhs, rhs, operation)
+
+        self.__lhs = lhs
+        self.__rhs = rhs
+        self.__operation = operation
+
+    @property
+    def operation(self):
+        return self.__operation
+
+    @operation.setter
+    def operation(self, operation):
+        self.__assert_valid(self.lhs, self.rhs, operation)
+        self.__operation = operation
+
+    @property
+    def lhs(self):
+        return self.__lhs
+
+    @lhs.setter
+    def lhs(self, lhs):
+        self.__assert_valid(lhs, self.rhs, self.operation)
+        self.__lhs = lhs
+
+    @property
+    def rhs(self):
+        return self.__rhs
+
+    @rhs.setter
+    def rhs(self, rhs):
+        self.__assert_valid(self.lhs, rhs, self.operation)
+        self.__rhs = rhs
+
+    def __eq__(self, other):
+        return self.lhs == other.lhs and self.rhs == other.rhs and self.operation == other.operation
+
+    def __format_var(self, var):
+        var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
+        var = var.name if isinstance(var, (Reaction, Metabolite)) else var
+
+        return var
+
+    def __repr__(self):
+        lhs = self.__format_var(self.lhs)
+        rhs = self.__format_var(self.rhs)
+
+        return "{lhs} {op} {rhs}".format(lhs=lhs, op=self.operation, rhs=rhs)
+
+    def __assert_valid(self, lhs, rhs, operation):
+        if not isinstance(operation, Operation):
+            raise TypeError("Operation is not an instance of class <Operation>")
+        if operation.is_unary and lhs is not None:
+            raise TypeError("Left hand side of unary operation should be None")
+        if operation.is_unary and rhs is None:
+            raise TypeError("Right hand side of unary operation should not be None")
+        if operation.is_unary and (lhs is None or rhs is None):
+            raise TypeError("Both left hand side and right hand side of binary operation should not be None")
+
+        return True
+
 
 class Model(object):
     def __init__(self):
