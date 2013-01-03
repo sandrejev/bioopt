@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys,re
 import thread
+import itertools
 
 class Bounds(object):
     def __init__(self, lb=float("-inf"), ub=float("inf")):
@@ -112,7 +113,7 @@ class ReactionMember(object):
     @metabolite.setter
     def metabolite(self, metabolite):
         self.__assert_metabolite(metabolite)
-        self.__metabolite = float(metabolite)
+        self.__metabolite = metabolite
 
     @property
     def coefficient(self):
@@ -266,13 +267,16 @@ class Reaction(object):
         else:
             self.__reactants = reactants
 
+    def find_participants(self):
+        return ReactionMemberList(itertools.chain(self.__reactants, self.__products))
+
     @property
     def products(self):
         return self.__products
 
     @products.setter
     def products(self, products):
-        self.__assert_members(self, products)
+        self.__assert_members(products)
         if isinstance(products, ReactionMember):
             self.__products = ReactionMemberList([products])
         else:
@@ -284,8 +288,8 @@ class Reaction(object):
 
     @direction.setter
     def direction(self, direction):
-        self.__assert_direction(self, direction)
-        self.direction = direction
+        self.__assert_direction(direction)
+        self.__direction = direction
 
     @property
     def bounds(self):
@@ -293,7 +297,7 @@ class Reaction(object):
 
     @bounds.setter
     def bounds(self, bounds):
-        self.__assert_bounds(self, bounds)
+        self.__assert_bounds(bounds)
         self.__bounds = bounds
 
     def find_effective_bounds(self):
@@ -454,6 +458,7 @@ class MathExpression(object):
     def __indent(self, text, indent="  "):
         return "\n".join([indent + l for l in text.split("\n")])
 
+    # TODO: test tree representation
     def __repr__(self, tree=False):
         if not tree:
             lhs = self.__format_var(self.lhs)
@@ -493,7 +498,7 @@ class Model(object):
         return self.__reactions
 
     def find_metabolites(self):
-        return set(rm.metabolite for r in self.reactions for rm in r.reactants + r.products)
+        return set(rm.metabolite for r in self.reactions for rm in r.find_participants())
 
     def find_boundary_metabolites(self):
         return set(m for m in self.find_metabolites() if m.boundary)

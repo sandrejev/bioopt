@@ -1,6 +1,7 @@
 from unittest import TestCase
 from bioopt_parser import *
 from model import *
+import itertools
 
 class TestBounds(TestCase):
     def test_new(self):
@@ -42,6 +43,19 @@ class TestMetabolite(TestCase):
         self.assertEquals(m.name, "H2O")
         self.assertEquals(m.boundary, True)
 
+    def test_setters(self):
+        m = Metabolite("H2O")
+
+        self.assertRaises(TypeError, m.__setattr__, "name", 1)
+        m.name = "Na"
+        self.assertEquals(m.name, "Na")
+
+        self.assertRaises(TypeError, m.__setattr__, "boundary", "true")
+        new_boundary = not m.boundary
+        self.assertNotEqual(new_boundary, m.boundary)
+        m.boundary = new_boundary
+        self.assertEquals(m.boundary, new_boundary)
+
     def test_arithmetics(self):
         try:
             -1*Metabolite("Na")
@@ -78,6 +92,19 @@ class TestReactionMember(TestCase):
             self.fail("Creating ReactionMember object failed")
 
         self.assertEquals(rm.coefficient, 2)
+
+    def test_setters(self):
+        m = ReactionMember(Metabolite("Na"), 1)
+        H2O = Metabolite("H2O")
+
+        self.assertRaises(TypeError, m.__setattr__, "metabolite", 1)
+        m.metabolite = H2O
+        self.assertEquals(m.metabolite, H2O)
+
+        self.assertRaises(TypeError, m.__setattr__, "coefficient", "test")
+        self.assertRaises(ValueError, m.__setattr__, "coefficient", -1)
+        m.coefficient = 2
+        self.assertEquals(m.coefficient, 2)
 
     def test_arithmetics(self):
         Na = 1*Metabolite("Na")
@@ -140,16 +167,50 @@ class TestReaction(TestCase):
         self.assertEquals(r.name, name)
         self.assertEquals(r.reactants, reactants)
         self.assertEquals(r.products, products)
+        self.assertTrue(all(reactant in r.find_participants() for reactant in reactants))
+        self.assertTrue(all(product in r.find_participants() for product in products))
         self.assertEquals(r.direction, direction)
         self.assertEquals(r.bounds, bounds)
         self.assertEquals(r.find_effective_bounds().lb, 0)
         self.assertEquals(r.find_effective_bounds().ub, float("Inf"))
 
+    def test_setters(self):
+        name = "Burn"
+        bounds = Bounds(-10, float("Inf"))
+        direction = Direction.forward()
+
+        m_2_Na = ReactionMember(Metabolite("Na"), 2)
+        m_2_H2O = ReactionMember(Metabolite("H2O"), 2)
+        m_2_NaOH = ReactionMember(Metabolite("NaOH"), 2)
+        m_1_H2 = ReactionMember(Metabolite("H2"), 1)
+        reactants = ReactionMemberList([m_2_Na, m_2_H2O])
+        products = ReactionMemberList([m_2_NaOH, m_1_H2])
+
+        r = Reaction("")
+
+        self.assertRaises(TypeError, r.__setattr__, "name", 1)
+        r.name = name
+        self.assertEquals(r.name, name)
+
+        self.assertRaises(TypeError, r.__setattr__, "bounds", 1)
+        r.bounds = bounds
+        self.assertEquals(r.bounds, bounds)
+
+        self.assertRaises(TypeError, r.__setattr__, "direction", 1)
+        r.direction = direction
+        self.assertEquals(r.direction, direction)
+
+        self.assertRaises(TypeError, r.__setattr__, "reactants", 1)
+        r.reactants = reactants
+        self.assertEquals(r.reactants, reactants)
+
+        self.assertRaises(TypeError, r.__setattr__, "products", 1)
+        r.products = products
+        self.assertEquals(r.products, products)
+
 class TestArithmetic(TestCase):
     def test_reaction_member(self):
         self.assertEquals((2*Metabolite("Na")).coefficient, 2)
-
-
 
 class TestModel(TestCase):
     def test_new(self):

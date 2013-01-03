@@ -181,31 +181,58 @@ class BiooptParser(object):
 
             yield method(line)
 
+    def __fix_math_reactions(self, expression, reactions):
+        if isinstance(expression, MathExpression):
+            if isinstance(expression.lhs, MathExpression):
+                self.__fix_math_reactions(expression.lhs, reactions)
+            elif isinstance(expression.lhs, MathExpression):
+                expression.lhs = reactions[expression.lhs.name]
+
+            if isinstance(expression.rhs, MathExpression):
+                self.__fix_math_reactions(expression.rhs, reactions)
+            elif isinstance(expression.rhs, MathExpression):
+                expression.rhs = reactions[expression.rhs.name]
+
     def __parse(self, text, force=1):
-        #self.__remove_comments(text)
         sections = self.find_sections(text)
 
+        # TODO: print line where error appeared
         model = Model()
 
-#        react_section = sections["-REACTIONS"]
-#        reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
-#
-        #model.reactions.extend(reactions)
+        react_section = sections["-REACTIONS"]
+        reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
+        model.reactions.extend(reactions)
 
-#        const_section = sections["-CONSTRAINTS"]
-#        self.parse_constraints_section(text[const_section[0]:const_section[1]])
+        # TODO: test for duplicate reactions
+        metabolites = dict((m.name, m) for m in model.find_metabolites())
+        reactions = dict((r.name, r) for r in model.reactions)
 
-#        ext_m_section = sections["-EXTERNAL METABOLITES"]
-#        self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])
+        const_section = sections["-CONSTRAINTS"]
+        constrains = dict((reaction.name, reaction) for reaction in self.parse_constraints_section(text[const_section[0]:const_section[1]]))
+        for r in model.reactions:
+            r.bounds = constrains[r.name].bounds
 
+        # TODO: test metabolite references
+        for reaction in model.reactions:
+            for member in reaction.find_participants():
+                member.metabolite = metabolites[member.metabolite.name]
+
+        # TODO: test references
+        ext_m_section = sections["-EXTERNAL METABOLITES"]
+        external_metabolites = (m.name for m in self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]]))
+        for m in metabolites.values():
+            m.boundary = m.name in external_metabolites
+
+        # TODO: test references
         obj_section = sections["-OBJ"]
         objective = self.parse_objective_section(text[obj_section[0]:obj_section[1]])
+        self.__fix_math_reactions(objective, reactions)
 
+        # TODO: test references
         dobj_section = sections["-DESIGNOBJ"]
         design_objective = self.parse_objective_section(text[dobj_section[0]:dobj_section[1]])
+        self.__fix_math_reactions(design_objective, reactions)
 
-        print objective.__repr__(tree=True)
-
-
-parser = BiooptParser()
-parser.parse_file("Respiro_ferm_prep.bioopt")
+if __name__ == "__main__":
+    parser = BiooptParser()
+    parser.parse_file("Respiro_ferm_prep.bioopt")
