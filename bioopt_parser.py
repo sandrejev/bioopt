@@ -113,12 +113,30 @@ class BiooptParser(object):
         return list(self.__parse_section(section_text, self.parse_constraint))
 
     def __parse_objective_section_line(self, objective_line):
-        m = re.match(r"(.*)\s+("+self.re_number+r")\s+("+self.re_number+r")", objective_line)
-        if not m:
+        parts = re.split(r"\s+", objective_line)
+        if not parts:
             raise SyntaxError("Could not parse objective section line: {0}".format(objective_line))
 
-        name, unused, weight = m.groups()
-        return MathExpression(float(weight), Reaction(name), Operation.multiplication())
+        parsed_parts = []
+        for i, p in enumerate(parts):
+            try:
+                p = float(p)
+            except ValueError:
+                p = Reaction(p)
+
+            parsed_parts.append(p)
+
+        if len(parsed_parts) == 1:
+            return MathExpression(None, parsed_parts[0], None)
+        else:
+            expression = None
+            for i, p in enumerate(parsed_parts[1:]):
+                if i == 1:
+                    expression = MathExpression(parsed_parts[i-1], p, Operation.multiplication())
+                else:
+                    expression = MathExpression(expression, p, Operation.multiplication())
+
+            return expression
 
     def parse_objective_section(self, section_text):
         if not isinstance(section_text, str):
@@ -181,7 +199,12 @@ class BiooptParser(object):
 #        self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])
 
         obj_section = sections["-OBJ"]
-        print self.parse_objective_section(text[obj_section[0]:obj_section[1]])
+        objective = self.parse_objective_section(text[obj_section[0]:obj_section[1]])
+
+        dobj_section = sections["-DESIGNOBJ"]
+        design_objective = self.parse_objective_section(text[dobj_section[0]:dobj_section[1]])
+
+        print objective.__repr__(tree=True)
 
 
 parser = BiooptParser()

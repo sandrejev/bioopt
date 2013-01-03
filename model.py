@@ -451,11 +451,25 @@ class MathExpression(object):
 
         return var
 
-    def __repr__(self):
-        lhs = self.__format_var(self.lhs)
-        rhs = self.__format_var(self.rhs)
+    def __indent(self, text, indent="  "):
+        return "\n".join([indent + l for l in text.split("\n")])
 
-        return "{lhs} {op} {rhs}".format(lhs=lhs, op=self.operation, rhs=rhs)
+    def __repr__(self, tree=False):
+        if not tree:
+            lhs = self.__format_var(self.lhs)
+            rhs = self.__format_var(self.rhs)
+
+            return "{lhs} {op} {rhs}".format(lhs=lhs, op=self.operation, rhs=rhs)
+        else:
+            lhs = self.lhs.__repr__(tree=True) if isinstance(self.lhs, MathExpression) else "{0}({1})".format(type(self.lhs).__name__, self.__format_var(self.lhs))
+            rhs = self.rhs.__repr__(tree=True) if isinstance(self.rhs, MathExpression) else "{0}({1})".format(type(self.rhs).__name__, self.__format_var(self.rhs))
+
+            return "{0}(\n{1}\n)".format(
+                type(self).__name__,
+                self.__indent("{lhs}\n{op}\n{rhs}".format(lhs=lhs, op=self.operation, rhs=rhs))
+            )
+
+
 
     def __assert_valid(self, lhs, rhs, operation):
         if not isinstance(operation, Operation):
