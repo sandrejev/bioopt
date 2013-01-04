@@ -28,7 +28,7 @@
       <file leaf-file-name="test_parser.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="181" column="23" selection-start="8288" selection-end="8288" vertical-scroll-proportion="0.38235295">
+            <state line="163" column="54" selection-start="7543" selection-end="7650" vertical-scroll-proportion="0.2413793">
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -39,7 +39,7 @@
       <file leaf-file-name="bioopt_parser.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="67" selection-start="150" selection-end="150" vertical-scroll-proportion="140.92">
+            <state line="174" column="22" selection-start="6526" selection-end="6526" vertical-scroll-proportion="-4.96">
               <folding />
             </state>
           </provider>
@@ -48,7 +48,7 @@
       <file leaf-file-name="model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="229" column="30" selection-start="6551" selection-end="6551" vertical-scroll-proportion="-7.68">
+            <state line="445" column="28" selection-start="12992" selection-end="12992" vertical-scroll-proportion="-8.16">
               <folding>
                 <element signature="e#22#35#0" expanded="true" />
               </folding>
@@ -59,10 +59,19 @@
       <file leaf-file-name="test_model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="220" column="61" selection-start="8405" selection-end="8405" vertical-scroll-proportion="0.0">
+            <state line="248" column="70" selection-start="9659" selection-end="9659" vertical-scroll-proportion="-16.32">
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="unittest.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://C:/Python26/Lib/unittest.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="335" column="0" selection-start="11807" selection-end="11807" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -230,7 +239,7 @@
       <recent name="C:\Users\Aleksej\workspace\python\testing\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python's test.Full parse">
+  <component name="RunManager" selected="Python's test.All Tests">
     <configuration default="false" name="bioopt_parser" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -450,11 +459,11 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16862327" sideWeight="0.3423913" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22998933" sideWeight="0.6065217" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.06883671" sideWeight="0.6826087" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.06883671" sideWeight="0.52717394" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39891306" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45326087" sideWeight="0.49839914" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3173913" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4728261" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -519,13 +528,8 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/tests/test_parser.py</url>
-          <line>187</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/model.py</url>
-          <line>546</line>
+          <line>549</line>
           <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
@@ -575,13 +579,6 @@
         <state line="1" column="0" selection-start="25" selection-end="75" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://C:/Python26/Lib/unittest.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="347" column="0" selection-start="12251" selection-end="12251" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/iAG612.bioopt">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1332" column="12" selection-start="61231" selection-end="61231" vertical-scroll-proportion="0.0" />
@@ -622,16 +619,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
+    <entry file="file://C:/Python26/Lib/unittest.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="67" selection-start="150" selection-end="150" vertical-scroll-proportion="140.92">
+        <state line="335" column="0" selection-start="11807" selection-end="11807" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="220" column="61" selection-start="8405" selection-end="8405" vertical-scroll-proportion="0.0">
+        <state line="248" column="70" selection-start="9659" selection-end="9659" vertical-scroll-proportion="-16.32">
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>
@@ -640,16 +637,23 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="229" column="30" selection-start="6551" selection-end="6551" vertical-scroll-proportion="-7.68">
+        <state line="445" column="28" selection-start="12992" selection-end="12992" vertical-scroll-proportion="-8.16">
           <folding>
             <element signature="e#22#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="174" column="22" selection-start="6526" selection-end="6526" vertical-scroll-proportion="-4.96">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="181" column="23" selection-start="8288" selection-end="8288" vertical-scroll-proportion="0.38235295">
+        <state line="163" column="54" selection-start="7543" selection-end="7650" vertical-scroll-proportion="0.2413793">
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>

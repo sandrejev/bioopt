@@ -224,6 +224,31 @@ class TestArithmetic(TestCase):
     def test_reaction_member(self):
         self.assertEquals((2*Metabolite("Na")).coefficient, 2)
 
+class TestMathExpression(TestCase):
+    def test_new(self):
+        self.assertRaises(TypeError, MathExpression, "a", [1])
+        self.assertRaises(ValueError, MathExpression, Operation.addition(), [])
+        self.assertRaises(ValueError, MathExpression, Operation.addition(), [1])
+        self.assertRaises(ValueError, MathExpression, Operation.addition(), [])
+
+        try:
+            ex = MathExpression(Operation.addition(), [Reaction("R1"), 2])
+            MathExpression(Operation.negation(), [True])
+        except Exception, ex:
+            self.fail("Creating <MathExpression> object failed object failed: {0}".format(ex))
+
+        self.assertEquals(Operation.addition(), ex.operation)
+        self.assertEquals([Reaction("R1"), 2], ex.operands)
+
+
+    def test_setters(self):
+        ex = MathExpression(Operation.addition(), [Reaction("R1"), 2])
+        self.assertRaises(TypeError, ex.__setattr__, "operation", "a")
+        ex.operation = Operation.division()
+        self.assertEquals(Operation.division(), ex.operation)
+        self.assertRaises(ValueError, ex.__setattr__, "operands", [10])
+
+
 class TestModel(TestCase):
     def test_new(self):
         Na = Metabolite("Na")

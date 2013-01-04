@@ -128,16 +128,10 @@ class BiooptParser(object):
             parsed_parts.append(p)
 
         if len(parsed_parts) == 1:
-            return MathExpression(None, parsed_parts[0], None)
+            # TODO: test for operation None
+            return MathExpression(None, [parsed_parts[0]])
         else:
-            expression = None
-            for i, p in enumerate(parsed_parts):
-                if i == 1:
-                    expression = MathExpression(parsed_parts[i-1], p, Operation.multiplication())
-                elif i > 1:
-                    expression = MathExpression(expression, p, Operation.multiplication())
-
-            return expression
+            return MathExpression(Operation.multiplication(), parsed_parts)
 
     def parse_objective_section(self, section_text):
         if not isinstance(section_text, str):
@@ -182,17 +176,14 @@ class BiooptParser(object):
 
             yield method(line)
 
+    # TODO: move to Model
     def __fix_math_reactions(self, expression, reactions):
         if isinstance(expression, MathExpression):
-            if isinstance(expression.lhs, MathExpression):
-                self.__fix_math_reactions(expression.lhs, reactions)
-            elif isinstance(expression.lhs, MathExpression):
-                expression.lhs = reactions[expression.lhs.name]
-
-            if isinstance(expression.rhs, MathExpression):
-                self.__fix_math_reactions(expression.rhs, reactions)
-            elif isinstance(expression.rhs, MathExpression):
-                expression.rhs = reactions[expression.rhs.name]
+            for i, o in enumerate(expression.operands):
+                if isinstance(o, MathExpression):
+                    self.__fix_math_reactions(o, reactions)
+                elif isinstance(o, Reaction):
+                    expression.operands[i] = reactions[o.name]
 
     def parse(self, text):
         sections = self.find_sections(text)
@@ -204,7 +195,6 @@ class BiooptParser(object):
         model.reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
 
         # TODO: test for duplicate reactions
-        metabolites = dict((m.name, m) for m in model.find_metabolites())
         reactions = dict((r.name, r) for r in model.reactions)
 
         const_section = sections["-CONSTRAINTS"]
@@ -212,24 +202,18 @@ class BiooptParser(object):
         for r in model.reactions:
             r.bounds = constrains[r.name].bounds
 
-        # TODO: test metabolite references
-        for reaction in model.reactions:
-            for member in reaction.find_participants():
-                member.metabolite = metabolites[member.metabolite.name]
+        model.unify_metabolite_references()
 
-        # TODO: test references
         ext_m_section = sections["-EXTERNAL METABOLITES"]
         external_metabolites = [m.name for m in self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])]
-        for m in metabolites.values():
+        for m in model.find_metabolites():
             m.boundary = m.name in external_metabolites
 
-        # TODO: test references
         obj_section = sections["-OBJ"]
         objective = self.parse_objective_section(text[obj_section[0]:obj_section[1]])
         self.__fix_math_reactions(objective, reactions)
         model.objective = objective
 
-        # TODO: test references
         dobj_section = sections["-DESIGNOBJ"]
         design_objective = self.parse_objective_section(text[dobj_section[0]:dobj_section[1]])
         self.__fix_math_reactions(design_objective, reactions)

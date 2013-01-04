@@ -411,7 +411,7 @@ class Operation(object):
         return Operation.__create_singleton(False, "/", Operation.__division)
 
     @staticmethod
-    def __negation():
+    def negation():
         return Operation.__create_singleton(True, "-", Operation.__negation)
 
     def __repr__(self):
@@ -419,11 +419,10 @@ class Operation(object):
 
 
 class MathExpression(object):
-    def __init__(self, lhs, rhs, operation):
-        self.__assert_valid(lhs, rhs, operation)
+    def __init__(self, operation, operands):
+        self.__assert_valid(operation, operands)
 
-        self.__lhs = lhs
-        self.__rhs = rhs
+        self.__operands = operands
         self.__operation = operation
 
     @property
@@ -432,32 +431,34 @@ class MathExpression(object):
 
     @operation.setter
     def operation(self, operation):
-        self.__assert_valid(self.lhs, self.rhs, operation)
+        self.__assert_valid(operation, self.operands)
         self.__operation = operation
 
     @property
-    def lhs(self):
-        return self.__lhs
+    def operands(self):
+        return self.__operands
 
-    @lhs.setter
-    def lhs(self, lhs):
-        self.__assert_valid(lhs, self.rhs, self.operation)
-        self.__lhs = lhs
-
-    @property
-    def rhs(self):
-        return self.__rhs
-
-    @rhs.setter
-    def rhs(self, rhs):
-        self.__assert_valid(self.lhs, rhs, self.operation)
-        self.__rhs = rhs
+    @operands.setter
+    def operands(self, operands):
+        self.__assert_valid(self.operation, operands)
+        self.__operands = operands
 
     def __eq__(self, other):
         return type(self) == type(other) and \
-               self.lhs == other.lhs and \
-               self.rhs == other.rhs and \
+               self.operands == other.operands and \
                self.operation == other.operation
+
+    #TODO: operands should be a list without empty members
+    def find_variables(self):
+        vars = set()
+        if self.operands is list():
+            for o in self.operands:
+                if isinstance(o, type(self)):
+                    vars = vars.union(o.find_variables())
+                elif not o is None:
+                    vars = vars.add(o)
+
+        return vars
 
     def __format_var(self, var):
         var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
@@ -471,32 +472,26 @@ class MathExpression(object):
     # TODO: test tree representation
     def __repr__(self, tree=False):
         if not tree:
-            lhs = self.__format_var(self.lhs)
-            rhs = self.__format_var(self.rhs)
-
-            return "{lhs} {op} {rhs}".format(lhs=lhs, op=self.operation, rhs=rhs)
+            return " {0} ".format(self.operation).join(str(self.__format_var(o)) for o in self.operands)
         else:
-            lhs = self.lhs.__repr__(tree=True) if isinstance(self.lhs, MathExpression) else "{0}({1})".format(type(self.lhs).__name__, self.__format_var(self.lhs))
-            rhs = self.rhs.__repr__(tree=True) if isinstance(self.rhs, MathExpression) else "{0}({1})".format(type(self.rhs).__name__, self.__format_var(self.rhs))
+            operands = []
+            for o in self.operands:
+                operands.append(o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__, self.__format_var(o)))
 
             return "{0}(\n{1}\n)".format(
                 type(self).__name__,
-                self.__indent("{lhs}\n{op}\n{rhs}".format(lhs=lhs, op=self.operation, rhs=rhs))
+                self.__indent("\n{0}\n".format(self.operation).join(operands))
             )
 
-
-
-    def __assert_valid(self, lhs, rhs, operation):
+    def __assert_valid(self, operation, operands):
         if not isinstance(operation, Operation):
             raise TypeError("Operation is not an instance of class <Operation>")
-        if operation.is_unary and lhs is not None:
-            raise TypeError("Left hand side of unary operation should be None")
-        if operation.is_unary and rhs is None:
-            raise TypeError("Right hand side of unary operation should not be None")
-        if operation.is_unary and (lhs is None or rhs is None):
-            raise TypeError("Both left hand side and right hand side of binary operation should not be None")
-
-        return True
+        if not isinstance(operands, list):
+            raise TypeError("Operands are not a list")
+        if operation.is_unary and len(operands) != 1:
+            raise ValueError("Unary operation have number of operands different from one")
+        if not operation.is_unary and len(operands) < 2:
+            raise ValueError("Binary operation have less than 2 operands")
 
 
 class Model(object):
@@ -520,7 +515,7 @@ class Model(object):
 
     @objective.setter
     def objective(self, objective):
-        # TODO: assert
+        self.__assert_objective(objective)
         self.__objective = objective
 
     @property
@@ -529,22 +524,34 @@ class Model(object):
 
     @design_objective.setter
     def design_objective(self, design_objective):
-        # TODO: assert
+        self.__assert_objective(design_objective)
         self.__design_objective = design_objective
 
+    #TODO: Unit tests
+    def unify_metabolite_references(self):
+        metabolites = dict((m.name, m) for m in self.find_metabolites())
+        for reaction in self.reactions:
+            for member in reaction.find_participants():
+                member.metabolite = metabolites[member.metabolite.name]
+
+    # TODO: Test with multiple instances of the same metabolite (result should contain two instances)
     def find_metabolites(self):
         metabolites_set = set()
         metabolites = []
         for r in self.reactions:
             for rm in r.find_participants():
-                if rm.metabolite.name not in metabolites_set:
-                    metabolites_set.add(rm.metabolite.name)
+                if rm.metabolite not in metabolites_set:
+                    metabolites_set.add(rm.metabolite)
                     metabolites.append(rm.metabolite)
 
         return metabolites
 
     def find_boundary_metabolites(self):
         return [m for m in self.find_metabolites() if m.boundary]
+
+    def __assert_objective(self, objective):
+        if not (objective is None or isinstance(objective, MathExpression)):
+            raise TypeError("Objective is not None or <MathExpression>")
 
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
