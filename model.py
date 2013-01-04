@@ -45,7 +45,9 @@ class Bounds(object):
             raise ValueError("Lower bound is greater than upper bound")
 
     def __eq__(self, other):
-        return self.lb == other.lb and self.ub == other.ub
+        return type(self) == type(other) and \
+               self.lb == other.lb and \
+               self.ub == other.ub
 
     def __repr__(self):
         return "[{0}, {1}]".format(self.lb, self.ub)
@@ -77,7 +79,9 @@ class Metabolite(object):
         self.__boundary = boundary
 
     def __eq__(self, other):
-        return self.name == other.name and self.boundary == other.boundary
+        return type(self) == type(other) and \
+               self.name == other.name and \
+               self.boundary == other.boundary
 
     def __assert_name(self, name):
         if not isinstance(name, str):
@@ -138,7 +142,9 @@ class ReactionMember(object):
         return "{0:.5g} {1}".format(self.coefficient, self.metabolite)
 
     def __eq__(self, other):
-        return self.metabolite == other.metabolite and self.coefficient == other.coefficient
+        return type(self) == type(other) and \
+               self.metabolite == other.metabolite and \
+               self.coefficient == other.coefficient
 
     def __assert_metabolite(self, metabolite):
         if not isinstance(metabolite, Metabolite):
@@ -221,6 +227,7 @@ class ReactionMemberList(list):
     def __repr__(self):
         return " + ".join(m.__repr__() for m in self)
 
+# TODO: Add class ReactionList
 class Reaction(object):
     def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None, bounds=Bounds()):
         if direction is None:
@@ -326,7 +333,8 @@ class Reaction(object):
         return "{name}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
 
     def __eq__(self, other):
-        return self.name == other.name and \
+        return type(self) == type(other) and \
+               self.name == other.name and \
                self.reactants == other.reactants and \
                self.products == other.products and \
                self.bounds == other.bounds and \
@@ -335,11 +343,11 @@ class Reaction(object):
 
 class Operation(object):
     __lockObj = thread.allocate_lock()
-    __addition = None
-    __subtraction = None
-    __negation = None
-    __multiplication = None
-    __division = None
+    __addition = []
+    __subtraction = []
+    __negation = []
+    __multiplication = []
+    __division = []
 
     __unary_priority = ["-"]
     __binary_priority = ["*", "/", "+", "-"]
@@ -355,7 +363,6 @@ class Operation(object):
         self.__is_unary = is_unary
         self.__operation = operation
 
-        priority = 0
         if is_unary:
             priority = Operation.__unary_priority.index(operation)
         else:
@@ -365,15 +372,15 @@ class Operation(object):
         self.__priority = priority
 
     @staticmethod
-    def __create_singleton(type, operation, instance, lock):
-        lock.acquire()
+    def __create_singleton(type, operation, instance):
+        Operation.__lockObj.acquire()
         try:
-            if instance is None:
-                instance = Operation(operation, type)
+            if not instance:
+                instance.append(Operation(operation, type))
         finally:
-            lock.release()
+            Operation.__lockObj.release()
 
-        return instance
+        return instance[0]
 
     @property
     def is_unary(self):
@@ -389,23 +396,23 @@ class Operation(object):
 
     @staticmethod
     def addition():
-        return Operation.__create_singleton(False, "+", Operation.__addition, Operation.__lockObj)
+        return Operation.__create_singleton(False, "+", Operation.__addition)
 
     @staticmethod
     def subtraction():
-        return Operation.__create_singleton(False, "-", Operation.__subtraction, Operation.__lockObj)
+        return Operation.__create_singleton(False, "-", Operation.__subtraction)
 
     @staticmethod
     def multiplication():
-        return Operation.__create_singleton(False, "*", Operation.__multiplication, Operation.__lockObj)
+        return Operation.__create_singleton(False, "*", Operation.__multiplication)
 
     @staticmethod
     def division():
-        return Operation.__create_singleton(False, "/", Operation.__division, Operation.__lockObj)
+        return Operation.__create_singleton(False, "/", Operation.__division)
 
     @staticmethod
     def __negation():
-        return Operation.__create_singleton(True, "-", Operation.__negation, Operation.__lockObj)
+        return Operation.__create_singleton(True, "-", Operation.__negation)
 
     def __repr__(self):
         return self.symbol
@@ -447,7 +454,10 @@ class MathExpression(object):
         self.__rhs = rhs
 
     def __eq__(self, other):
-        return self.lhs == other.lhs and self.rhs == other.rhs and self.operation == other.operation
+        return type(self) == type(other) and \
+               self.lhs == other.lhs and \
+               self.rhs == other.rhs and \
+               self.operation == other.operation
 
     def __format_var(self, var):
         var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
@@ -492,20 +502,61 @@ class MathExpression(object):
 class Model(object):
     def __init__(self):
         self.__reactions = list()
+        self.__objective = None
+        self.__design_objective = None
 
     @property
     def reactions(self):
         return self.__reactions
 
+    @reactions.setter
+    def reactions(self, reactions):
+        # TODO: assert
+        self.__reactions = reactions
+
+    @property
+    def objective(self):
+        return self.__objective
+
+    @objective.setter
+    def objective(self, objective):
+        # TODO: assert
+        self.__objective = objective
+
+    @property
+    def design_objective(self):
+        return self.__design_objective
+
+    @design_objective.setter
+    def design_objective(self, design_objective):
+        # TODO: assert
+        self.__design_objective = design_objective
+
     def find_metabolites(self):
-        return set(rm.metabolite for r in self.reactions for rm in r.find_participants())
+        metabolites_set = set()
+        metabolites = []
+        for r in self.reactions:
+            for rm in r.find_participants():
+                if rm.metabolite.name not in metabolites_set:
+                    metabolites_set.add(rm.metabolite.name)
+                    metabolites.append(rm.metabolite)
+
+        return metabolites
 
     def find_boundary_metabolites(self):
-        return set(m for m in self.find_metabolites() if m.boundary)
+        return [m for m in self.find_metabolites() if m.boundary]
 
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
         ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.find_effective_bounds()) for r in self.reactions))
-        ret += "-EXTERNAL METABOLITES\n{0}".format("\n".join(m.name for m in self.find_boundary_metabolites()))
+        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format("\n".join(m.name for m in self.find_boundary_metabolites()))
+        ret += "-OBJECTIVE\n{0}\n\n".format(self.objective)
+        ret += "-DESIGN OBJECTIVE\n{0}\n\n".format(self.design_objective)
 
         return ret
+
+    def __eq__(self, other):
+        return type(self) == type(other) and \
+               self.reactions == other.reactions and \
+               self.objective == other.objective and \
+               self.design_objective == other.design_objective

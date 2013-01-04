@@ -3,12 +3,13 @@ from model import *
 
 class BiooptParser(object):
     def __init__(self):
+        # TODO: replace number with float() for performance reasons
         self.re_number = r"(?:[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)|(?:[-+]?(?:[0-9]*\.[0-9]+|[0-9]+))"
         self.re_member = r"(\(?(" + self.re_number + r") *\)? +)?(.*)"
 
-    def parse_file(self, path, force = 1):
+    def parse_file(self, path):
         f = open(path, "r")
-        self.__parse(f.read(), force)
+        self.parse(f.read())
 
     def parse_reactions_section(self, section_text):
         if not isinstance(section_text, str):
@@ -130,10 +131,10 @@ class BiooptParser(object):
             return MathExpression(None, parsed_parts[0], None)
         else:
             expression = None
-            for i, p in enumerate(parsed_parts[1:]):
+            for i, p in enumerate(parsed_parts):
                 if i == 1:
                     expression = MathExpression(parsed_parts[i-1], p, Operation.multiplication())
-                else:
+                elif i > 1:
                     expression = MathExpression(expression, p, Operation.multiplication())
 
             return expression
@@ -193,15 +194,14 @@ class BiooptParser(object):
             elif isinstance(expression.rhs, MathExpression):
                 expression.rhs = reactions[expression.rhs.name]
 
-    def __parse(self, text, force=1):
+    def parse(self, text):
         sections = self.find_sections(text)
 
         # TODO: print line where error appeared
         model = Model()
 
         react_section = sections["-REACTIONS"]
-        reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
-        model.reactions.extend(reactions)
+        model.reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
 
         # TODO: test for duplicate reactions
         metabolites = dict((m.name, m) for m in model.find_metabolites())
@@ -219,7 +219,7 @@ class BiooptParser(object):
 
         # TODO: test references
         ext_m_section = sections["-EXTERNAL METABOLITES"]
-        external_metabolites = (m.name for m in self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]]))
+        external_metabolites = [m.name for m in self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])]
         for m in metabolites.values():
             m.boundary = m.name in external_metabolites
 
@@ -227,11 +227,15 @@ class BiooptParser(object):
         obj_section = sections["-OBJ"]
         objective = self.parse_objective_section(text[obj_section[0]:obj_section[1]])
         self.__fix_math_reactions(objective, reactions)
+        model.objective = objective
 
         # TODO: test references
         dobj_section = sections["-DESIGNOBJ"]
         design_objective = self.parse_objective_section(text[dobj_section[0]:dobj_section[1]])
         self.__fix_math_reactions(design_objective, reactions)
+        model.design_objective = design_objective
+
+        return model
 
 if __name__ == "__main__":
     parser = BiooptParser()

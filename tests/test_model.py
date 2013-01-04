@@ -71,7 +71,6 @@ class TestMetabolite(TestCase):
         except TypeError:
             pass
         except Exception, ex:
-            print ex
             self.fail("Multiplying metabolite by anything else than a number should rise TypeError")
 
         self.assertEquals(type(2*Metabolite("Na")), ReactionMember)
@@ -207,6 +206,19 @@ class TestReaction(TestCase):
         self.assertRaises(TypeError, r.__setattr__, "products", 1)
         r.products = products
         self.assertEquals(r.products, products)
+
+class TestOperation(TestCase):
+    def test_equality(self):
+        self.assertTrue(Operation.multiplication() is Operation.multiplication())
+        self.assertTrue(Operation.addition() is Operation.addition())
+        self.assertTrue(Operation.division() is Operation.division())
+        self.assertTrue(Operation.subtraction() is Operation.subtraction())
+        self.assertNotEquals(Operation.multiplication(), Operation.addition())
+        self.assertNotEquals(Operation.multiplication(), Operation.division())
+        self.assertNotEquals(Operation.multiplication(), Operation.subtraction())
+        self.assertNotEquals(Operation.addition(), Operation.division())
+        self.assertNotEquals(Operation.addition(), Operation.subtraction())
+        self.assertNotEquals(Operation.division(), Operation.subtraction())
 
 class TestArithmetic(TestCase):
     def test_reaction_member(self):

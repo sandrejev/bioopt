@@ -3,25 +3,29 @@ from bioopt_parser import *
 from model import Metabolite as M
 from model import Reaction as R
 from model import ReactionMemberList as RML
+from model import MathExpression as ME
+
 
 class TestBiooptParser(TestCase):
     def setUp(self):
         self.fwd = Direction.forward()
         self.rev = Direction.reversible()
 
-#    model = """-REACTIONS
-#R1: A + B -> 3 C
-#R2: B + C <-> 1 E
-#-CONSTRAINTS
-#R1[-100, 100]
-#R2[-100, 100]
-#-EXTERNAL METABOLITES
-#E
-#-OBJ
-#R2 1 1
-#-DESIGNOBJ
-#R2 1 1
-#"""
+        self.model = """
+-REACTIONS
+R1: A + B -> 3 C
+R2: B + C <-> 1 E
+-CONSTRAINTS
+R1[-100, 100]
+R2[-100, 100]
+-EXTERNAL METABOLITES
+E
+-OBJ
+R2 1 1
+-DESIGNOBJ
+R2 R1 1
+"""
+
     def test_strip_comments(self):
         parser = BiooptParser()
         self.assertEquals(parser.strip_comments("test"), "test")
@@ -148,3 +152,46 @@ class TestBiooptParser(TestCase):
         parser = BiooptParser()
         self.assertEquals([M("A"), M("'A"), M("A B")], parser.parse_external_metabolites_section(constraints_section))
 
+    def test_full_model(self):
+        mult = Operation.multiplication()
+
+        parser = BiooptParser()
+        parsed_model = parser.parse(self.model)
+
+        model = Model()
+        model.reactions.append(R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100)))
+        model.reactions.append(R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100)))
+        model.objective = ME(ME(R("R2"), float(1), mult), float(1), mult)
+        model.design_objective = ME(ME(R("R2"), R("R1"), mult), float(1), mult)
+
+        self.assertEqual(model, parsed_model)
+
+        obj = model.objective
+        model.objective = MathExpression(1,1,mult)
+        self.assertNotEqual(model, parsed_model)
+        model.objective = obj
+
+        dobj = model.design_objective
+        model.objective = MathExpression(1,1,mult)
+        self.assertNotEqual(model, parsed_model)
+        model.design_objective = dobj
+
+        r = model.reactions
+        model.reactions = []
+        self.assertNotEqual(model, parsed_model)
+        model.reactions = r
+
+    def test_find_metabolites(self):
+        parser = BiooptParser()
+        m = parser.parse(self.model)
+        self.assertEquals([M("A"), M("B"), M("C"), M("E", boundary=True)], m.find_metabolites())
+        self.assertEquals([M("E", boundary=True)], list(m.find_boundary_metabolites()))
+
+    def test_metabolite_references(self):
+        parser = BiooptParser()
+        m = parser.parse(self.model)
+
+        self.assertFalse(m.reactions[0].reactants[1] is m.reactions[1].reactants[0])
+        self.assertFalse(m.reactions[0].reactants[1].metabolite is m.reactions[0].reactants[0].metabolite)
+        self.assertTrue(m.reactions[0].reactants[1].metabolite is m.reactions[1].reactants[0].metabolite)
+        self.assertTrue(m.reactions[1].reactants[1].metabolite, m.find_boundary_metabolites()[0])
