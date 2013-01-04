@@ -5,7 +5,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bioopt_parser.py" afterPath="$PROJECT_DIR$/bioopt_parser.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/model.py" afterPath="$PROJECT_DIR$/model.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_model.py" afterPath="$PROJECT_DIR$/tests/test_model.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_parser.py" afterPath="$PROJECT_DIR$/tests/test_parser.py" />
     </list>
     <ignored path="testing.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,10 +24,10 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test_parser.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="test_parser.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="163" column="54" selection-start="7543" selection-end="7650" vertical-scroll-proportion="0.2413793">
+            <state line="154" column="30" selection-start="7196" selection-end="7273" vertical-scroll-proportion="-5.12">
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -39,16 +38,16 @@
       <file leaf-file-name="bioopt_parser.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="174" column="22" selection-start="6526" selection-end="6526" vertical-scroll-proportion="-4.96">
+            <state line="217" column="0" selection-start="8091" selection-end="8091" vertical-scroll-proportion="-13.32">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="model.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="model.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="445" column="28" selection-start="12992" selection-end="12992" vertical-scroll-proportion="-8.16">
+            <state line="547" column="73" selection-start="16728" selection-end="16728" vertical-scroll-proportion="19.949425">
               <folding>
                 <element signature="e#22#35#0" expanded="true" />
               </folding>
@@ -59,7 +58,7 @@
       <file leaf-file-name="test_model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="248" column="70" selection-start="9659" selection-end="9659" vertical-scroll-proportion="-16.32">
+            <state line="258" column="83" selection-start="10007" selection-end="10007" vertical-scroll-proportion="-4.44">
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -98,10 +97,10 @@
         <option value="$PROJECT_DIR$/tests/__init__.py" />
         <option value="$PROJECT_DIR$/iAG612.bioopt" />
         <option value="$PROJECT_DIR$/Respiro_ferm_prep.bioopt" />
-        <option value="$PROJECT_DIR$/tests/test_model.py" />
-        <option value="$PROJECT_DIR$/bioopt_parser.py" />
         <option value="$PROJECT_DIR$/tests/test_parser.py" />
+        <option value="$PROJECT_DIR$/tests/test_model.py" />
         <option value="$PROJECT_DIR$/model.py" />
+        <option value="$PROJECT_DIR$/bioopt_parser.py" />
       </list>
     </option>
   </component>
@@ -529,7 +528,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/model.py</url>
-          <line>549</line>
+          <line>577</line>
           <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
@@ -626,36 +625,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_model.py">
+    <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="248" column="70" selection-start="9659" selection-end="9659" vertical-scroll-proportion="-16.32">
+        <state line="154" column="30" selection-start="7196" selection-end="7273" vertical-scroll-proportion="-5.12">
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/model.py">
+    <entry file="file://$PROJECT_DIR$/tests/test_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="445" column="28" selection-start="12992" selection-end="12992" vertical-scroll-proportion="-8.16">
+        <state line="258" column="83" selection-start="10007" selection-end="10007" vertical-scroll-proportion="-4.44">
           <folding>
-            <element signature="e#22#35#0" expanded="true" />
+            <element signature="e#0#29#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="174" column="22" selection-start="6526" selection-end="6526" vertical-scroll-proportion="-4.96">
+        <state line="217" column="0" selection-start="8091" selection-end="8091" vertical-scroll-proportion="-13.32">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
+    <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="163" column="54" selection-start="7543" selection-end="7650" vertical-scroll-proportion="0.2413793">
+        <state line="547" column="73" selection-start="16728" selection-end="16728" vertical-scroll-proportion="19.949425">
           <folding>
-            <element signature="e#0#29#0" expanded="true" />
+            <element signature="e#22#35#0" expanded="true" />
           </folding>
         </state>
       </provider>

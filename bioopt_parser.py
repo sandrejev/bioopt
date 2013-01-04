@@ -176,15 +176,6 @@ class BiooptParser(object):
 
             yield method(line)
 
-    # TODO: move to Model
-    def __fix_math_reactions(self, expression, reactions):
-        if isinstance(expression, MathExpression):
-            for i, o in enumerate(expression.operands):
-                if isinstance(o, MathExpression):
-                    self.__fix_math_reactions(o, reactions)
-                elif isinstance(o, Reaction):
-                    expression.operands[i] = reactions[o.name]
-
     def parse(self, text):
         sections = self.find_sections(text)
 
@@ -211,13 +202,13 @@ class BiooptParser(object):
 
         obj_section = sections["-OBJ"]
         objective = self.parse_objective_section(text[obj_section[0]:obj_section[1]])
-        self.__fix_math_reactions(objective, reactions)
         model.objective = objective
 
         dobj_section = sections["-DESIGNOBJ"]
         design_objective = self.parse_objective_section(text[dobj_section[0]:dobj_section[1]])
-        self.__fix_math_reactions(design_objective, reactions)
         model.design_objective = design_objective
+
+        model.unify_reaction_references()
 
         return model
 

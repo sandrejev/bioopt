@@ -1,7 +1,9 @@
 from unittest import TestCase
 from bioopt_parser import *
-from model import *
-import itertools
+from model import Metabolite as M
+from model import Reaction as R
+from model import ReactionMemberList as RML
+from model import MathExpression as ME
 
 class TestBounds(TestCase):
     def test_new(self):
@@ -248,6 +250,14 @@ class TestMathExpression(TestCase):
         self.assertEquals(Operation.division(), ex.operation)
         self.assertRaises(ValueError, ex.__setattr__, "operands", [10])
 
+    def test_variables(self):
+        mult = Operation.multiplication()
+        add = Operation.addition()
+
+        r1 = R("R1")
+        r2 = R("R2")
+        ex = ME(add, [ME(mult, [r2, r1, 1]), ME(mult, [r2, 1]), ME(mult, [r1, 2])])
+        self.assertEquals([r2, r1, 1, 2], ex.find_variables())
 
 class TestModel(TestCase):
     def test_new(self):

@@ -448,15 +448,17 @@ class MathExpression(object):
                self.operands == other.operands and \
                self.operation == other.operation
 
-    #TODO: operands should be a list without empty members
-    def find_variables(self):
-        vars = set()
-        if self.operands is list():
-            for o in self.operands:
-                if isinstance(o, type(self)):
-                    vars = vars.union(o.find_variables())
-                elif not o is None:
-                    vars = vars.add(o)
+    def find_variables(self, remove_duplicates=True):
+        vars = []
+        for o in self.operands:
+            if isinstance(o, type(self)):
+                vars.extend(o.find_variables(False))
+            elif not o is None:
+                vars.append(o)
+
+        if remove_duplicates:
+            seen = set()
+            return [x for x in vars if x not in seen and not seen.add(x)]
 
         return vars
 
@@ -527,12 +529,38 @@ class Model(object):
         self.__assert_objective(design_objective)
         self.__design_objective = design_objective
 
-    #TODO: Unit tests
     def unify_metabolite_references(self):
         metabolites = dict((m.name, m) for m in self.find_metabolites())
         for reaction in self.reactions:
             for member in reaction.find_participants():
                 member.metabolite = metabolites[member.metabolite.name]
+
+    def __unify_objective_references(self, expression, reactions):
+        if isinstance(expression, MathExpression):
+            for i, o in enumerate(expression.operands):
+                if isinstance(o, MathExpression):
+                    self.__unify_objective_references(o, reactions)
+                elif isinstance(o, Reaction):
+                    expression.operands[i] = reactions[o.name]
+
+    # TODO: unit tests
+    def unify_reaction_references(self):
+        # TODO: What if more than one reaction with same name (Use first)
+        reactions = dict((r.name, r) for r in self.reactions)
+        self.__unify_objective_references(self.objective, reactions)
+        self.__unify_objective_references(self.design_objective, reactions)
+
+    def unify_references(self):
+        self.unify_metabolite_references()
+        self.unify_reaction_references()
+
+    def __fix_math_reactions(self, expression, reactions):
+        if isinstance(expression, MathExpression):
+            for i, o in enumerate(expression.operands):
+                if isinstance(o, MathExpression):
+                    self.__fix_math_reactions(o, reactions)
+                elif isinstance(o, Reaction):
+                    expression.operands[i] = reactions[o.name]
 
     # TODO: Test with multiple instances of the same metabolite (result should contain two instances)
     def find_metabolites(self):
