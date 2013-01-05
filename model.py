@@ -33,16 +33,13 @@ class Bounds(object):
 
     def __assert_valid(self, lb, ub):
         if not isinstance(ub, (int, float)):
-            raise TypeError("Upper bound is not a number")
-
-        if not isinstance(ub, (int, float)):
-            raise TypeError("Upper bound is not a number")
+            raise TypeError("Upper bound is not a number: {0}".format(type(ub)))
 
         if not isinstance(lb, (int, float)):
-            raise TypeError("Lower bound is not a number")
+            raise TypeError("Lower bound is not a number: {0}".format(type(lb)))
 
         if lb > ub:
-            raise ValueError("Lower bound is greater than upper bound")
+            raise ValueError("Lower bound is greater than upper bound ({0} > {1})".format(lb, ub))
 
     def __eq__(self, other):
         return type(self) == type(other) and \
@@ -85,13 +82,13 @@ class Metabolite(object):
 
     def __assert_name(self, name):
         if not isinstance(name, str):
-            raise TypeError("Metabolite name is not a string")
+            raise TypeError("Metabolite name is not a string: {0}".format(type(name)))
         if not len(name):
             raise ValueError("Metabolite name is empty string")
 
     def __assert_boundary(self, boundary):
         if not isinstance(boundary, bool):
-            raise TypeError("Metabolite boundary condition is not a boolean")
+            raise TypeError("Metabolite boundary condition is not a boolean: {0}".format(type(boundary)))
 
     def __rmul__(self, other):
         if isinstance(other, (float, int)):
@@ -148,13 +145,13 @@ class ReactionMember(object):
 
     def __assert_metabolite(self, metabolite):
         if not isinstance(metabolite, Metabolite):
-            raise TypeError("Reaction member is not of type <Metabolite>")
+            raise TypeError("Reaction member is not of type <Metabolite>: {0}".format(type(metabolite)))
 
     def __assert_coefficient(self, coefficient):
         if not isinstance(coefficient, (int, float)):
-            raise TypeError("Reaction member coefficient is not a number")
+            raise TypeError("Reaction member coefficient is not a number: {0}".format(type(coefficient)))
         if coefficient <= 0:
-            raise ValueError("Reaction member coefficient is not strictly positive")
+            raise ValueError("Reaction member coefficient is not strictly positive: {0}".format(coefficient))
 
 class Direction(object):
     __lockObj = thread.allocate_lock()
@@ -315,19 +312,19 @@ class Reaction(object):
 
     def __assert_name(self, name):
         if not isinstance(name, str):
-            raise TypeError("Reaction name is not a string")
+            raise TypeError("Reaction name is not a string: {0}".format(type(name)))
 
     def __assert_members(self, reactants):
         if not isinstance(reactants, (ReactionMemberList, ReactionMember)):
-            raise TypeError("Reaction reactants is not of type ReactionMemberList or ReactionMember")
+            raise TypeError("Reaction reactants is not of type ReactionMemberList or ReactionMember: {0}".format(type(reactants)))
 
     def __assert_direction(self, direction):
         if not isinstance(direction, Direction):
-            raise TypeError("Reaction direction is not of type ReactionDirection")
+            raise TypeError("Reaction direction is not of type ReactionDirection: {0}".format(type(direction)))
 
     def __assert_bounds(self, bounds):
         if not isinstance(bounds, Bounds):
-            raise TypeError("Reaction bounds is not of type bounds")
+            raise TypeError("Reaction bounds is not of type bounds: {0}".format(type(bounds)))
 
     def __repr__(self):
         return "{name}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
@@ -354,7 +351,7 @@ class Operation(object):
 
     def __init__(self, operation, is_unary):
         if not isinstance(is_unary, bool):
-            raise TypeError("Parameter is_unary is not of type bool")
+            raise TypeError("Parameter is_unary is not of type bool: {0}".format(type(is_unary)))
         if not is_unary and operation not in Operation.__binary_priority:
             raise ValueError("Invalid binary operation: {0}".format(operation))
         if is_unary and operation not in Operation.__unary_priority:
@@ -471,7 +468,6 @@ class MathExpression(object):
     def __indent(self, text, indent="  "):
         return "\n".join([indent + l for l in text.split("\n")])
 
-    # TODO: test tree representation
     def __repr__(self, tree=False):
         if not tree:
             return " {0} ".format(self.operation).join(str(self.__format_var(o)) for o in self.operands)
@@ -486,14 +482,20 @@ class MathExpression(object):
             )
 
     def __assert_valid(self, operation, operands):
-        if not isinstance(operation, Operation):
-            raise TypeError("Operation is not an instance of class <Operation>")
+        if not isinstance(operation, (Operation, type(None))):
+            raise TypeError("Operation is not an instance of class <Operation>: {0}".format(type(operation)))
         if not isinstance(operands, list):
-            raise TypeError("Operands are not a list")
-        if operation.is_unary and len(operands) != 1:
-            raise ValueError("Unary operation have number of operands different from one")
-        if not operation.is_unary and len(operands) < 2:
-            raise ValueError("Binary operation have less than 2 operands")
+            raise TypeError("Operands are not a list: {0}".format(type(operands)))
+
+        # TODO: test these exceptions
+        if operation is None:
+            if len(operands) != 1:
+                raise ValueError("Math expression not representing any operation (<None>) have number of operands different from one")
+        else:
+            if operation.is_unary and len(operands) != 1:
+                raise ValueError("Unary operation have number of operands different from one")
+            elif not operation.is_unary and len(operands) < 2:
+                raise ValueError("Binary operation have less than 2 operands")
 
 
 class Model(object):
@@ -579,7 +581,7 @@ class Model(object):
 
     def __assert_objective(self, objective):
         if not (objective is None or isinstance(objective, MathExpression)):
-            raise TypeError("Objective is not None or <MathExpression>")
+            raise TypeError("Objective is not None or <MathExpression>: {0}".format(type(objective)))
 
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))

@@ -128,7 +128,6 @@ class BiooptParser(object):
             parsed_parts.append(p)
 
         if len(parsed_parts) == 1:
-            # TODO: test for operation None
             return MathExpression(None, [parsed_parts[0]])
         else:
             return MathExpression(Operation.multiplication(), parsed_parts)
@@ -137,14 +136,13 @@ class BiooptParser(object):
         if not isinstance(section_text, str):
             raise TypeError("Objective section text is not of type string")
 
-        expression = None
-        for exp in self.__parse_section(section_text, self.__parse_objective_section_line):
-            if expression is None:
-                expression = exp
-            else:
-                expression = MathExpression(expression, exp, Operation.addition())
-
-        return expression
+        add_operands = list(self.__parse_section(section_text, self.__parse_objective_section_line))
+        if len(add_operands) == 0:
+            return None
+        elif len(add_operands) == 1:
+            return add_operands[0]
+        else:
+            return MathExpression(Operation.addition(), add_operands)
 
     def parse_external_metabolites_section(self, section_text):
         if not isinstance(section_text, str):
@@ -184,16 +182,12 @@ class BiooptParser(object):
 
         react_section = sections["-REACTIONS"]
         model.reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
-
-        # TODO: test for duplicate reactions
-        reactions = dict((r.name, r) for r in model.reactions)
+        model.unify_metabolite_references()
 
         const_section = sections["-CONSTRAINTS"]
         constrains = dict((reaction.name, reaction) for reaction in self.parse_constraints_section(text[const_section[0]:const_section[1]]))
         for r in model.reactions:
             r.bounds = constrains[r.name].bounds
-
-        model.unify_metabolite_references()
 
         ext_m_section = sections["-EXTERNAL METABOLITES"]
         external_metabolites = [m.name for m in self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])]

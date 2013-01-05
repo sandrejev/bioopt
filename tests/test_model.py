@@ -259,6 +259,12 @@ class TestMathExpression(TestCase):
         ex = ME(add, [ME(mult, [r2, r1, 1]), ME(mult, [r2, 1]), ME(mult, [r1, 2])])
         self.assertEquals([r2, r1, 1, 2], ex.find_variables())
 
+    def test_representation(self):
+        # TODO: test representation
+        #print ME(Operation.addition(), [ME(mult, [R("R2"), R("R1"), float(1)]), ME(mult, [R("R2"), R("R1"), float(1)]), ME(mult, [R("R2"), R("R1"), float(1)])]).__repr__(tree=True)
+        #print ME(mult, [ME(add, [R("R2"), R("R1"), float(1)]), ME(add, [R("R2"), R("R1"), float(1)]), ME(add, [R("R2"), R("R1"), float(1)])]).__repr__()
+        pass
+
 class TestModel(TestCase):
     def test_new(self):
         Na = Metabolite("Na")
@@ -278,5 +284,33 @@ class TestModel(TestCase):
         model.reactions.append(r1)
         model.reactions.append(r2)
 
+        # TODO: finish this test
         #print ReactionMember(Homocysteine, 1) + ReactionMember(Oxobutyrate, 1)
         #print model
+
+    def test_references(self):
+        model = Model()
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
+        r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        model.reactions = [r1, r2]
+        model.objective = ME(Operation.multiplication(), [R("R1"), 1, 1])
+        model.design_objective = ME(Operation.multiplication(), [R("R2"), R("R1"), 1])
+
+        self.assertFalse(model.objective.operands[0] is r1)
+        self.assertFalse(model.design_objective.operands[0] is r2)
+        self.assertFalse(model.design_objective.operands[1] is r1)
+        self.assertFalse(r1.reactants[1].metabolite is r2.reactants[0].metabolite)
+
+        model.unify_references()
+
+        self.assertTrue(model.objective.operands[0] is r1)
+        self.assertTrue(model.design_objective.operands[0] is r2)
+        self.assertTrue(model.design_objective.operands[1] is r1)
+        self.assertTrue(r1.reactants[1].metabolite is r2.reactants[0].metabolite)
+
+        self.assertFalse(model.objective.operands[1] is r1)
+        self.assertFalse(r1.reactants[1].metabolite is r2.reactants[1].metabolite)
+
+    def test_incomplete_model(self):
+        # TODO: test when some sections are missing
+        pass

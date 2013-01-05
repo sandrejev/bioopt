@@ -152,9 +152,43 @@ R2 R1 1
         parser = BiooptParser()
         self.assertEquals([M("A"), M("'A"), M("A B")], parser.parse_external_metabolites_section(constraints_section))
 
+
+    def test_parse_objective_section(self):
+        parser = BiooptParser()
+        section = """biomass"""
+        objective = parser.parse_objective_section(section)
+        self.assertEquals(ME(None, [R("biomass")]), objective)
+
+        parser = BiooptParser()
+        section = """12 biomass 3"""
+        objective = parser.parse_objective_section(section)
+        self.assertEquals(ME(Operation.multiplication(), [12, R("biomass"), 3]), objective)
+
+        parser = BiooptParser()
+        section = """biomass 2   2\n3\ttest"""
+        objective = parser.parse_objective_section(section)
+        self.assertEquals(ME(Operation.addition(), [
+            ME(Operation.multiplication(), [R("biomass"), 2, 2]),
+            ME(Operation.multiplication(), [3, R("test")])
+        ]), objective)
+
+        self.assertNotEquals(ME(Operation.addition(), [
+            ME(Operation.multiplication(), [R("biomass"), 2, 2]),
+            ME(Operation.multiplication(), [3, R("test")]),
+            1
+        ]), objective)
+
+        self.assertNotEquals(ME(None, [
+            ME(Operation.multiplication(), [R("biomass"), 2, 2])
+        ]), objective)
+
+        self.assertNotEquals(ME(Operation.addition(), [
+            ME(Operation.multiplication(), [R("biomass"), 2, 2]),
+            ME(Operation.multiplication(), [2, R("test")])
+        ]), objective)
+
     def test_full_model(self):
         mult = Operation.multiplication()
-        add = Operation.addition()
 
         parser = BiooptParser()
         parsed_model = parser.parse(self.model)
@@ -165,10 +199,6 @@ R2 R1 1
         model.reactions = [r1, r2]
         model.objective = ME(mult, [r2, float(1), float(1)])
         model.design_objective = ME(mult, [r2, r1, float(1)])
-
-        # TODO: test representation
-        #print ME(Operation.addition(), [ME(mult, [R("R2"), R("R1"), float(1)]), ME(mult, [R("R2"), R("R1"), float(1)]), ME(mult, [R("R2"), R("R1"), float(1)])]).__repr__(tree=True)
-        #print ME(mult, [ME(add, [R("R2"), R("R1"), float(1)]), ME(add, [R("R2"), R("R1"), float(1)]), ME(add, [R("R2"), R("R1"), float(1)])]).__repr__()
 
         self.assertEqual(model, parsed_model)
 
