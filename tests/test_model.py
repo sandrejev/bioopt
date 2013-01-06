@@ -310,7 +310,3 @@ class TestModel(TestCase):
 
         self.assertFalse(model.objective.operands[1] is r1)
         self.assertFalse(r1.reactants[1].metabolite is r2.reactants[1].metabolite)
-
-    def test_incomplete_model(self):
-        # TODO: test when some sections are missing
-        pass

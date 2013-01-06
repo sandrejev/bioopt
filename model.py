@@ -531,6 +531,26 @@ class Model(object):
         self.__assert_objective(design_objective)
         self.__design_objective = design_objective
 
+    # TODO: test and test find_metabolites
+    # TODO: Test with no reaction section. Reaction present in objective section should be accessible
+    def find_reactions(self, names):
+        if not self.reactions:
+            return None
+
+        import collections
+        if names is None:
+            return [r for r in self.reactions]
+        elif isinstance(names, str):
+            for r in self.reactions:
+                if r.name == names:
+                    return r
+            return None
+        elif isinstance(names, collections.Iterable):
+            names = set(names)
+            return [r for r in self.reactions if r.name in names]
+        else:
+            raise TypeError("Names argument should be iterable, string or <None>")
+
     def unify_metabolite_references(self):
         metabolites = dict((m.name, m) for m in self.find_metabolites())
         for reaction in self.reactions:
@@ -543,7 +563,8 @@ class Model(object):
                 if isinstance(o, MathExpression):
                     self.__unify_objective_references(o, reactions)
                 elif isinstance(o, Reaction):
-                    expression.operands[i] = reactions[o.name]
+                    if o.name in reactions:
+                        expression.operands[i] = reactions[o.name]
 
     # TODO: unit tests
     def unify_reaction_references(self):
@@ -565,7 +586,8 @@ class Model(object):
                     expression.operands[i] = reactions[o.name]
 
     # TODO: Test with multiple instances of the same metabolite (result should contain two instances)
-    def find_metabolites(self):
+    # TODO: Test with no reaction section. Metabolite present in ext. metabolites should be accessible
+    def find_metabolites(self, names=None):
         metabolites_set = set()
         metabolites = []
         for r in self.reactions:
@@ -574,7 +596,20 @@ class Model(object):
                     metabolites_set.add(rm.metabolite)
                     metabolites.append(rm.metabolite)
 
-        return metabolites
+        import collections
+        if names is None:
+            return metabolites
+        elif isinstance(names, str):
+            for m in metabolites:
+                if m.name == names:
+                    return m
+            return None
+        elif isinstance(names, collections.Iterable):
+            names = set(names)
+            return [m for m in metabolites if m.name in names]
+        else:
+            raise TypeError("Names argument should be iterable, string or <None>")
+
 
     def find_boundary_metabolites(self):
         return [m for m in self.find_metabolites() if m.boundary]

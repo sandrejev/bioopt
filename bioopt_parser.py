@@ -174,33 +174,46 @@ class BiooptParser(object):
 
             yield method(line)
 
+    def __find_section(self, text, sections, names):
+        for name in names:
+            if name in sections:
+                start, end = sections[name]
+                return text[start:end]
+
+        return None
+
     def parse(self, text):
         sections = self.find_sections(text)
 
         # TODO: print line where error appeared
         model = Model()
 
-        react_section = sections["-REACTIONS"]
-        model.reactions = self.parse_reactions_section(text[react_section[0]:react_section[1]])
-        model.unify_metabolite_references()
+        react_text =  self.__find_section(text, sections, ["-REACTIONS"])
+        if react_text:
+            model.reactions = self.parse_reactions_section(react_text)
+            model.unify_metabolite_references()
 
-        const_section = sections["-CONSTRAINTS"]
-        constrains = dict((reaction.name, reaction) for reaction in self.parse_constraints_section(text[const_section[0]:const_section[1]]))
-        for r in model.reactions:
-            r.bounds = constrains[r.name].bounds
+        const_text =  self.__find_section(text, sections, ["-CONSTRAINTS"])
+        if const_text:
+            constrains = dict((reaction.name, reaction) for reaction in self.parse_constraints_section(const_text))
+            for r in model.reactions:
+                r.bounds = constrains[r.name].bounds
 
-        ext_m_section = sections["-EXTERNAL METABOLITES"]
-        external_metabolites = [m.name for m in self.parse_external_metabolites_section(text[ext_m_section[0]:ext_m_section[1]])]
-        for m in model.find_metabolites():
-            m.boundary = m.name in external_metabolites
+        ext_m_text =  self.__find_section(text, sections, ["-EXTERNAL METABOLITES"])
+        if ext_m_text:
+            external_metabolites = [m.name for m in self.parse_external_metabolites_section(ext_m_text)]
+            for m in model.find_metabolites():
+                m.boundary = m.name in external_metabolites
 
-        obj_section = sections["-OBJ"]
-        objective = self.parse_objective_section(text[obj_section[0]:obj_section[1]])
-        model.objective = objective
+        obj_text = self.__find_section(text, sections, ["-OBJ", "-OBJECTIVE"])
+        if obj_text:
+            objective = self.parse_objective_section(obj_text)
+            model.objective = objective
 
-        dobj_section = sections["-DESIGNOBJ"]
-        design_objective = self.parse_objective_section(text[dobj_section[0]:dobj_section[1]])
-        model.design_objective = design_objective
+        dobj_text = self.__find_section(text, sections, ["-DESIGNOBJ", "-DESIGN_OBJECTIVE"])
+        if dobj_text:
+            design_objective = self.parse_objective_section(dobj_text)
+            model.design_objective = design_objective
 
         model.unify_reaction_references()
 

@@ -11,7 +11,7 @@ class TestBiooptParser(TestCase):
         self.fwd = Direction.forward()
         self.rev = Direction.reversible()
 
-        self.model = """
+        self.model_text = """
 -REACTIONS
 R1: A + B -> 3 C
 R2: B + C <-> 1 E
@@ -25,6 +25,13 @@ R2 1 1
 -DESIGNOBJ
 R2 R1 1
 """
+
+        self.model = Model()
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
+        r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        self.model.reactions = [r1, r2]
+        self.model.objective = ME(Operation.multiplication(), [r2, float(1), float(1)])
+        self.model.design_objective = ME(Operation.multiplication(), [r2, r1, float(1)])
 
     def test_strip_comments(self):
         parser = BiooptParser()
@@ -191,7 +198,7 @@ R2 R1 1
         mult = Operation.multiplication()
 
         parser = BiooptParser()
-        parsed_model = parser.parse(self.model)
+        parsed_model = parser.parse(self.model_text)
 
         model = Model()
         r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
@@ -217,15 +224,118 @@ R2 R1 1
         self.assertNotEqual(model, parsed_model)
         model.reactions = r
 
+    def test_missing_dobj(self):
+        model_no_dobj = """
+-REACTIONS
+R1: A + B -> 3 C
+R2: B + C <-> 1 E
+-CONSTRAINTS
+R1[-100, 100]
+R2[-100, 100]
+-EXTERNAL METABOLITES
+E
+-OBJ
+R2 1 1
+"""
+        parser = BiooptParser()
+        m = parser.parse(model_no_dobj)
+        self.assertTrue(m.design_objective is None)
+        self.assertEquals(self.model.reactions, m.reactions)
+        self.assertEquals(self.model.objective, m.objective)
+
+    def test_missing_obj(self):
+        model_no_obj = """
+-REACTIONS
+R1: A + B -> 3 C
+R2: B + C <-> 1 E
+-CONSTRAINTS
+R1[-100, 100]
+R2[-100, 100]
+-EXTERNAL METABOLITES
+E
+-DESIGNOBJ
+R2 R1 1
+"""
+        parser = BiooptParser()
+        m = parser.parse(model_no_obj)
+        self.assertTrue(m.objective is None)
+        self.assertEquals(self.model.reactions, m.reactions)
+        self.assertEquals(self.model.design_objective, m.design_objective)
+
+    def test_missing_external_metabolites(self):
+        model_no_ext = """
+-REACTIONS
+R1: A + B -> 3 C
+R2: B + C <-> 1 E
+-CONSTRAINTS
+R1[-100, 100]
+R2[-100, 100]
+-OBJ
+R2 1 1
+-DESIGNOBJ
+R2 R1 1
+"""
+        parser = BiooptParser()
+        m = parser.parse(model_no_ext)
+        self.assertTrue(isinstance(m.find_metabolites("E"), Metabolite))
+        self.assertFalse(m.find_metabolites("E").boundary)
+        self.model.find_metabolites("E").boundary = False
+        self.assertEquals(self.model.reactions, m.reactions)
+        self.assertEquals(self.model.objective, m.objective)
+        self.assertEquals(self.model.design_objective, m.design_objective)
+        self.model.find_metabolites("E").boundary = True
+
+
+    def test_missing_constraints(self):
+        model_no_const = """
+-REACTIONS
+R1: A + B -> 3 C
+R2: B + C <-> 1 E
+-EXTERNAL METABOLITES
+E
+-OBJ
+R2 1 1
+-DESIGNOBJ
+R2 R1 1
+"""
+
+        parser = BiooptParser()
+        m = parser.parse(model_no_const)
+        self.model.find_reactions("R1").bounds = Bounds()
+        self.model.find_reactions("R2").bounds = Bounds()
+        self.assertEquals(self.model.reactions[0], m.reactions[0])
+        self.assertEquals(self.model.reactions[1], m.reactions[1])
+        self.assertEquals(self.model.objective, m.objective)
+        self.assertEquals(self.model.design_objective, m.design_objective)
+        self.model.find_reactions("R1").bounds = Bounds(-100, 100)
+        self.model.find_reactions("R2").bounds = Bounds(-100, 100)
+
+    def test_missing_reactions(self):
+        model_no_reactions = """
+-CONSTRAINTS
+R1[-100, 100]
+R2[-100, 100]
+-EXTERNAL METABOLITES
+E
+-OBJ
+R2 1 1
+"""
+        parser = BiooptParser()
+        m = parser.parse(model_no_reactions)
+
+        self.assertTrue(not m.reactions)
+        self.assertTrue(self.model.objective, m.objective)
+        self.assertTrue(self.model.design_objective, m.design_objective)
+
     def test_find_metabolites(self):
         parser = BiooptParser()
-        m = parser.parse(self.model)
+        m = parser.parse(self.model_text)
         self.assertEquals([M("A"), M("B"), M("C"), M("E", boundary=True)], m.find_metabolites())
         self.assertEquals([M("E", boundary=True)], list(m.find_boundary_metabolites()))
 
     def test_metabolite_references(self):
         parser = BiooptParser()
-        m = parser.parse(self.model)
+        m = parser.parse(self.model_text)
 
         self.assertFalse(m.reactions[0].reactants[1] is m.reactions[1].reactants[0])
         self.assertFalse(m.reactions[0].reactants[1].metabolite is m.reactions[0].reactants[0].metabolite)
