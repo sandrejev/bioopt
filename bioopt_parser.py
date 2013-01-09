@@ -1,5 +1,9 @@
 import re
 from model import *
+import warnings
+
+class BiooptParseWarning(Warning):
+    pass
 
 class BiooptParser(object):
     def __init__(self):
@@ -9,13 +13,16 @@ class BiooptParser(object):
 
     def parse_file(self, path):
         f = open(path, "r")
-        self.parse(f.read())
+        return self.__parse(f.read(), filename=path)
 
     def parse_reactions_section(self, section_text):
+        return list(r for r, i in self.__parse_reactions_section(section_text))
+
+    def __parse_reactions_section(self, section_text, filename=None, section_start=0):
         if not isinstance(section_text, str):
             raise TypeError("Reactions section text is not of type string")
 
-        return list(self.__parse_section(section_text, self.parse_reaction))
+        return self.__parse_section(section_text, self.parse_reaction, filename=filename, section_start=section_start)
 
     def parse_reaction_member(self, member_str):
         if not isinstance(member_str, str):
@@ -108,12 +115,15 @@ class BiooptParser(object):
         return Reaction(reaction_name, ReactionMemberList(), ReactionMemberList(), bounds.direction, bounds)
 
     def parse_constraints_section(self, section_text):
+        return list(c for c, i in self.__parse_constraints_section(section_text))
+
+    def __parse_constraints_section(self, section_text, filename=None, section_start=0):
         if not isinstance(section_text, str):
             raise TypeError("External metabolites section text is not of type string")
 
-        return list(self.__parse_section(section_text, self.parse_constraint))
+        return self.__parse_section(section_text, self.parse_constraint, filename=filename, section_start=section_start)
 
-    def __parse_objective_section_line(self, objective_line):
+    def parse_objective_section_line(self, objective_line):
         parts = re.split(r"\s+", objective_line)
         if not parts:
             raise SyntaxError("Could not parse objective section line: {0}".format(objective_line))
@@ -133,22 +143,36 @@ class BiooptParser(object):
             return MathExpression(Operation.multiplication(), parsed_parts)
 
     def parse_objective_section(self, section_text):
+        return self.__parse_objective_section(section_text)
+
+    def __parse_objective_section(self, section_text, filename=None, section_start=0, reactions=None, section_name="-DESIGN OBJECTIVE/-OBJECTIVE", reactions_section_name="-REACTIONS"):
         if not isinstance(section_text, str):
             raise TypeError("Objective section text is not of type string")
 
-        add_operands = list(self.__parse_section(section_text, self.__parse_objective_section_line))
-        if len(add_operands) == 0:
-            return None
-        elif len(add_operands) == 1:
-            return add_operands[0]
-        else:
-            return MathExpression(Operation.addition(), add_operands)
+        add_operands = list(self.__parse_section(section_text, self.parse_objective_section_line, filename=filename, section_start=section_start))
+
+        if not reactions is None and len(reactions) > 0 and len(add_operands) > 0:
+            line_reactions = ((i, r) for expression, i in add_operands for r in expression.find_variables() if isinstance(r, Reaction))
+            for i, r in line_reactions:
+                if r.name not in reactions:
+                    warnings.warn_explicit(
+                        "Reaction '{0}' from '{1}' section is not present in '{2}' section".format(r.name, section_name, reactions_section_name),
+                        BiooptParseWarning, filename=filename, lineno=section_start+i+1)
+
+        if len(add_operands) == 1:
+            return add_operands[0][0]
+        elif len(add_operands) > 1:
+            return MathExpression(Operation.addition(), list(e[0] for e in add_operands))
+
 
     def parse_external_metabolites_section(self, section_text):
+        return list(e for e, i in self.__parse_external_metabolites_section(section_text))
+
+    def __parse_external_metabolites_section(self, section_text, filename=None, section_start=0):
         if not isinstance(section_text, str):
             raise TypeError("External metabolites section text is not of type string")
 
-        return list(self.__parse_section(section_text, Metabolite))
+        return self.__parse_section(section_text, Metabolite, filename=filename, section_start=section_start)
 
     def find_sections(self, text):
         s = re.compile(r"^-[\w ]+$", re.MULTILINE)
@@ -159,61 +183,107 @@ class BiooptParser(object):
             name = s[0]
             start = s[2]+1
             end = sections1[i+1][1]-1 if i+1 < len(sections1) else len(text)
+            line = text[0:start].count("\n")
 
-            sections2[name] = (start, end)
+            sections2[name] = (start, end, line)
 
         return sections2
 
-    def __parse_section(self, section_text, method):
+    def __parse_section(self, section_text, method, filename=None, section_start=0):
         nl = re.compile("\n\r|\r\n|\n")
         lines = nl.split(section_text)
         for i, line in enumerate(lines):
             line = self.strip_comments(line)
+            # TODO: Return None to have errors with line information anntached
             if not len(line):
                 continue
 
-            yield method(line)
+            saved_warnings = []
+            with warnings.catch_warnings(record=True) as ws:
+                warnings.simplefilter("always")
+                result = method(line)
 
-    def __find_section(self, text, sections, names):
-        for name in names:
-            if name in sections:
-                start, end = sections[name]
-                return text[start:end]
+                for w in ws:
+                    w_outer = warnings.WarningMessage(message=w.message, category=BiooptParseWarning, filename=filename, lineno=section_start+i+1, line=line)
+                    saved_warnings.append(w_outer)
 
-        return None
+            for w in saved_warnings:
+                warnings.warn_explicit(message=w.message, category=w.category, filename=w.filename, lineno=w.lineno)
+
+            yield result, i
+
+    def __find_section(self, text, sections, fun):
+        for name in sections.keys():
+            if fun(name):
+                start, end, line = sections[name]
+                return name, text[start:end], line
+
+        return None, None, None
 
     def parse(self, text):
+        return self.__parse(text)
+
+    def __parse(self, text, filename=None):
         sections = self.find_sections(text)
 
         # TODO: print line where error appeared
         model = Model()
 
-        react_text =  self.__find_section(text, sections, ["-REACTIONS"])
+        react_name, react_text, react_line = self.__find_section(text, sections, lambda x: re.search(r"reac", x, re.I))
         if react_text:
-            model.reactions = self.parse_reactions_section(react_text)
+            model.reactions = list(r for r, i in self.__parse_reactions_section(react_text, filename=filename, section_start=react_line))
             model.unify_metabolite_references()
+        else:
+            warnings.warn("Could not find '{0}' section".format(react_name), BiooptParseWarning)
 
-        const_text =  self.__find_section(text, sections, ["-CONSTRAINTS"])
+        reactions = None
+
+        const_name, const_text, const_line =  self.__find_section(text, sections, lambda x: re.search(r"cons", x, re.I))
         if const_text:
-            constrains = dict((reaction.name, reaction) for reaction in self.parse_constraints_section(const_text))
-            for r in model.reactions:
-                r.bounds = constrains[r.name].bounds
+            reactions = dict((r.name, r) for r in model.reactions)
+            for c, i in self.__parse_constraints_section(const_text, filename=filename, section_start=const_line):
+                if c.name in reactions:
+                    reactions[c.name].bounds = c.bounds
+                elif react_text:
+                    warnings.warn_explicit(
+                        "Reaction '{0}' from '{1}' section is not present in '{2}' section".format(c.name, const_name, react_name),
+                        BiooptParseWarning, filename=filename, lineno=const_line+i+1)
+        else:
+            warnings.warn("Could not find '{0}' section".format(const_name), BiooptParseWarning)
 
-        ext_m_text =  self.__find_section(text, sections, ["-EXTERNAL METABOLITES"])
+        ext_m_name, ext_m_text, ext_m_line =  self.__find_section(text, sections, lambda x: re.search(r"ext", x, re.I))
         if ext_m_text:
-            external_metabolites = [m.name for m in self.parse_external_metabolites_section(ext_m_text)]
-            for m in model.find_metabolites():
-                m.boundary = m.name in external_metabolites
+            metabolites = dict((m.name, m) for m in model.find_metabolites())
+            for m, i in self.__parse_external_metabolites_section(ext_m_text, filename=filename, section_start=ext_m_line):
+                if m.name in metabolites:
+                    metabolites[m.name].boundary = True
+                elif react_text:
+                    warnings.warn_explicit(
+                        "Metabolite '{0}' from '{1}' section is not present in any reaction from '{2}' section".format(m.name, ext_m_name, react_name),
+                        BiooptParseWarning, filename=filename, lineno=ext_m_line+i+1)
+        else:
+            warnings.warn("Could not find '{0}' section".format(ext_m_name), BiooptParseWarning)
 
-        obj_text = self.__find_section(text, sections, ["-OBJ", "-OBJECTIVE"])
+        obj_name, obj_text, obj_line = self.__find_section(text, sections, lambda x: re.search(r"obj", x, re.I) and not re.search("des", x, re.I))
         if obj_text:
-            objective = self.parse_objective_section(obj_text)
-            model.objective = objective
+            if reactions is None:
+                reactions = dict((r.name, r) for r in model.reactions)
 
-        dobj_text = self.__find_section(text, sections, ["-DESIGNOBJ", "-DESIGN_OBJECTIVE"])
+            objective = self.__parse_objective_section(obj_text, section_name=obj_name, reactions_section_name=react_name, filename=filename, section_start=obj_line, reactions=reactions)
+            model.objective = objective
+        else:
+            warnings.warn("Could not find '{0}' section".format(obj_name), BiooptParseWarning)
+
+        dobj_name, dobj_text, line = self.__find_section(text, sections, lambda x: re.search(r"obj", x, re.I) and re.search("des", x, re.I))
         if dobj_text:
-            design_objective = self.parse_objective_section(dobj_text)
+            if reactions is None:
+                reactions = dict((r.name, r) for r in model.reactions)
+
+            design_objective = self.__parse_objective_section(dobj_text, section_name=dobj_name, filename=filename, section_start=line, reactions=reactions)
             model.design_objective = design_objective
+        else:
+            warnings.warn("Could not find '{0}' section".format(dobj_name), BiooptParseWarning)
+
 
         model.unify_reaction_references()
 
@@ -221,4 +291,30 @@ class BiooptParser(object):
 
 if __name__ == "__main__":
     parser = BiooptParser()
-    parser.parse_file("Respiro_ferm_prep.bioopt")
+    models = ["Respiro_ferm_prep.bioopt", "iAG612.bioopt", "X:/Joana/Bioopt models/Rich20/rich20MbarkeriiAF692.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richaeroEcoliWmodified.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richbacillus_Oh.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richchloroflexi.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richclostridiumbeijerinckiiANAER.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richEcoliiAF1260_ANAEROBIC.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richKLEBSIELLA.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richpseudomonasaerob.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richpyloriIT341aerobe.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richsalmonella.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richSaureusaerobiciSB619.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richshewanella.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richsynecho.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richthermotogaanaer.bioopt",
+              "X:/Joana/Bioopt models/Rich20/richtuberculosisiNJ661aerobe.bioopt"]
+
+    #r = parser.parse_reaction("R1: 1 + 1 test -> test")
+    #print r.reactants[0]
+    #print r.reactants[1]
+    #exit(0)
+
+    for path in models:
+        print "Parsing '{0}'".format(path)
+        model = parser.parse_file(path)
+        exit(0)
+
+#    print model

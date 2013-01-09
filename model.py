@@ -2,6 +2,14 @@
 import sys,re
 import thread
 import itertools
+import warnings
+
+def _is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 class Bounds(object):
     def __init__(self, lb=float("-inf"), ub=float("inf")):
@@ -85,6 +93,10 @@ class Metabolite(object):
             raise TypeError("Metabolite name is not a string: {0}".format(type(name)))
         if not len(name):
             raise ValueError("Metabolite name is empty string")
+        if re.search("\s+", name):
+            warnings.warn("Metabolite '{0}' contains spaces".format(name), UserWarning)
+        if _is_number(name):
+            warnings.warn("Metabolite name is a number: '{0}'".format(name), UserWarning)
 
     def __assert_boundary(self, boundary):
         if not isinstance(boundary, bool):

@@ -5,6 +5,8 @@ from model import Reaction as R
 from model import ReactionMemberList as RML
 from model import MathExpression as ME
 
+warnings.simplefilter("ignore")
+
 class TestBounds(TestCase):
     def test_new(self):
         self.assertRaises(TypeError, Bounds, "a", 1)

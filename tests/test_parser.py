@@ -5,6 +5,7 @@ from model import Reaction as R
 from model import ReactionMemberList as RML
 from model import MathExpression as ME
 
+warnings.simplefilter("ignore")
 
 class TestBiooptParser(TestCase):
     def setUp(self):
