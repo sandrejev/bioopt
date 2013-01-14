@@ -7,6 +7,7 @@ from model import MathExpression as ME
 
 warnings.simplefilter("ignore")
 
+# TODO: change expected and actual results order.
 class TestBiooptParser(TestCase):
     def setUp(self):
         self.fwd = Direction.forward()
@@ -36,12 +37,18 @@ R2 R1 1
 
     def test_strip_comments(self):
         parser = BiooptParser()
-        self.assertEquals(parser.strip_comments("test"), "test")
-        self.assertEquals(parser.strip_comments("    test"), "test")
-        self.assertEquals(parser.strip_comments("test    "), "test")
-        self.assertEquals(parser.strip_comments("test# test    "), "test")
-        self.assertEquals(parser.strip_comments("test # test    "), "test")
-        self.assertEquals(parser.strip_comments("#test# test    "), "")
+        self.assertEquals(("test", False), parser.strip_comments("test"))
+        self.assertEquals(("test", False), parser.strip_comments("    test"))
+        self.assertEquals(("test", False), parser.strip_comments("test    "))
+        self.assertEquals(("test", False), parser.strip_comments("test# test    "))
+        self.assertEquals(("test", False), parser.strip_comments("test # test    "))
+        self.assertEquals(("", False), parser.strip_comments("#test# test    "))
+        self.assertEquals(("", False), parser.strip_comments("#test# %test%    "))
+        self.assertEquals(("test3", False), parser.strip_comments("% test1% %test2% test3 #test4  "))
+
+        self.assertEquals(("", True), parser.strip_comments("% commented1"))
+        self.assertEquals(("uncommented", False), parser.strip_comments(" commented2% uncommented # comm%   ented3", True))
+        self.assertEquals(("Uncommented", False), parser.strip_comments("Uncomm%mmmm%ented"))
 
     def test_parse_reaction_member(self):
         parser = BiooptParser()

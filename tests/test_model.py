@@ -189,7 +189,7 @@ class TestReaction(TestCase):
         reactants = ReactionMemberList([m_2_Na, m_2_H2O])
         products = ReactionMemberList([m_2_NaOH, m_1_H2])
 
-        r = Reaction("")
+        r = Reaction("whatsoever")
 
         self.assertRaises(TypeError, r.__setattr__, "name", 1)
         r.name = name

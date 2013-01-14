@@ -32,10 +32,8 @@
       <file leaf-file-name="test_parser.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="30" selection-start="238" selection-end="238" vertical-scroll-proportion="-4.76">
-              <folding>
-                <element signature="e#0#29#0" expanded="true" />
-              </folding>
+            <state line="331" column="0" selection-start="13275" selection-end="13275" vertical-scroll-proportion="-8.36">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -43,7 +41,7 @@
       <file leaf-file-name="bioopt_parser.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="8" selection-start="90" selection-end="90" vertical-scroll-proportion="0.05487805">
+            <state line="260" column="24" selection-start="10881" selection-end="10881" vertical-scroll-proportion="0.1891892">
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -60,15 +58,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Respiro_ferm_prep.bioopt" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Respiro_ferm_prep.bioopt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="2292" column="7" selection-start="88547" selection-end="88554" vertical-scroll-proportion="-4.96">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="exceptions.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$USER_HOME$/.PyCharm10/system/python_stubs/-891257481/exceptions.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -78,22 +67,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="iAG612.bioopt" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/iAG612.bioopt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="44" selection-start="1549" selection-end="1549" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="624" column="0" selection-start="20192" selection-end="20192" vertical-scroll-proportion="-5.52">
-              <folding>
-                <element signature="e#22#35#0" expanded="true" />
-              </folding>
+            <state line="328" column="0" selection-start="9608" selection-end="9608" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -101,7 +79,7 @@
       <file leaf-file-name="test_model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="0" selection-start="207" selection-end="239" vertical-scroll-proportion="0.0">
+            <state line="191" column="22" selection-start="7028" selection-end="7038" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -127,9 +105,9 @@
         <option value="$USER_HOME$/.PyCharm10/system/python_stubs/-891257481/__builtin__.py" />
         <option value="$PROJECT_DIR$/tests/__init__.py" />
         <option value="$PROJECT_DIR$/iAG612.bioopt" />
-        <option value="$PROJECT_DIR$/model.py" />
         <option value="$PROJECT_DIR$/Respiro_ferm_prep.bioopt" />
         <option value="C:/Python26/Lib/warnings.py" />
+        <option value="$PROJECT_DIR$/model.py" />
         <option value="$PROJECT_DIR$/tests/test_model.py" />
         <option value="$PROJECT_DIR$/tests/test_parser.py" />
         <option value="$PROJECT_DIR$/bioopt_parser.py" />
@@ -137,8 +115,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="width" value="1183" />
-    <option name="height" value="1040" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1176" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -166,40 +146,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="testing" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="testing" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bioopt" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="testing" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bioopt" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tests" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="Scope">
         <subPane subId="Default" />
         <subPane subId="Problems">
@@ -237,6 +183,40 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="testing" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="testing" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bioopt" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="testing" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bioopt" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="Favorites" />
     </panes>
   </component>
@@ -269,7 +249,7 @@
       <recent name="C:\Users\Aleksej\workspace\python\testing\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python's test.All Tests">
+  <component name="RunManager" selected="Python.bioopt_parser">
     <configuration default="false" name="bioopt_parser" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -366,8 +346,10 @@
       <option name="USE_PATTERN" value="false" />
       <option name="PUREUNITTEST" value="true" />
       <RunnerSettings RunnerId="PyDebugRunner" />
+      <RunnerSettings RunnerId="PythonCover" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PythonCover" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
@@ -396,11 +378,35 @@
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <list size="4">
+    <configuration default="false" name="test_strip_comments" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONPATH" value="../.." />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <module name="testing" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_parser.py" />
+      <option name="CLASS_NAME" value="TestBiooptParser" />
+      <option name="METHOD_NAME" value="test_strip_comments" />
+      <option name="FOLDER_NAME" value="$PROJECT_DIR$/tests" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.bioopt_parser" />
       <item index="1" class="java.lang.String" itemvalue="Python's test.Full parse" />
       <item index="2" class="java.lang.String" itemvalue="Python's test.All Tests" />
       <item index="3" class="java.lang.String" itemvalue="Python's test.test_missing_dobj" />
+      <item index="4" class="java.lang.String" itemvalue="Python's test.test_strip_comments" />
     </list>
     <recent_temporary>
       <list size="1">
@@ -492,20 +498,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1183" height="1040" extended-state="0" />
+    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3298077" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32934782" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32632744" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32596153" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16862327" sideWeight="0.3423913" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22998933" sideWeight="0.6065217" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.15812917" sideWeight="0.39159292" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34955752" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.15795091" sideWeight="0.61730766" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34903845" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45326087" sideWeight="0.49839914" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.5674779" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3826923" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -573,16 +579,11 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/tests/test_parser.py</url>
-          <line>166</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/bioopt_parser.py</url>
-          <line>148</line>
-          <option name="timeStamp" value="9" />
+          <line>331</line>
+          <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="10" />
+      <option name="time" value="16" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -604,13 +605,6 @@
     <entry file="file://C:/Python26/Lib/re.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="185" column="42" selection-start="8823" selection-end="8823" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://C:/Python26/Lib/unittest.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="335" column="0" selection-start="11807" selection-end="11807" vertical-scroll-proportion="0.02724359">
-          <folding />
-        </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/.PyCharm10/system/python_stubs/-891257481/__builtin__.py">
@@ -636,30 +630,17 @@
     </entry>
     <entry file="file://$USER_HOME$/.PyCharm10/system/python_stubs/-891257481/_warnings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="4" selection-start="283" selection-end="283" vertical-scroll-proportion="0.56557375">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="0" selection-start="207" selection-end="239" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="16" column="4" selection-start="283" selection-end="283" vertical-scroll-proportion="0.56557375" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Respiro_ferm_prep.bioopt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2292" column="7" selection-start="88547" selection-end="88554" vertical-scroll-proportion="-4.96">
-          <folding />
-        </state>
+        <state line="2292" column="7" selection-start="88547" selection-end="88554" vertical-scroll-proportion="-4.96" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/iAG612.bioopt">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="44" selection-start="1549" selection-end="1549" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="20" column="44" selection-start="1549" selection-end="1549" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/.PyCharm10/system/python_stubs/-891257481/exceptions.py">
@@ -671,25 +652,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="624" column="0" selection-start="20192" selection-end="20192" vertical-scroll-proportion="-5.52">
-          <folding>
-            <element signature="e#22#35#0" expanded="true" />
-          </folding>
+        <state line="328" column="0" selection-start="9608" selection-end="9608" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="191" column="22" selection-start="7028" selection-end="7038" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Python26/Lib/unittest.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="278" column="0" selection-start="9830" selection-end="9830" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="30" selection-start="238" selection-end="238" vertical-scroll-proportion="-4.76">
-          <folding>
-            <element signature="e#0#29#0" expanded="true" />
-          </folding>
+        <state line="331" column="0" selection-start="13275" selection-end="13275" vertical-scroll-proportion="-8.36">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="8" selection-start="90" selection-end="90" vertical-scroll-proportion="0.05487805">
+        <state line="260" column="24" selection-start="10881" selection-end="10881" vertical-scroll-proportion="0.1891892">
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

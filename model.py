@@ -325,6 +325,12 @@ class Reaction(object):
     def __assert_name(self, name):
         if not isinstance(name, str):
             raise TypeError("Reaction name is not a string: {0}".format(type(name)))
+        if not len(name):
+            raise ValueError("Reaction name is empty string")
+        if re.search("\s+", name):
+            warnings.warn("Reaction '{0}' contains spaces".format(name), UserWarning)
+        if _is_number(name):
+            warnings.warn("Reaction name is a number: '{0}'".format(name), UserWarning)
 
     def __assert_members(self, reactants):
         if not isinstance(reactants, (ReactionMemberList, ReactionMember)):
