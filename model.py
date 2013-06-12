@@ -205,6 +205,13 @@ class Direction(object):
             return "<->"
 
 class ReactionMemberList(list):
+    def find_member(self, name):
+        for mb in self:
+            if mb.metabolite.name == name:
+                return mb
+
+        return None
+
     def __radd__(self, other):
         if isinstance(other, ReactionMember):
             rml = ReactionMemberList()
@@ -551,7 +558,7 @@ class Model(object):
 
     # TODO: test and test find_metabolites
     # TODO: Test with no reaction section. Reaction present in objective section should be accessible
-    def find_reactions(self, names):
+    def find_reactions(self, names=None):
         if not self.reactions:
             return None
 
