@@ -329,6 +329,17 @@ class Reaction(object):
 
         return Bounds(lb, ub)
 
+    def reverse(self):
+        if self.direction != Direction.reversible():
+            raise RuntimeError("Reaction direction is not reversible. Only reversible reactions can be reversed")
+        if self.bounds.lb > 0 and self.bounds.ub > 0:
+            raise RuntimeError("Reaction effective direction is strictly forward and cannot be reversed")
+
+        tmp = self.__products
+        self.__products = self.__reactants
+        self.__reactants = tmp
+        self.__bounds = Bounds(-self.bounds.ub, -self.bounds.lb)
+
     def __assert_name(self, name):
         if not isinstance(name, str):
             raise TypeError("Reaction name is not a string: {0}".format(type(name)))

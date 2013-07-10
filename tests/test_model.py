@@ -211,6 +211,37 @@ class TestReaction(TestCase):
         r.products = products
         self.assertEquals(r.products, products)
 
+    def test_reverse(self):
+        fwd = Direction.forward()
+        rev = Direction.reversible()
+
+        m_2_Na = ReactionMember(Metabolite("Na"), 2)
+        m_2_H2O = ReactionMember(Metabolite("H2O"), 2)
+        m_2_NaOH = ReactionMember(Metabolite("NaOH"), 2)
+        m_1_H2 = ReactionMember(Metabolite("H2"), 1)
+
+        r = R("r", m_2_Na + m_2_H2O, m_2_NaOH + m_1_H2, direction=fwd, bounds=Bounds(-10, float("Inf")))
+        self.assertRaises(RuntimeError, r.reverse)
+
+        r = R("r", m_2_Na + m_2_H2O, m_2_NaOH + m_1_H2, direction=fwd, bounds=Bounds(1, 10))
+        self.assertRaises(RuntimeError, r.reverse)
+
+        r = R("r", m_2_Na + m_2_H2O, m_2_NaOH + m_1_H2, direction=rev, bounds=Bounds(1, 10))
+        self.assertRaises(RuntimeError, r.reverse)
+
+        products = m_2_Na + m_2_H2O
+        reactants = m_2_NaOH + m_1_H2
+        r = R("r", reactants, products, direction=rev, bounds=Bounds(-7, 8))
+        try:
+            r.reverse()
+        except Exception, ex:
+            self.fail("Creating Bounds object failed: {0}".format(ex))
+        self.assertEquals(-8, r.bounds.lb)
+        self.assertEquals(7, r.bounds.ub)
+        self.assertEquals(reactants, r.products)
+        self.assertEquals(products, r.reactants)
+
+
 class TestOperation(TestCase):
     def test_equality(self):
         self.assertTrue(Operation.multiplication() is Operation.multiplication())
