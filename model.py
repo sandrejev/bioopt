@@ -54,6 +54,9 @@ class Bounds(object):
                self.lb == other.lb and \
                self.ub == other.ub
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __repr__(self):
         return "[{0}, {1}]".format(self.lb, self.ub)
 
@@ -87,6 +90,9 @@ class Metabolite(object):
         return type(self) == type(other) and \
                self.name == other.name and \
                self.boundary == other.boundary
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __assert_name(self, name):
         if not isinstance(name, str):
@@ -155,6 +161,9 @@ class ReactionMember(object):
                self.metabolite == other.metabolite and \
                self.coefficient == other.coefficient
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __assert_metabolite(self, metabolite):
         if not isinstance(metabolite, Metabolite):
             raise TypeError("Reaction member is not of type <Metabolite>: {0}".format(type(metabolite)))
@@ -197,6 +206,12 @@ class Direction(object):
             Direction.__lockObj.release()
 
         return Direction.__reversible
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.__type == other.__type
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __repr__(self):
         if self.__type == "f":
@@ -373,6 +388,9 @@ class Reaction(object):
                self.bounds == other.bounds and \
                self.direction == other.direction
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Operation(object):
     __lockObj = thread.allocate_lock()
@@ -480,6 +498,9 @@ class MathExpression(object):
         return type(self) == type(other) and \
                self.operands == other.operands and \
                self.operation == other.operation
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def find_variables(self, remove_duplicates=True):
         vars = []
@@ -668,3 +689,6 @@ class Model(object):
                self.reactions == other.reactions and \
                self.objective == other.objective and \
                self.design_objective == other.design_objective
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
