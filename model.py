@@ -115,7 +115,8 @@ class Metabolite(object):
         raise TypeError("Can only multiply by numeric coefficient")
 
     def __repr__(self):
-        return self.name
+        b = "*" if self.boundary else ""
+        return "{0}{1}".format(self.name, b)
 
 class ReactionMember(object):
     def __init__(self, metabolite, coefficient):
@@ -153,6 +154,7 @@ class ReactionMember(object):
         else:
             raise TypeError("Can only join ReactionMember objects")
 
+    # TODO: This is not save() method. Don't use it for exporting the model! Create save() method
     def __repr__(self):
         return "{0:.5g} {1}".format(self.coefficient, self.metabolite)
 
@@ -254,6 +256,7 @@ class ReactionMemberList(list):
             return self
 
         return super(ReactionMemberList, self).__iadd__(other)
+
 
     def __repr__(self):
         return " + ".join(m.__repr__() for m in self)
@@ -378,7 +381,7 @@ class Reaction(object):
             raise TypeError("Reaction bounds is not of type bounds: {0}".format(type(bounds)))
 
     def __repr__(self):
-        return "{name}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products)
+        return "{name}{bnds}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products, bnds=self.bounds)
 
     def __eq__(self, other):
         return type(self) == type(other) and \
@@ -675,10 +678,11 @@ class Model(object):
         if not (objective is None or isinstance(objective, MathExpression)):
             raise TypeError("Objective is not None or <MathExpression>: {0}".format(type(objective)))
 
+    # TODO: This is not save() method. Don't use it for exporting the model! Create save() method
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
         ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.find_effective_bounds()) for r in self.reactions))
-        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format("\n".join(m.name for m in self.find_boundary_metabolites()))
+        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format("\n".join(m.__repr__() for m in self.find_boundary_metabolites()))
         ret += "-OBJECTIVE\n{0}\n\n".format(self.objective)
         ret += "-DESIGN OBJECTIVE\n{0}\n\n".format(self.design_objective)
 
