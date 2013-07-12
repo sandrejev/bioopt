@@ -266,6 +266,11 @@ class BiooptParser(object):
 
         if const_text:
             for c, i in self.__parse_constraints_section(const_text, filename=filename, section_start=const_line):
+                if c.name in reactions and c.bounds.lb < 0 and reactions[c.name].direction != Direction.reversible():
+                    warnings.warn_explicit(
+                        "Reaction '{0}' from '{1}' has effective bounds not compatible with reaction direction in '{2}' section ({3} : {4})".format(c.name, const_name, react_name, reactions[c.name].direction, c.bounds),
+                        BiooptParseWarning, filename=filename, lineno=const_line+i+1)
+
                 if c.name in reactions:
                     reactions[c.name].bounds = c.bounds
                 elif react_text:

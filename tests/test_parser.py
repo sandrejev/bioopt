@@ -18,7 +18,7 @@ class TestBiooptParser(TestCase):
 R1: A + B -> 3 C
 R2: B + C <-> 1 E
 -CONSTRAINTS
-R1[-100, 100]
+R1[0, 100]
 R2[-100, 100]
 -EXTERNAL METABOLITES
 E
@@ -29,7 +29,7 @@ R2 R1 1
 """
 
         self.model = Model()
-        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(0, 100))
         r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
         self.model.reactions = [r1, r2]
         self.model.objective = ME(Operation.multiplication(), [r2, float(1), float(1)])
@@ -209,7 +209,7 @@ R2 R1 1
         parsed_model = parser.parse(self.model_text)
 
         model = Model()
-        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(0, 100))
         r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
         model.reactions = [r1, r2]
         model.objective = ME(mult, [r2, float(1), float(1)])
@@ -238,7 +238,7 @@ R2 R1 1
 R1: A + B -> 3 C
 R2: B + C <-> 1 E
 -CONSTRAINTS
-R1[-100, 100]
+R1[0, 100]
 R2[-100, 100]
 -EXTERNAL METABOLITES
 E
@@ -257,7 +257,7 @@ R2 1 1
 R1: A + B -> 3 C
 R2: B + C <-> 1 E
 -CONSTRAINTS
-R1[-100, 100]
+R1[0, 100]
 R2[-100, 100]
 -EXTERNAL METABOLITES
 E
@@ -276,7 +276,7 @@ R2 R1 1
 R1: A + B -> 3 C
 R2: B + C <-> 1 E
 -CONSTRAINTS
-R1[-100, 100]
+R1[0, 100]
 R2[-100, 100]
 -OBJ
 R2 1 1
@@ -309,7 +309,7 @@ R2 R1 1
 
         parser = BiooptParser()
         m = parser.parse(model_no_const)
-        self.model.find_reactions("R1").bounds = Bounds()
+        self.model.find_reactions("R1").bounds = Bounds(0, Bounds.inf())
         self.model.find_reactions("R2").bounds = Bounds()
         self.assertEquals(self.model.reactions[0], m.reactions[0])
         self.assertEquals(self.model.reactions[1], m.reactions[1])

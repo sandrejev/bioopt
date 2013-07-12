@@ -39,6 +39,10 @@ class Bounds(object):
     def direction(self):
         return Direction.forward() if self.lb >= 0 else Direction.reversible()
 
+    @staticmethod
+    def inf():
+        return float("Inf")
+
     def __assert_valid(self, lb, ub):
         if not isinstance(ub, (int, float)):
             raise TypeError("Upper bound is not a number: {0}".format(type(ub)))
@@ -263,9 +267,13 @@ class ReactionMemberList(list):
 
 # TODO: Add class ReactionList
 class Reaction(object):
-    def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None, bounds=Bounds()):
-        if direction is None:
+    def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None, bounds=None):
+        if bounds is None and direction is None:
+            direction = Direction.reversible()
+        if direction is None and bounds is not None:
             direction = bounds.direction
+        if bounds is None and direction is not None:
+            bounds = Bounds(-float('inf'), float('inf')) if direction == Direction.reversible() else Bounds(0, float('inf'))
 
         self.__assert_name(name)
         self.__assert_members(reactants)
@@ -681,7 +689,7 @@ class Model(object):
     # TODO: This is not save() method. Don't use it for exporting the model! Create save() method
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
-        ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.find_effective_bounds()) for r in self.reactions))
+        ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.bounds) for r in self.reactions))
         ret += "-EXTERNAL METABOLITES\n{0}\n\n".format("\n".join(m.__repr__() for m in self.find_boundary_metabolites()))
         ret += "-OBJECTIVE\n{0}\n\n".format(self.objective)
         ret += "-DESIGN OBJECTIVE\n{0}\n\n".format(self.design_objective)

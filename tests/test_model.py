@@ -146,7 +146,7 @@ class TestReactionMember(TestCase):
 class TestReaction(TestCase):
     def test_new(self):
         name = "Burn"
-        bounds = Bounds(-10, float("Inf"))
+        bounds = Bounds(-10, Bounds.inf())
         direction = Direction.forward()
 
         m_2_Na = ReactionMember(Metabolite("Na"), 2)
@@ -175,11 +175,11 @@ class TestReaction(TestCase):
         self.assertEquals(r.direction, direction)
         self.assertEquals(r.bounds, bounds)
         self.assertEquals(r.find_effective_bounds().lb, 0)
-        self.assertEquals(r.find_effective_bounds().ub, float("Inf"))
+        self.assertEquals(r.find_effective_bounds().ub, Bounds.inf())
 
     def test_setters(self):
         name = "Burn"
-        bounds = Bounds(-10, float("Inf"))
+        bounds = Bounds(-10, Bounds.inf())
         direction = Direction.forward()
 
         m_2_Na = ReactionMember(Metabolite("Na"), 2)
@@ -220,7 +220,7 @@ class TestReaction(TestCase):
         m_2_NaOH = ReactionMember(Metabolite("NaOH"), 2)
         m_1_H2 = ReactionMember(Metabolite("H2"), 1)
 
-        r = R("r", m_2_Na + m_2_H2O, m_2_NaOH + m_1_H2, direction=fwd, bounds=Bounds(-10, float("Inf")))
+        r = R("r", m_2_Na + m_2_H2O, m_2_NaOH + m_1_H2, direction=fwd, bounds=Bounds(-10, Bounds.inf()))
         self.assertRaises(RuntimeError, r.reverse)
 
         r = R("r", m_2_Na + m_2_H2O, m_2_NaOH + m_1_H2, direction=fwd, bounds=Bounds(1, 10))
