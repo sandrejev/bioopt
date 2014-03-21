@@ -3,6 +3,7 @@ import sys,re
 import thread
 import itertools
 import warnings
+import copy
 
 def _is_number(s):
     try:
@@ -158,7 +159,6 @@ class ReactionMember(object):
         else:
             raise TypeError("Can only join ReactionMember objects")
 
-    # TODO: This is not save() method. Don't use it for exporting the model! Create save() method
     def __repr__(self):
         return "{0:.5g} {1}".format(self.coefficient, self.metabolite)
 
@@ -682,11 +682,96 @@ class Model(object):
     def find_boundary_metabolites(self):
         return [m for m in self.find_metabolites() if m.boundary]
 
+    @staticmethod
+    def commune(models, model_prefix="ML{0:04d}_", env_prefix="ENV_"):
+        model = Model()
+        for i, mod in enumerate(models):
+            mod_new = copy.deepcopy(mod)
+
+            env_reactions = []
+            for m in mod.find_boundary_metabolites():
+                m_in = copy.deepcopy(m)
+                m_in.name = model_prefix.format(i) + m.name
+                m_in.boundary = False
+
+                m_out = copy.deepcopy(m)
+                m_out.name = env_prefix + m.name
+                m_out.boundary = True
+
+                r_env = Reaction("R_" + env_prefix + model_prefix.format(i) + m.name, ReactionMemberList([ReactionMember(m_in, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.reversible())
+                env_reactions.append(r_env)
+
+            for r in mod_new.reactions:
+                r.name = model_prefix.format(i) + r.name
+
+            for m in mod_new.find_metabolites():
+                m.name = model_prefix.format(i) + m.name
+                m.boundary = False
+
+
+            model.reactions.extend(mod_new.reactions)
+            model.reactions.extend(env_reactions)
+
+        model.unify_references()
+
+        for m_out in model.find_boundary_metabolites():
+            m_out.boundary = False
+
+            m_ext = copy.deepcopy(m_out)
+            m_ext.name = "{0}xtX".format(m_ext.name)
+            m_ext.boundary = True
+
+            r_out = Reaction(m_out.name+"xtO", ReactionMemberList([ReactionMember(m_out, 1)]), ReactionMemberList([ReactionMember(m_ext, 1)]), Direction.forward())
+            model.reactions.append(r_out)
+
+            r_in = Reaction(m_out.name+"xtI", ReactionMemberList([ReactionMember(m_ext, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward())
+            model.reactions.append(r_in)
+
+
+        return model
+
     def __assert_objective(self, objective):
         if not (objective is None or isinstance(objective, MathExpression)):
             raise TypeError("Objective is not None or <MathExpression>: {0}".format(type(objective)))
 
-    # TODO: This is not save() method. Don't use it for exporting the model! Create save() method
+    def save(self, path=None):
+        ret = "-REACTIONS\n"
+        for r in self.reactions:
+            reactants = " + ".join("{0:.5g} {1}".format(m.coefficient, m.metabolite.name) for m in r.reactants)
+            products = " + ".join("{0:.5g} {1}".format(m.coefficient, m.metabolite.name) for m in r.products)
+            dir = "->" if r.direction is Direction.forward() else "<->"
+            ret += "{name}\t:\t{lhs} {dir} {rhs}".format(name=r.name, lhs=reactants, dir=dir, rhs=products) + "\n"
+        ret += "\n"
+
+        ret += "-CONSTRAINTS\n"
+        for r in self.reactions:
+            lb = -1000 if r.bounds.lb is -Bounds.inf() else r.bounds.lb
+            ub = 1000 if r.bounds.ub is -Bounds.inf() else r.bounds.ub
+            ret += "{0}\t[{1}, {2}]".format(r.name, lb, ub) + "\n"
+        ret += "\n"
+
+        ret += "-EXTERNAL METABOLITES\n"
+        for m in self.find_boundary_metabolites():
+            ret += m.name + "\n"
+        ret += "\n"
+
+        if self.objective:
+            ret += "-OBJECTIVE\n"
+            ret += str(self.objective)
+            ret += "\n\n"
+
+        if self.design_objective:
+            ret += "-DESIGN OBJECTIVE\n"
+            ret += str(self.design_objective)
+            ret += "\n\n"
+
+        if path:
+            f = open(path, 'w')
+            f.write(ret)
+            return f.close()
+        else:
+            return ret
+
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
         ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.bounds) for r in self.reactions))

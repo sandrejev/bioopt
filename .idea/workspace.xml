@@ -2,38 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="17af2f7c-6622-43bd-8a30-50b467d8af53" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bioopt_parser.py" afterPath="$PROJECT_DIR$/bioopt_parser.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bioopt_commune.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/model.py" afterPath="$PROJECT_DIR$/model.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_model.py" afterPath="$PROJECT_DIR$/tests/test_model.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_parser.py" afterPath="$PROJECT_DIR$/tests/test_parser.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/testing.iml" afterPath="$PROJECT_DIR$/.idea/testing.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="testing.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="X:/Cluster/bin/sp/mkdirs.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1368636071224" ignored="false" />
-    <file path="/mkdirs.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1368635991723" ignored="false" />
-    <file path="X:/Cluster/bin/sp/configuration.ini" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1368631223278" ignored="false" />
-    <file path="/configuration.ini" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1368630764364" ignored="false" />
-    <file path="X:/Cluster/bin/sp/copy_q.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1368631519764" ignored="false" />
-    <file path="/bioopt2optflux.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1371052019683" ignored="false" />
-    <file path="$PROJECT_DIR$/../UplcExport/report2table.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1371049357495" ignored="false" />
-    <file path="/model.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373619331863" ignored="false" />
-    <file path="/Python Console" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373616795961" ignored="false" />
-    <file path="/test_model.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373619379024" ignored="false" />
-    <file path="/test_network.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373462693943" ignored="false" />
-    <file path="$PROJECT_DIR$/../test_network.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373462693943" ignored="false" />
-    <file path="$PROJECT_DIR$/../test_create_DiGraph.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373463127788" ignored="false" />
-    <file path="$PROJECT_DIR$/../tests.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373569034248" ignored="false" />
-    <file path="/tests.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373568987896" ignored="false" />
-    <file path="$PROJECT_DIR$/../network_builder.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373615737514" ignored="false" />
-    <file path="/network_builder.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373615607397" ignored="false" />
-    <file path="/test_parser.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373619182572" ignored="false" />
-    <file path="/a.dummy" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373619337666" ignored="false" />
-    <file path="/Dummy.txt" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373535718469" ignored="false" />
-    <file path="/bioopt_parser.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373618202784" ignored="false" />
-    <file path="/fragment.py" changelist="17af2f7c-6622-43bd-8a30-50b467d8af53" time="1373618904500" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,20 +30,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test_parser.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="test_parser.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="309" column="12" selection-start="12491" selection-end="12491" vertical-scroll-proportion="0.30622837">
+            <state line="314" column="20" selection-start="12770" selection-end="12770" vertical-scroll-proportion="2.12" vertical-offset="5306" max-vertical-offset="5967">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="bioopt2optflux.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bioopt2optflux.py">
+      <file leaf-file-name="bioopt_commune.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/bioopt_commune.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="24" selection-start="1335" selection-end="1335" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="23" column="20" selection-start="738" selection-end="738" vertical-scroll-proportion="0.67741936" vertical-offset="34" max-vertical-offset="595">
+              <folding>
+                <element signature="e#0#27#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -74,7 +53,7 @@
       <file leaf-file-name="bioopt_parser.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="84" column="0" selection-start="3246" selection-end="3246" vertical-scroll-proportion="-7.6">
+            <state line="245" column="0" selection-start="9858" selection-end="9858" vertical-scroll-proportion="-4.627451" vertical-offset="3895" max-vertical-offset="5712">
               <folding />
             </state>
           </provider>
@@ -83,7 +62,7 @@
       <file leaf-file-name="model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="39" column="42" selection-start="782" selection-end="782" vertical-scroll-proportion="-8.16">
+            <state line="769" column="24" selection-start="25638" selection-end="25638" vertical-scroll-proportion="-1.6153846" vertical-offset="13031" max-vertical-offset="13532">
               <folding>
                 <element signature="e#22#35#0" expanded="true" />
               </folding>
@@ -94,7 +73,7 @@
       <file leaf-file-name="test_model.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="222" column="102" selection-start="8173" selection-end="8173" vertical-scroll-proportion="0.0">
+            <state line="298" column="8" selection-start="11646" selection-end="11646" vertical-scroll-proportion="-6.423077" vertical-offset="4899" max-vertical-offset="7242">
               <folding />
             </state>
           </provider>
@@ -110,7 +89,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/parser.py" />
         <option value="$PROJECT_DIR$/tests/test_test.py" />
         <option value="$PROJECT_DIR$/de/test_bounds.py" />
         <option value="$PROJECT_DIR$/src/__init__py.py" />
@@ -122,10 +100,11 @@
         <option value="$PROJECT_DIR$/Respiro_ferm_prep.bioopt" />
         <option value="C:/Python26/Lib/warnings.py" />
         <option value="$PROJECT_DIR$/bioopt2optflux.py" />
-        <option value="$PROJECT_DIR$/model.py" />
+        <option value="$PROJECT_DIR$/tests/test_parser.py" />
         <option value="$PROJECT_DIR$/bioopt_parser.py" />
         <option value="$PROJECT_DIR$/tests/test_model.py" />
-        <option value="$PROJECT_DIR$/tests/test_parser.py" />
+        <option value="$PROJECT_DIR$/model.py" />
+        <option value="$PROJECT_DIR$/bioopt_commune.py" />
       </list>
     </option>
   </component>
@@ -215,10 +194,6 @@
               <option name="myItemId" value="bioopt" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="model.py" />
-              <option name="myItemType" value="com.jetbrains.python.projectView.PyFileNode" />
-            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -230,17 +205,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="bioopt_parser.py" />
-              <option name="myItemType" value="com.jetbrains.python.projectView.PyFileNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="testing" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="bioopt" />
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -252,7 +217,7 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
-    <property name="options.lastSelected" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="options.lastSelected" value="com.jetbrains.python.configuration.PythonSdkConfigurable" />
     <property name="recentsLimit" value="5" />
     <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
@@ -262,14 +227,11 @@
     <property name="restartRequiresConfirmation" value="true" />
     <property name="FullScreen" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
-      <PyConsoleSettings />
-    </option>
-    <option name="myDjangoConsoleState">
       <PyConsoleSettings />
     </option>
   </component>
@@ -279,7 +241,7 @@
       <recent name="C:\Users\Aleksej\workspace\python\testing\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.All Tests">
+  <component name="RunManager" selected="Python.bioopt_commune">
     <configuration default="false" name="bioopt_parser" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -299,6 +261,51 @@
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PyDebugRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="testing" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="testToRun" value="" />
+      <option name="keywords" value="" />
+      <option name="params" value="" />
+      <option name="USE_PARAM" value="false" />
+      <option name="USE_KEYWORD" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="testing" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
       <method />
     </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -361,15 +368,34 @@
       <option name="USE_PATTERN" value="false" />
       <method />
     </configuration>
+    <configuration default="true" type="tests" factoryName="Attests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="testing" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
     <configuration default="false" name="bioopt2optflux" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="testing" />
@@ -380,15 +406,36 @@
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
+    <configuration default="false" name="bioopt_commune" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="testing" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="bioopt_commune.py" />
+      <option name="PARAMETERS" value="iAO358.bioopt SeediAZ_final.bioopt output.bioopt" />
+      <RunnerSettings RunnerId="PyDebugRunner" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
     <configuration default="false" name="Full parse" type="tests" factoryName="Unittests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONPATH" value="../.." />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="testing" />
@@ -413,7 +460,7 @@
       <envs>
         <env name="PYTHONPATH" value="../.." />
       </envs>
-      <option name="SDK_HOME" value="C:/Python27/python.exe" />
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -444,9 +491,9 @@
       <envs>
         <env name="PYTHONPATH" value="../.." />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="testing" />
@@ -473,9 +520,9 @@
       <envs>
         <env name="PYTHONPATH" value="../.." />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="testing" />
@@ -500,7 +547,7 @@
       <envs>
         <env name="PYTHONPATH" value="../.." />
       </envs>
-      <option name="SDK_HOME" value="C:/Python27/python.exe" />
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -517,18 +564,79 @@
       <option name="PUREUNITTEST" value="true" />
       <option name="PARAMS" value="" />
       <option name="USE_PARAM" value="false" />
+      <RunnerSettings RunnerId="PyDebugRunner" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="test_commune" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONPATH" value="../.." />
+      </envs>
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="testing" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_model.py" />
+      <option name="CLASS_NAME" value="TestModel" />
+      <option name="METHOD_NAME" value="test_commune" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <RunnerSettings RunnerId="PyDebugRunner" />
+      <RunnerSettings RunnerId="PythonRunner" />
+      <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="false" name="test_save" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONPATH" value="../.." />
+      </envs>
+      <option name="SDK_HOME" value="C:/Python26/python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="testing" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_model.py" />
+      <option name="CLASS_NAME" value="TestModel" />
+      <option name="METHOD_NAME" value="test_save" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_METHOD" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
-    <list size="7">
+    <list size="10">
       <item index="0" class="java.lang.String" itemvalue="Python.bioopt2optflux" />
-      <item index="1" class="java.lang.String" itemvalue="Python tests.Full parse" />
-      <item index="2" class="java.lang.String" itemvalue="Python tests.All Tests" />
-      <item index="3" class="java.lang.String" itemvalue="Python tests.test_missing_dobj" />
-      <item index="4" class="java.lang.String" itemvalue="Python tests.test_strip_comments" />
-      <item index="5" class="java.lang.String" itemvalue="Python tests.test_reverse" />
-      <item index="6" class="java.lang.String" itemvalue="Python.bioopt_parser" />
+      <item index="1" class="java.lang.String" itemvalue="Python.bioopt_commune" />
+      <item index="2" class="java.lang.String" itemvalue="Python.bioopt_parser" />
+      <item index="3" class="java.lang.String" itemvalue="Python tests.Full parse" />
+      <item index="4" class="java.lang.String" itemvalue="Python tests.All Tests" />
+      <item index="5" class="java.lang.String" itemvalue="Python tests.test_missing_dobj" />
+      <item index="6" class="java.lang.String" itemvalue="Python tests.test_strip_comments" />
+      <item index="7" class="java.lang.String" itemvalue="Python tests.test_reverse" />
+      <item index="8" class="java.lang.String" itemvalue="Python tests.test_commune" />
+      <item index="9" class="java.lang.String" itemvalue="Python tests.test_save" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
@@ -550,7 +658,7 @@
     <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
     <option name="FORCE_UPDATE" value="false" />
     <option name="IGNORE_EXTERNALS" value="false" />
-    <configuration useDefault="true">C:\Users\Alex\AppData\Roaming\Subversion</configuration>
+    <configuration useDefault="true">C:\Users\sandrejev\AppData\Roaming\Subversion</configuration>
     <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
     <supportedVersion>125</supportedVersion>
   </component>
@@ -558,20 +666,20 @@
     <option name="myMappingRoots">
       <list>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="Z:\Alex\transcriptome_metabolome\results\2013-07-07\bin\bioopt" />
-          <option name="myCopyRoot" value="Z:\Alex\transcriptome_metabolome\results\2013-07-07\bin\bioopt" />
+          <option name="myVcsRoot" value="D:\Users\sandrejev\Workspace\utils\trunk\python\bioopt" />
+          <option name="myCopyRoot" value="D:\Users\sandrejev\Workspace\utils\trunk\python\bioopt" />
         </SvnCopyRootSimple>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="Z:\Alex\transcriptome_metabolome\results\2013-07-07\bin\bioopt\.idea" />
-          <option name="myCopyRoot" value="Z:\Alex\transcriptome_metabolome\results\2013-07-07\bin\bioopt\.idea" />
+          <option name="myVcsRoot" value="D:\Users\sandrejev\Workspace\utils\trunk\python\bioopt\.idea" />
+          <option name="myCopyRoot" value="D:\Users\sandrejev\Workspace\utils\trunk\python\bioopt\.idea" />
         </SvnCopyRootSimple>
       </list>
     </option>
     <option name="myMoreRealMappingRoots">
       <list>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="Z:\Alex\transcriptome_metabolome\results\2013-07-07\bin\bioopt" />
-          <option name="myCopyRoot" value="Z:\Alex\transcriptome_metabolome\results\2013-07-07\bin\bioopt" />
+          <option name="myVcsRoot" value="D:\Users\sandrejev\Workspace\utils\trunk\python\bioopt" />
+          <option name="myCopyRoot" value="D:\Users\sandrejev\Workspace\utils\trunk\python\bioopt" />
         </SvnCopyRootSimple>
       </list>
     </option>
@@ -623,23 +731,24 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32940018" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32950193" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3284169" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32546705" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32471263" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.16862327" sideWeight="0.3423913" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22998933" sideWeight="0.6065217" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17449306" sideWeight="0.61848575" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3480826" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17447917" sideWeight="0.5296935" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34770116" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45326087" sideWeight="0.49839914" order="10" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.38151425" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.47030652" sideWeight="0.49786553" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22998933" sideWeight="0.6065217" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -651,62 +760,14 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="OFFER_MOVE_TO_ANOTHER_CHANGELIST_ON_PARTIAL_COMMIT" value="true" />
-    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="CHECK_NEW_TODO" value="true" />
     <option name="myTodoPanelSettings">
-      <value>
-        <are-packages-shown value="false" />
-        <are-modules-shown value="false" />
-        <flatten-packages value="false" />
-        <is-autoscroll-to-source value="false" />
-      </value>
+      <TodoPanelSettings />
     </option>
-    <option name="PERFORM_UPDATE_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_COMMIT_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
-    <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
-    <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="false" />
-    <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
-    <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
-    <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
-    <option name="DEFAULT_PATCH_EXTENSION" value="patch" />
-    <option name="SHORT_DIFF_HORIZONTALLY" value="true" />
-    <option name="SHORT_DIFF_EXTRA_LINES" value="2" />
-    <option name="SOFT_WRAPS_IN_SHORT_DIFF" value="true" />
-    <option name="INCLUDE_TEXT_INTO_PATCH" value="false" />
-    <option name="INCLUDE_TEXT_INTO_SHELF" value="false" />
-    <option name="SHOW_FILE_HISTORY_DETAILS" value="true" />
-    <option name="SHOW_VCS_ERROR_NOTIFICATIONS" value="true" />
-    <option name="SHOW_DIRTY_RECURSIVELY" value="false" />
-    <option name="LIMIT_HISTORY" value="true" />
-    <option name="MAXIMUM_HISTORY_ROWS" value="1000" />
-    <option name="UPDATE_FILTER_SCOPE_NAME" />
-    <option name="USE_COMMIT_MESSAGE_MARGIN" value="false" />
-    <option name="COMMIT_MESSAGE_MARGIN_SIZE" value="72" />
-    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
-    <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed __repr__ for Metabolite class and Model" />
-    <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
-    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
-    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
-    <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
-    <option name="FILE_HISTORY_DIALOG_COMMENTS_SPLITTER_PROPORTION" value="0.8" />
-    <option name="FILE_HISTORY_DIALOG_SPLITTER_PROPORTION" value="0.5" />
-    <option name="ACTIVE_VCS_NAME" />
-    <option name="UPDATE_GROUP_BY_PACKAGES" value="false" />
-    <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
-    <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
-    <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
-    <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
     <MESSAGE value="Parse reaction member" />
     <MESSAGE value="Test parsing when some one of the sections is missing" />
     <MESSAGE value="add __ne__ methods to accomodate __eq__ methods. Add __eq__ to Direction class" />
     <MESSAGE value="Changed __repr__ for Metabolite class and Model" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed __repr__ for Metabolite class and Model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -716,149 +777,134 @@
           <line>297</line>
           <option name="timeStamp" value="17" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/model.py</url>
+          <line>611</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/model.py</url>
+          <line>686</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="18" />
+      <option name="time" value="28" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="328" column="6" selection-start="13238" selection-end="13238" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bioopt2optflux.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="24" selection-start="1335" selection-end="1335" vertical-scroll-proportion="0.0">
+        <state line="42" column="24" selection-start="1335" selection-end="1335" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="27" selection-start="451" selection-end="451" vertical-scroll-proportion="0.0">
+        <state line="14" column="27" selection-start="451" selection-end="451" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="347" column="0" selection-start="9981" selection-end="10022" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#22#35#0" expanded="true" />
-          </folding>
+        <state line="347" column="0" selection-start="9981" selection-end="10022" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="183" column="0" selection-start="6670" selection-end="6670" vertical-scroll-proportion="0.0">
+        <state line="183" column="0" selection-start="6670" selection-end="6670" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="330" column="31" selection-start="13274" selection-end="13274" vertical-scroll-proportion="0.0">
+        <state line="330" column="31" selection-start="13274" selection-end="13274" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt2optflux.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="24" selection-start="1335" selection-end="1335" vertical-scroll-proportion="0.0">
+        <state line="42" column="24" selection-start="1335" selection-end="1335" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="325" column="42" selection-start="14486" selection-end="14526" vertical-scroll-proportion="0.0">
+        <state line="325" column="42" selection-start="14486" selection-end="14526" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="325" column="8" selection-start="9376" selection-end="9376" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#22#35#0" expanded="true" />
-          </folding>
+        <state line="325" column="8" selection-start="9376" selection-end="9376" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="198" column="25" selection-start="7258" selection-end="7302" vertical-scroll-proportion="0.0">
+        <state line="198" column="25" selection-start="7258" selection-end="7302" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="uml://Python/#Z:/Alex/transcriptome_metabolome/results/2013-07-07/bin/bioopt/model.py">
-      <provider selected="true" editor-type-id="UmlEditorProvider">
-        <state>
-          <ID>Python</ID>
-          <OriginalElement>#Z:/Alex/transcriptome_metabolome/results/2013-07-07/bin/bioopt/model.py</OriginalElement>
-          <nodes>
-            <node x="" y="">model.Reaction</node>
-            <node x="" y="">model.Bounds</node>
-            <node x="" y="">model.Operation</node>
-            <node x="" y="">model.Metabolite</node>
-            <node x="" y="">list</node>
-            <node x="" y="">model.ReactionMemberList</node>
-            <node x="" y="">model.Model</node>
-            <node x="" y="">object</node>
-            <node x="" y="">model.Direction</node>
-            <node x="" y="">model.MathExpression</node>
-            <node x="" y="">model.ReactionMember</node>
-          </nodes>
-          <notes />
-          <edges />
-          <settings layout="Hierarchic Group" zoom="0.6373886595698457" x="3014.0" y="478.0" />
-          <SelectedNodes />
-          <Categories>
-            <Category>Fields</Category>
-            <Category>Methods</Category>
-          </Categories>
-          <SCOPE>All</SCOPE>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pycharm/utrunner.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="143" column="0" selection-start="4341" selection-end="4341" vertical-scroll-proportion="0.8426966" vertical-offset="1872" max-vertical-offset="2635">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt2optflux.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="24" selection-start="1335" selection-end="1335" vertical-scroll-proportion="0.0">
+        <state line="10" column="39" selection-start="0" selection-end="1831" vertical-scroll-proportion="-5.44" vertical-offset="0" max-vertical-offset="1037">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="39" column="42" selection-start="782" selection-end="782" vertical-scroll-proportion="-8.16">
-          <folding>
-            <element signature="e#22#35#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="84" column="0" selection-start="3246" selection-end="3246" vertical-scroll-proportion="-7.6">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="222" column="102" selection-start="8173" selection-end="8173" vertical-scroll-proportion="0.0">
+        <state line="245" column="0" selection-start="9858" selection-end="9858" vertical-scroll-proportion="-4.627451" vertical-offset="3895" max-vertical-offset="5712">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_parser.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="309" column="12" selection-start="12491" selection-end="12491" vertical-scroll-proportion="0.30622837">
+        <state line="314" column="20" selection-start="12770" selection-end="12770" vertical-scroll-proportion="2.12" vertical-offset="5306" max-vertical-offset="5967">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="298" column="8" selection-start="11646" selection-end="11646" vertical-scroll-proportion="-6.423077" vertical-offset="4899" max-vertical-offset="7242">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="769" column="24" selection-start="25638" selection-end="25638" vertical-scroll-proportion="-1.6153846" vertical-offset="13031" max-vertical-offset="13532">
+          <folding>
+            <element signature="e#22#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bioopt_commune.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="20" selection-start="738" selection-end="738" vertical-scroll-proportion="0.67741936" vertical-offset="34" max-vertical-offset="595">
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

@@ -2,6 +2,7 @@ from unittest import TestCase
 from bioopt_parser import *
 from model import Metabolite as M
 from model import Reaction as R
+from model import Bounds as B
 from model import ReactionMemberList as RML
 from model import MathExpression as ME
 
@@ -343,3 +344,77 @@ class TestModel(TestCase):
 
         self.assertFalse(model.objective.operands[1] is r1)
         self.assertFalse(r1.reactants[1].metabolite is r2.reactants[1].metabolite)
+
+    def test_commune(self):
+        fwd = Direction.forward()
+        rev = Direction.reversible()
+
+        model1 = Model()
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=fwd, bounds=Bounds(-100, 100))
+        r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        model1.reactions = [r1, r2]
+        model2 = Model()
+        r3 = R("R1", 1*M("A"), 3*M("B"), direction=fwd, bounds=Bounds(-100, 100))
+        r4 = R("R1", 1*M("A"), 3*M("B"), direction=fwd, bounds=Bounds(-100, 100))
+        r5 = R("R1", 1*M("C"), 3*M("B"), direction=fwd, bounds=Bounds(-100, 100))
+        r6 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        model2.reactions = [r3, r4, r5, r6]
+        model3 = Model()
+        r7 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=fwd, bounds=Bounds(-100, 100))
+        r8 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        model3.reactions = [r7, r8]
+
+        com_model = Model.commune([model1, model2, model3])
+
+        com_model_true = Model()
+        com_model_true.reactions = [
+            R("ML0000_R1", 1*M("ML0000_A") + 1*M("ML0000_B"), 3*M("ML0000_C"), direction=fwd, bounds=B(-100, 100)),
+            R("ML0000_R2", 1*M("ML0000_B") + 1*M("ML0000_C"), 1*M("ML0000_E"), direction=rev, bounds=B(-100, 100)),
+            R("R_ENV_ML0000_E", 1*M("ML0000_E"), 1*M("ENV_E"), direction=rev),
+
+            R("ML0001_R1", 1*M("ML0001_A"), 3*M("ML0001_B"), direction=fwd, bounds=Bounds(-100, 100)),
+            R("ML0001_R1", 1*M("ML0001_A"), 3*M("ML0001_B"), direction=fwd, bounds=Bounds(-100, 100)),
+            R("ML0001_R1", 1*M("ML0001_C"), 3*M("ML0001_B"), direction=fwd, bounds=Bounds(-100, 100)),
+            R("ML0001_R2", 1*M("ML0001_B") + 1*M("ML0001_C"), 1*M("ML0001_E"), direction=rev, bounds=B(-100, 100)),
+            R("R_ENV_ML0001_E", 1*M("ML0001_E"), 1*M("ENV_E"), direction=rev),
+
+            R("ML0002_R1", 1*M("ML0002_A") + 1*M("ML0002_B"), 3*M("ML0002_C"), direction=fwd, bounds=B(-100, 100)),
+            R("ML0002_R2", 1*M("ML0002_B") + 1*M("ML0002_C"), 1*M("ML0002_E"), direction=rev, bounds=B(-100, 100)),
+            R("R_ENV_ML0002_E", 1*M("ML0002_E"), 1*M("ENV_E"), direction=rev),
+
+            R("ENV_ExtO", 1*M("ENV_E"), 1*M("ENV_ExtX", boundary=True), direction=fwd, bounds=B(0, B.inf())),
+            R("ENV_ExtI", 1*M("ENV_ExtX", boundary=True), 1*M("ENV_E"), direction=fwd, bounds=B(0, B.inf())),
+        ]
+        com_model_true.unify_references()
+
+        self.assertEquals(com_model, com_model_true)
+
+
+    def test_save(self):
+        model = Model()
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
+        r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        model.reactions = [r1, r2]
+        model.objective = ME(Operation.multiplication(), [R("R1"), 1, 1])
+        model.design_objective = ME(Operation.multiplication(), [R("R2"), R("R1"), 1])
+
+        expected = """-REACTIONS
+R1	:	1 A + 1 B -> 3 C
+R2	:	1 B + 1 C <-> 1 E
+
+-CONSTRAINTS
+R1	[-100, 100]
+R2	[-100, 100]
+
+-EXTERNAL METABOLITES
+E
+
+-OBJECTIVE
+R1 * 1 * 1
+
+-DESIGN OBJECTIVE
+R2 * R1 * 1
+
+"""
+        self.assertEquals(expected, model.save())
+
