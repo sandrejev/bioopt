@@ -370,17 +370,20 @@ class TestModel(TestCase):
         com_model_true.reactions = [
             R("ML0000_R1", 1*M("ML0000_A") + 1*M("ML0000_B"), 3*M("ML0000_C"), direction=fwd, bounds=B(-100, 100)),
             R("ML0000_R2", 1*M("ML0000_B") + 1*M("ML0000_C"), 1*M("ML0000_E"), direction=rev, bounds=B(-100, 100)),
-            R("R_ENV_ML0000_E", 1*M("ML0000_E"), 1*M("ENV_E"), direction=rev),
+            R("ML0000_OUT_E", 1*M("ML0000_E"), 1*M("ENV_E"), direction=fwd, bounds=B(0, B.inf())),
+            R("ML0000_IN_E", 1*M("ENV_E"), 1*M("ML0000_E"), direction=fwd, bounds=B(0, B.inf())),
 
             R("ML0001_R1", 1*M("ML0001_A"), 3*M("ML0001_B"), direction=fwd, bounds=Bounds(-100, 100)),
             R("ML0001_R1", 1*M("ML0001_A"), 3*M("ML0001_B"), direction=fwd, bounds=Bounds(-100, 100)),
             R("ML0001_R1", 1*M("ML0001_C"), 3*M("ML0001_B"), direction=fwd, bounds=Bounds(-100, 100)),
             R("ML0001_R2", 1*M("ML0001_B") + 1*M("ML0001_C"), 1*M("ML0001_E"), direction=rev, bounds=B(-100, 100)),
-            R("R_ENV_ML0001_E", 1*M("ML0001_E"), 1*M("ENV_E"), direction=rev),
+            R("ML0001_OUT_E", 1*M("ML0001_E"), 1*M("ENV_E"), direction=fwd, bounds=B(0, B.inf())),
+            R("ML0001_IN_E", 1*M("ENV_E"), 1*M("ML0001_E"), direction=fwd, bounds=B(0, B.inf())),
 
             R("ML0002_R1", 1*M("ML0002_A") + 1*M("ML0002_B"), 3*M("ML0002_C"), direction=fwd, bounds=B(-100, 100)),
             R("ML0002_R2", 1*M("ML0002_B") + 1*M("ML0002_C"), 1*M("ML0002_E"), direction=rev, bounds=B(-100, 100)),
-            R("R_ENV_ML0002_E", 1*M("ML0002_E"), 1*M("ENV_E"), direction=rev),
+            R("ML0002_OUT_E", 1*M("ML0002_E"), 1*M("ENV_E"), direction=fwd, bounds=B(0, B.inf())),
+            R("ML0002_IN_E", 1*M("ENV_E"), 1*M("ML0002_E"), direction=fwd, bounds=B(0, B.inf())),
 
             R("ENV_ExtO", 1*M("ENV_E"), 1*M("ENV_ExtX", boundary=True), direction=fwd, bounds=B(0, B.inf())),
             R("ENV_ExtI", 1*M("ENV_ExtX", boundary=True), 1*M("ENV_E"), direction=fwd, bounds=B(0, B.inf())),

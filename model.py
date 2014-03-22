@@ -698,8 +698,9 @@ class Model(object):
                 m_out.name = env_prefix + m.name
                 m_out.boundary = True
 
-                r_env = Reaction("R_" + env_prefix + model_prefix.format(i) + m.name, ReactionMemberList([ReactionMember(m_in, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.reversible())
-                env_reactions.append(r_env)
+                r_out = Reaction(model_prefix.format(i) + 'OUT_' + m.name, ReactionMemberList([ReactionMember(m_in, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward(), Bounds(0, Bounds.inf()))
+                r_in = Reaction(model_prefix.format(i) + 'IN_' + m.name, ReactionMemberList([ReactionMember(m_out, 1)]), ReactionMemberList([ReactionMember(m_in, 1)]), Direction.forward(), Bounds(0, Bounds.inf()))
+                env_reactions.extend([r_out, r_in])
 
             for r in mod_new.reactions:
                 r.name = model_prefix.format(i) + r.name

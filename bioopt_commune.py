@@ -8,6 +8,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Converts moel from bioopt format to optflux format')
     parser.add_argument('bioopt', action='store', nargs='+', help='Files containing bioopt models')
     parser.add_argument('output', action='store', help='Output file')
+    parser.add_argument('--block', '-b', dest="block", action='store', help='Regexp to block uptake of reactions')
 
     args = parser.parse_args()
 
@@ -25,6 +26,19 @@ if __name__ == "__main__":
 
     com_model = Model.commune(models)
     print "Community model created"
+
+    if args.block:
+        print "Blocking reactions: ",
+        block_re = re.compile(args.block)
+        blocked_rcount = 0
+        for r in com_model.reactions:
+            if block_re.match(r.name):
+                if blocked_rcount > 0:
+                    print ", ",
+                print r.name,
+                r.bounds = Bounds(0, 0)
+                blocked_rcount += 1
+        print ""
 
     com_model.save(args.output)
     print "File {0} written!".format(args.output)
