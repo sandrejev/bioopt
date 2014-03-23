@@ -683,7 +683,7 @@ class Model(object):
     def find_boundary_metabolites(self):
         return [m for m in self.find_metabolites() if m.boundary]
 
-    def max_bound(self):
+    def get_max_bound(self):
         mb = 0
         for r in self.reactions:
             lb = math.fabs(r.bounds.lb)
