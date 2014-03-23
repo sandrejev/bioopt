@@ -128,7 +128,7 @@ class BiooptParser(object):
         if m is None:
             raise SyntaxError("Could parse reaction constraint: {0}".format(constraint_text))
 
-        reaction_name, lb, ub =  m.groups()
+        reaction_name, lb, ub = m.groups()
         reaction_name = reaction_name.strip()
         bounds = Bounds(float(lb), float(ub))
 

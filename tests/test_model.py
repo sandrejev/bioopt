@@ -395,8 +395,8 @@ class TestModel(TestCase):
 
     def test_save(self):
         model = Model()
-        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=Bounds(-100, 100))
-        r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible(), bounds=Bounds(-100, 100))
+        r1 = R("R1", 1*M("A") + 1*M("B"), 3*M("C"), direction=Direction.forward(), bounds=B(-100, 100))
+        r2 = R("R2", 1*M("B") + 1*M("C"), 1*M("E", boundary=True), direction=Direction.reversible())
         model.reactions = [r1, r2]
         model.objective = ME(Operation.multiplication(), [R("R1"), 1, 1])
         model.design_objective = ME(Operation.multiplication(), [R("R2"), R("R1"), 1])
@@ -407,7 +407,7 @@ R2	:	1 B + 1 C <-> 1 E
 
 -CONSTRAINTS
 R1	[-100, 100]
-R2	[-100, 100]
+R2	[-1000, 1000]
 
 -EXTERNAL METABOLITES
 E

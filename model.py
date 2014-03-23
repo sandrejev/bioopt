@@ -4,6 +4,7 @@ import thread
 import itertools
 import warnings
 import copy
+import math
 
 def _is_number(s):
     try:
@@ -682,6 +683,19 @@ class Model(object):
     def find_boundary_metabolites(self):
         return [m for m in self.find_metabolites() if m.boundary]
 
+    def max_bound(self):
+        mb = 0
+        for r in self.reactions:
+            lb = math.fabs(r.bounds.lb)
+            if lb > mb:
+                mb = lb
+
+            ub = math.fabs(r.bounds.ub)
+            if ub > mb:
+                mb = ub
+
+        return mb
+
     @staticmethod
     def commune(models, model_prefix="ML{0:04d}_", env_prefix="ENV_"):
         model = Model()
@@ -728,14 +742,13 @@ class Model(object):
             r_in = Reaction(m_out.name+"xtI", ReactionMemberList([ReactionMember(m_ext, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward())
             model.reactions.append(r_in)
 
-
         return model
 
     def __assert_objective(self, objective):
         if not (objective is None or isinstance(objective, MathExpression)):
             raise TypeError("Objective is not None or <MathExpression>: {0}".format(type(objective)))
 
-    def save(self, path=None):
+    def save(self, path=None, inf=1000):
         ret = "-REACTIONS\n"
         for r in self.reactions:
             reactants = " + ".join("{0:.5g} {1}".format(m.coefficient, m.metabolite.name) for m in r.reactants)
@@ -746,8 +759,8 @@ class Model(object):
 
         ret += "-CONSTRAINTS\n"
         for r in self.reactions:
-            lb = -1000 if r.bounds.lb is -Bounds.inf() else r.bounds.lb
-            ub = 1000 if r.bounds.ub is -Bounds.inf() else r.bounds.ub
+            lb = -inf if r.bounds.lb == -Bounds.inf() else r.bounds.lb
+            ub = inf if r.bounds.ub == Bounds.inf() else r.bounds.ub
             ret += "{0}\t[{1}, {2}]".format(r.name, lb, ub) + "\n"
         ret += "\n"
 
