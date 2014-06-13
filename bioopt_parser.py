@@ -285,6 +285,7 @@ class BiooptParser(object):
             for m, i in self.__parse_external_metabolites_section(ext_m_text, filename=filename, section_start=ext_m_line):
                 if m.name in metabolites:
                     metabolites[m.name].boundary = True
+                    metabolites[m.name].order_boundary = i
                 elif react_text:
                     warnings.warn_explicit(
                         "Metabolite '{0}' from '{1}' section is not present in any reaction from '{2}' section".format(m.name, ext_m_name, react_name),

@@ -73,6 +73,7 @@ class Metabolite(object):
         self.__assert_boundary(boundary)
         self.__name = name
         self.__boundary = boundary
+        self.__order_boundary = 0
 
     @property
     def name(self):
@@ -91,6 +92,17 @@ class Metabolite(object):
     def boundary(self, boundary):
         self.__assert_boundary(boundary)
         self.__boundary = boundary
+
+    @property
+    def order_boundary(self):
+        return self.__order_boundary
+
+    @order_boundary.setter
+    def order_boundary(self, order_boundary):
+        if not _is_number(order_boundary):
+            raise TypeError("Display priority should be a number: {0}".format(type(order_boundary)))
+
+        self.__order_boundary = order_boundary
 
     def __eq__(self, other):
         return type(self) == type(other) and \
@@ -528,7 +540,8 @@ class MathExpression(object):
 
         return vars
 
-    def __format_var(self, var):
+    @staticmethod
+    def format_var(var):
         var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
         var = var.name if isinstance(var, (Reaction, Metabolite)) else var
 
@@ -539,11 +552,11 @@ class MathExpression(object):
 
     def __repr__(self, tree=False):
         if not tree:
-            return " {0} ".format(self.operation).join(str(self.__format_var(o)) for o in self.operands)
+            return " {0} ".format(self.operation).join(str(self.format_var(o)) for o in self.operands)
         else:
             operands = []
             for o in self.operands:
-                operands.append(o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__, self.__format_var(o)))
+                operands.append(o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__, self.format_var(o)))
 
             return "{0}(\n{1}\n)".format(
                 type(self).__name__,
@@ -751,8 +764,8 @@ class Model(object):
     def save(self, path=None, inf=1000):
         ret = "-REACTIONS\n"
         for r in self.reactions:
-            reactants = " + ".join("{0:.5g} {1}".format(m.coefficient, m.metabolite.name) for m in r.reactants)
-            products = " + ".join("{0:.5g} {1}".format(m.coefficient, m.metabolite.name) for m in r.products)
+            reactants = " + ".join("{0} {1}".format("" if abs(m.coefficient) == 1 else "{0:.5g}".format(m.coefficient), m.metabolite.name) for m in r.reactants)
+            products = " + ".join("{0} {1}".format("" if abs(m.coefficient) == 1 else "{0:.5g}".format(m.coefficient), m.metabolite.name) for m in r.products)
             dir = "->" if r.direction is Direction.forward() else "<->"
             ret += "{name}\t:\t{lhs} {dir} {rhs}".format(name=r.name, lhs=reactants, dir=dir, rhs=products) + "\n"
         ret += "\n"
@@ -761,22 +774,25 @@ class Model(object):
         for r in self.reactions:
             lb = -inf if r.bounds.lb == -Bounds.inf() else r.bounds.lb
             ub = inf if r.bounds.ub == Bounds.inf() else r.bounds.ub
-            ret += "{0}\t[{1}, {2}]".format(r.name, lb, ub) + "\n"
+            ret += "{0}\t[{1:.5g}, {2:.5g}]".format(r.name, lb, ub) + "\n"
         ret += "\n"
 
         ret += "-EXTERNAL METABOLITES\n"
-        for m in self.find_boundary_metabolites():
+
+        b_metabolites = self.find_boundary_metabolites()
+        b_metabolites = sorted(b_metabolites, key=lambda x: x.order_boundary)
+        for m in b_metabolites:
             ret += m.name + "\n"
         ret += "\n"
 
         if self.objective:
             ret += "-OBJECTIVE\n"
-            ret += str(self.objective)
+            ret += " ".join(str(MathExpression.format_var(o)) for o in self.objective.operands)
             ret += "\n\n"
 
         if self.design_objective:
             ret += "-DESIGN OBJECTIVE\n"
-            ret += str(self.design_objective)
+            ret += " ".join(str(MathExpression.format_var(o)) for o in self.design_objective.operands)
             ret += "\n\n"
 
         if path:
