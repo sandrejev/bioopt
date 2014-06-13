@@ -285,13 +285,14 @@ R2 R1 1
 """
         parser = BiooptParser()
         m = parser.parse(model_no_ext)
-        self.assertTrue(isinstance(m.find_metabolites("E"), Metabolite))
-        self.assertFalse(m.find_metabolites("E").boundary)
-        self.model.find_metabolites("E").boundary = False
+        self.assertTrue(isinstance(m.find_metabolites("E")[0], Metabolite))
+        self.assertTrue(isinstance(m.find_metabolite("E"), Metabolite))
+        self.assertFalse(m.find_metabolite("E").boundary)
+        self.model.find_metabolite("E").boundary = False
         self.assertEquals(self.model.reactions, m.reactions)
         self.assertEquals(self.model.objective, m.objective)
         self.assertEquals(self.model.design_objective, m.design_objective)
-        self.model.find_metabolites("E").boundary = True
+        self.model.find_metabolite("E").boundary = True
 
 
     def test_missing_constraints(self):
@@ -309,14 +310,18 @@ R2 R1 1
 
         parser = BiooptParser()
         m = parser.parse(model_no_const)
-        self.model.find_reactions("R1").bounds = Bounds(0, Bounds.inf())
-        self.model.find_reactions("R2").bounds = Bounds()
+        self.model.find_reactions("R1")[0].bounds = Bounds(0, Bounds.inf())
+        self.model.find_reactions("R2")[0].bounds = Bounds()
+        self.model.find_reaction("R1").bounds = Bounds(0, Bounds.inf())
+        self.model.find_reaction("R2").bounds = Bounds()
         self.assertEquals(self.model.reactions[0], m.reactions[0])
         self.assertEquals(self.model.reactions[1], m.reactions[1])
         self.assertEquals(self.model.objective, m.objective)
         self.assertEquals(self.model.design_objective, m.design_objective)
-        self.model.find_reactions("R1").bounds = Bounds(-100, 100)
-        self.model.find_reactions("R2").bounds = Bounds(-100, 100)
+        self.model.find_reactions("R1")[0].bounds = Bounds(-100, 100)
+        self.model.find_reactions("R2")[0].bounds = Bounds(-100, 100)
+        self.model.find_reaction("R1").bounds = Bounds(-100, 100)
+        self.model.find_reaction("R2").bounds = Bounds(-100, 100)
 
     def test_missing_reactions(self):
         model_no_reactions = """

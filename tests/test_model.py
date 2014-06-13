@@ -402,8 +402,8 @@ class TestModel(TestCase):
         model.design_objective = ME(Operation.multiplication(), [R("R2"), R("R1"), 1])
 
         expected = """-REACTIONS
-R1	:	1 A + 1 B -> 3 C
-R2	:	1 B + 1 C <-> 1 E
+R1	:	A + B -> 3 C
+R2	:	B + C <-> E
 
 -CONSTRAINTS
 R1	[-100, 100]
@@ -413,10 +413,10 @@ R2	[-1000, 1000]
 E
 
 -OBJECTIVE
-R1 * 1 * 1
+R1 1 1
 
 -DESIGN OBJECTIVE
-R2 * R1 * 1
+R2 R1 1
 
 """
         self.assertEquals(expected, model.save())

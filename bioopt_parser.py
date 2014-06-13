@@ -12,10 +12,16 @@ class BiooptParser(object):
         self.re_member = r"(\(?(" + self.re_number + r") *\)? +)?(.*)"
 
     def parse_file(self, path):
+        """
+        :rtype: Model
+        """
         f = open(path, "r")
         return self.__parse(f.read(), filename=path)
 
     def parse_reactions_section(self, section_text):
+        """
+        :rtype: list of Reaction
+        """
         return list(r for r, i in self.__parse_reactions_section(section_text))
 
     def __parse_reactions_section(self, section_text, filename=None, section_start=0):
@@ -25,6 +31,9 @@ class BiooptParser(object):
         return self.__parse_section(section_text, self.parse_reaction, filename=filename, section_start=section_start)
 
     def parse_reaction_member(self, member_str):
+        """
+        :rtype: ReactionMember
+        """
         if not isinstance(member_str, str):
             raise TypeError("Reaction member string is not of type string")
 
@@ -42,6 +51,9 @@ class BiooptParser(object):
         return ReactionMember(Metabolite(name), coef)
 
     def parse_reaction_member_list(self, list_str):
+        """
+        :rtype: ReactionMemberList
+        """
         if not isinstance(list_str, str):
             raise TypeError("Reaction member list string is not of type string")
 
@@ -55,6 +67,9 @@ class BiooptParser(object):
         return members
 
     def parse_reaction(self, line):
+        """
+        :rtype: Reaction
+        """
         if not isinstance(line, str):
             raise TypeError("Reaction line was not a string")
 
@@ -119,6 +134,9 @@ class BiooptParser(object):
         return output_line, multiline_comment
 
     def parse_constraint(self, constraint_text):
+        """
+        :rtype: Bounds
+        """
         constraint_text, multiline_comment = self.strip_comments(constraint_text, False)
 
         re_bounds = "\[\s*(" + self.re_number + r")\s*,\s*(" + self.re_number + r")\s*\]"
@@ -135,6 +153,9 @@ class BiooptParser(object):
         return Reaction(reaction_name, ReactionMemberList(), ReactionMemberList(), bounds.direction, bounds)
 
     def parse_constraints_section(self, section_text):
+        """
+        :rtype: list of Bounds
+        """
         return list(c for c, i in self.__parse_constraints_section(section_text))
 
     def __parse_constraints_section(self, section_text, filename=None, section_start=0):
@@ -144,6 +165,9 @@ class BiooptParser(object):
         return self.__parse_section(section_text, self.parse_constraint, filename=filename, section_start=section_start)
 
     def parse_objective_section_line(self, objective_line):
+        """
+        :rtype: MathExpression
+        """
         parts = re.split(r"\s+", objective_line)
         if not parts:
             raise SyntaxError("Could not parse objective section line: {0}".format(objective_line))
@@ -163,6 +187,9 @@ class BiooptParser(object):
             return MathExpression(Operation.multiplication(), parsed_parts)
 
     def parse_objective_section(self, section_text):
+        """
+        :rtype: MathExpression
+        """
         return self.__parse_objective_section(section_text)
 
     def __parse_objective_section(self, section_text, filename=None, section_start=0, reactions=None, section_name="-DESIGN OBJECTIVE/-OBJECTIVE", reactions_section_name="-REACTIONS"):
@@ -186,6 +213,9 @@ class BiooptParser(object):
 
 
     def parse_external_metabolites_section(self, section_text):
+        """
+        :rtype: list of Metabolite
+        """
         return list(e for e, i in self.__parse_external_metabolites_section(section_text))
 
     def __parse_external_metabolites_section(self, section_text, filename=None, section_start=0):
@@ -242,6 +272,9 @@ class BiooptParser(object):
         return None, None, None
 
     def parse(self, text):
+        """
+        :rtype: Model
+        """
         return self.__parse(text)
 
     def __parse(self, text, filename=None):
@@ -309,25 +342,3 @@ class BiooptParser(object):
         model.unify_reaction_references()
 
         return model
-
-if __name__ == "__main__":
-    parser = BiooptParser()
-    models = ["Respiro_ferm_prep.bioopt", "iAG612.bioopt", "X:/Joana/Bioopt models/Rich20/rich20MbarkeriiAF692.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richaeroEcoliWmodified.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richbacillus_Oh.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richchloroflexi.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richclostridiumbeijerinckiiANAER.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richEcoliiAF1260_ANAEROBIC.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richKLEBSIELLA.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richpseudomonasaerob.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richpyloriIT341aerobe.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richsalmonella.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richSaureusaerobiciSB619.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richshewanella.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richsynecho.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richthermotogaanaer.bioopt",
-              "X:/Joana/Bioopt models/Rich20/richtuberculosisiNJ661aerobe.bioopt"]
-
-    for path in models:
-        print "Parsing '{0}'".format(path)
-        model = parser.parse_file(path)

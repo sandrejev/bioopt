@@ -39,6 +39,9 @@ class Bounds(object):
 
     @property
     def direction(self):
+        """
+        :rtype: Direction
+        """
         return Direction.forward() if self.lb >= 0 else Direction.reversible()
 
     @staticmethod
@@ -146,6 +149,9 @@ class ReactionMember(object):
 
     @property
     def metabolite(self):
+        """
+        :rtype: Metabolite
+        """
         return self.__metabolite
 
     @metabolite.setter
@@ -240,6 +246,9 @@ class Direction(object):
 
 class ReactionMemberList(list):
     def find_member(self, name):
+        """
+        :rtype: ReactionMember
+        """
         for mb in self:
             if mb.metabolite.name == name:
                 return mb
@@ -319,6 +328,9 @@ class Reaction(object):
 
     @property
     def reactants(self):
+        """
+        :rtype: ReactionMemberList
+        """
         return self.__reactants
 
     @reactants.setter
@@ -334,6 +346,9 @@ class Reaction(object):
 
     @property
     def products(self):
+        """
+        :rtype: ReactionMemberList
+        """
         return self.__products
 
     @products.setter
@@ -355,6 +370,9 @@ class Reaction(object):
 
     @property
     def bounds(self):
+        """
+        :rtype: Bounds
+        """
         return self.__bounds
 
     @bounds.setter
@@ -363,6 +381,9 @@ class Reaction(object):
         self.__bounds = bounds
 
     def find_effective_bounds(self):
+        """
+        :rtype: Bounds
+        """
         lb = 0 if self.__direction == Direction.forward() and self.__bounds.lb < 0 else self.__bounds.lb
         ub = self.__bounds.ub
 
@@ -471,22 +492,37 @@ class Operation(object):
 
     @staticmethod
     def addition():
+        """
+        :rtype: Operation
+        """
         return Operation.__create_singleton(False, "+", Operation.__addition)
 
     @staticmethod
     def subtraction():
+        """
+        :rtype: Operation
+        """
         return Operation.__create_singleton(False, "-", Operation.__subtraction)
 
     @staticmethod
     def multiplication():
+        """
+        :rtype: Operation
+        """
         return Operation.__create_singleton(False, "*", Operation.__multiplication)
 
     @staticmethod
     def division():
+        """
+        :rtype: Operation
+        """
         return Operation.__create_singleton(False, "/", Operation.__division)
 
     @staticmethod
     def negation():
+        """
+        :rtype: Operation
+        """
         return Operation.__create_singleton(True, "-", Operation.__negation)
 
     def __repr__(self):
@@ -502,6 +538,9 @@ class MathExpression(object):
 
     @property
     def operation(self):
+        """
+        :rtype: Operation
+        """
         return self.__operation
 
     @operation.setter
@@ -588,6 +627,9 @@ class Model(object):
 
     @property
     def reactions(self):
+        """
+        :rtype: list of Reaction
+        """
         return self.__reactions
 
     @reactions.setter
@@ -597,6 +639,9 @@ class Model(object):
 
     @property
     def objective(self):
+        """
+        :rtype: list of MathExpression
+        """
         return self.__objective
 
     @objective.setter
@@ -606,6 +651,9 @@ class Model(object):
 
     @property
     def design_objective(self):
+        """
+        :rtype: list of MathExpression
+        """
         return self.__design_objective
 
     @design_objective.setter
@@ -613,11 +661,23 @@ class Model(object):
         self.__assert_objective(design_objective)
         self.__design_objective = design_objective
 
-    # TODO: test and test find_metabolites
-    # TODO: Test with no reaction section. Reaction present in objective section should be accessible
+    def find_reaction(self, names=None):
+        """
+        :rtype: Reaction
+        """
+        r = self.find_reactions(names)
+        if len(r) > 1:
+            warnings.warn("Found {0} reactions corresponding to name '{1}'. Returning first!".format(len(r), names), RuntimeWarning)
+
+        return r[0] if len(r) else None
+
+
     def find_reactions(self, names=None):
+        """
+        :rtype: list of Reaction
+        """
         if not self.reactions:
-            return None
+            return []
 
         import collections
         if names is None:
@@ -625,7 +685,7 @@ class Model(object):
         elif isinstance(names, str):
             for r in self.reactions:
                 if r.name == names:
-                    return r
+                    return [r]
             return None
         elif isinstance(names, collections.Iterable):
             names = set(names)
@@ -667,9 +727,23 @@ class Model(object):
                 elif isinstance(o, Reaction):
                     expression.operands[i] = reactions[o.name]
 
+
+    def find_metabolite(self, names=None):
+        """
+        :rtype: Reaction
+        """
+        m = self.find_metabolites(names)
+        if len(m) > 1:
+            warnings.warn("Found {0} metabolites corresponding to name '{1}'. Returning first!".format(len(m), names), RuntimeWarning)
+
+        return m[0] if len(m) else None
+
     # TODO: Test with multiple instances of the same metabolite (result should contain two instances)
     # TODO: Test with no reaction section. Metabolite present in ext. metabolites should be accessible
     def find_metabolites(self, names=None):
+        """
+        :rtype: list of Metabolite
+        """
         metabolites_set = set()
         metabolites = []
         for r in self.reactions:
@@ -684,8 +758,8 @@ class Model(object):
         elif isinstance(names, str):
             for m in metabolites:
                 if m.name == names:
-                    return m
-            return None
+                    return [m]
+            return []
         elif isinstance(names, collections.Iterable):
             names = set(names)
             return [m for m in metabolites if m.name in names]
@@ -694,6 +768,9 @@ class Model(object):
 
 
     def find_boundary_metabolites(self):
+        """
+        :rtype: list of Metabolite
+        """
         return [m for m in self.find_metabolites() if m.boundary]
 
     def get_max_bound(self):
@@ -764,8 +841,8 @@ class Model(object):
     def save(self, path=None, inf=1000):
         ret = "-REACTIONS\n"
         for r in self.reactions:
-            reactants = " + ".join("{0} {1}".format("" if abs(m.coefficient) == 1 else "{0:.5g}".format(m.coefficient), m.metabolite.name) for m in r.reactants)
-            products = " + ".join("{0} {1}".format("" if abs(m.coefficient) == 1 else "{0:.5g}".format(m.coefficient), m.metabolite.name) for m in r.products)
+            reactants = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.reactants)
+            products = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.products)
             dir = "->" if r.direction is Direction.forward() else "<->"
             ret += "{name}\t:\t{lhs} {dir} {rhs}".format(name=r.name, lhs=reactants, dir=dir, rhs=products) + "\n"
         ret += "\n"
