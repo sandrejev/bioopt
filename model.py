@@ -686,7 +686,7 @@ class Model(object):
             for r in self.reactions:
                 if r.name == names:
                     return [r]
-            return None
+            return []
         elif isinstance(names, collections.Iterable):
             names = set(names)
             return [r for r in self.reactions if r.name in names]

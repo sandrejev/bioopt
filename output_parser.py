@@ -96,7 +96,7 @@ def fmax(data, name):
 
 def r_str(model, r):
     from math import isinf
-    r = model.find_reactions(r)
+    r = model.find_reaction(r)
     lb = r.bounds.lb
     ub = r.bounds.ub
 

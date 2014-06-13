@@ -338,7 +338,6 @@ class BiooptParser(object):
         else:
             warnings.warn("Could not find '-DESIGN OBJECTIVE' section", BiooptParseWarning)
 
-
         model.unify_reaction_references()
 
         return model
