@@ -278,6 +278,8 @@ class BiooptParser(object):
         return self.__parse(text)
 
     def __parse(self, text, filename=None):
+        text = text.replace("\r\n", "\n")
+        text = text.replace("\r", "\n")
         sections = self.find_sections(text)
 
         model = Model()
