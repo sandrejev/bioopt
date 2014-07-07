@@ -879,6 +879,111 @@ class Model(object):
         else:
             return ret
 
+    def sbml(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000):
+        """@type : libsbml.SBMLDocument"""
+
+        import libsbml
+        doc = libsbml.SBMLDocument(level, version)
+        model = doc.createModel()
+
+        unit_definition = model.createUnitDefinition()
+        unit_definition.setId("mmol_per_gDW_per_hr")
+        mole = unit_definition.createUnit()
+        mole.setKind(libsbml.UNIT_KIND_MOLE)
+        mole.setScale(-3)
+
+        second = unit_definition.createUnit()
+        second.setKind(libsbml.UNIT_KIND_SECOND)
+        second.setMultiplier(0.00027778)
+        second.setExponent(-1)
+
+
+        if compartment_pattern:
+            compartment_pattern = re.compile(compartment_pattern)
+
+        c_dict = {}
+        m_dict = {}
+
+        class IdMap:
+            def __init__(self, id, name):
+                self.id = id
+                self.name = name
+
+        for i, m in enumerate(self.find_metabolites(), start=1):
+            if compartment_pattern:
+                c_pattern_res = compartment_pattern.search(m.name)
+                if c_pattern_res:
+                    c_name = c_pattern_res.group(1)
+                else:
+                    raise ValueError("Metabolite '{0}' doesn't match compartment pattern".format(m.name))
+            else:
+                c_name = "cell"
+
+            if c_name not in c_dict:
+                c_dict[c_name] = IdMap("C_{0:04d}".format(len(c_dict)), c_name)
+                compartment = model.createCompartment()
+                compartment.setId(c_dict[c_name].id)
+                compartment.setName(c_dict[c_name].name)
+
+            m_dict[m.name] = IdMap("M_{0:04d}".format(i), m.name)
+            species = model.createSpecies()
+            species.setId(m_dict[m.name].id)
+            species.setName(m_dict[m.name].name)
+            species.setBoundaryCondition(m.boundary)
+            species.setCompartment(c_dict[c_name].id)
+            species.setInitialAmount(0)
+
+        for i, r in enumerate(self.reactions, start=1):
+            r_id = "R_{0:04d}".format(i)
+
+            reaction = model.createReaction()
+            reaction.setId(r_id)
+            reaction.setName(r.name)
+            reaction.setCompartment(compartment.getId())
+            reaction.setReversible(r.direction == Direction.reversible())
+
+            for rm in r.reactants:
+                reactant = reaction.createReactant()
+                reactant.setSpecies(m_dict[rm.metabolite.name].id)
+                reactant.setStoichiometry(rm.coefficient)
+
+            for rm in r.products:
+                product = reaction.createProduct()
+                product.setSpecies(m_dict[rm.metabolite.name].id)
+                product.setStoichiometry(rm.coefficient)
+
+            law = reaction.createKineticLaw()
+
+            ast_flux = libsbml.ASTNode(libsbml.AST_NAME)
+            ast_flux.setName("FLUX_VALUE")
+            law.setMath(ast_flux)
+
+            lower_bound = law.createParameter()
+            lower_bound.setId("{0}_LB".format(r_id))
+            lower_bound.setName("LOWER_BOUND")
+            lower_bound.setUnits("mmol_per_gDW_per_hr")
+            lower_bound.setValue(r.bounds.lb if abs(r.bounds.lb) != Bounds.inf() else math.copysign(inf, r.bounds.lb))
+
+            upper_bound = law.createParameter()
+            upper_bound.setId("{0}_UB".format(r_id))
+            upper_bound.setName("UPPER_BOUND")
+            upper_bound.setUnits("mmol_per_gDW_per_hr")
+            upper_bound.setValue(r.bounds.ub if abs(r.bounds.ub) != Bounds.inf() else math.copysign(inf, r.bounds.ub))
+
+            objective = law.createParameter()
+            objective.setId("{0}_OBJ".format(r_id))
+            objective.setName("OBJECTIVE_COEFFICIENT")
+            objective.setUnits("dimensionless")
+            objective.setValue(0)
+
+            flux = law.createParameter()
+            flux.setId("FLUX_VALUE")
+            flux.setName("FLUX_VALUE")
+            flux.setUnits("mmol_per_gDW_per_hr")
+            flux.setValue(0)
+
+        return doc
+
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
         ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.bounds) for r in self.reactions))

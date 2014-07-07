@@ -421,3 +421,25 @@ R2 R1 1
 """
         self.assertEquals(expected, model.save())
 
+
+    def test_sbml(self):
+        fwd = Direction.forward()
+        rev = Direction.reversible()
+
+        A = M("A_c")
+        B = M("B_c")
+        C = M("C_e")
+        E = M("E_e", boundary=True)
+
+        model = Model()
+        model.reactions = [
+            R("R1", 1*A, 3*B, direction=fwd, bounds=Bounds(-100, 100)),
+            R("R2", 1*C, 3*B, direction=fwd, bounds=Bounds(-100, 100)),
+            R("R3", 1*B + 1*C, 1*E, direction=Direction.reversible(), bounds=Bounds(-100, 100))]
+
+        import libsbml
+        sbml = model.sbml()
+        sbml_export = libsbml.writeSBMLToString(sbml)
+
+        doc = libsbml.readSBMLFromString(sbml_export)
+        self.assertEquals(0, doc.getNumErrors())

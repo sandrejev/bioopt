@@ -3,9 +3,6 @@ import argparse
 import numpy as np
 
 
-def bioopt2optflux(model):
-    pass
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Converts moel from bioopt format to optflux format')
     parser.add_argument('bioopt', action='store', help='File containing bioopt model')
