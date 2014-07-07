@@ -455,14 +455,14 @@ R2 R1 1
       </unitDefinition>
     </listOfUnitDefinitions>
     <listOfCompartments>
-      <compartment id="C_0000" name="c"/>
-      <compartment id="C_0001" name="e"/>
+      <compartment id="C_0001" name="c"/>
+      <compartment id="C_0002" name="e"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="M_0001" name="A_c" compartment="C_0000" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0002" name="B_c" compartment="C_0000" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0003" name="C_e" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0004" name="E_e" compartment="C_0001" initialAmount="0" boundaryCondition="true"/>
+      <species id="M_0001" name="A_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0002" name="B_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0003" name="C_e" compartment="C_0002" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0004" name="E_e" compartment="C_0002" initialAmount="0" boundaryCondition="true"/>
     </listOfSpecies>
     <listOfReactions>
       <reaction id="R_0001" name="R1" reversible="false">

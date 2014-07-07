@@ -879,7 +879,7 @@ class Model(object):
         else:
             return ret
 
-    def sbml(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000):
+    def sbml(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto", metabolite_id="auto", compartment_id="auto"):
         """@type : libsbml.SBMLDocument"""
 
         import libsbml
@@ -920,12 +920,14 @@ class Model(object):
                 c_name = "cell"
 
             if c_name not in c_dict:
-                c_dict[c_name] = IdMap("C_{0:04d}".format(len(c_dict)), c_name)
+                c_id = "C_{0:04d}".format(len(c_dict)+1) if compartment_id == "auto" else c_name
+                c_dict[c_name] = IdMap(c_id, c_name)
                 compartment = model.createCompartment()
                 compartment.setId(c_dict[c_name].id)
                 compartment.setName(c_dict[c_name].name)
 
-            m_dict[m.name] = IdMap("M_{0:04d}".format(i), m.name)
+            m_id = "M_{0:04d}".format(i) if metabolite_id == "auto" else m.name
+            m_dict[m.name] = IdMap(m_id, m.name)
             species = model.createSpecies()
             species.setId(m_dict[m.name].id)
             species.setName(m_dict[m.name].name)
@@ -934,7 +936,7 @@ class Model(object):
             species.setInitialAmount(0)
 
         for i, r in enumerate(self.reactions, start=1):
-            r_id = "R_{0:04d}".format(i)
+            r_id = "R_{0:04d}".format(i) if reaction_id == "auto" else r.name
 
             reaction = model.createReaction()
             reaction.setId(r_id)
@@ -975,6 +977,9 @@ class Model(object):
             objective.setName("OBJECTIVE_COEFFICIENT")
             objective.setUnits("dimensionless")
             objective.setValue(0)
+            o = self.objective is not None and self.objective.operands is not None and len(self.objective.operands) and \
+                r in self.objective.operands
+            objective.setValue(int(o))
 
             flux = law.createParameter()
             flux.setId("FLUX_VALUE")
