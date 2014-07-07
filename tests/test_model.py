@@ -421,21 +421,20 @@ R2 R1 1
 """
         self.assertEquals(expected, model.save())
 
-
     def test_sbml(self):
         fwd = Direction.forward()
         rev = Direction.reversible()
 
-        A = M("A_c")
-        B = M("B_c")
-        C = M("C_e")
-        E = M("E_e", boundary=True)
+        a = M("A_c")
+        b = M("B_c")
+        c = M("C_e")
+        e = M("E_e", boundary=True)
 
         model = Model()
         model.reactions = [
-            R("R1", 1*A, 3*B, direction=fwd, bounds=Bounds(-100, 100)),
-            R("R2", 1*C, 3*B, direction=fwd, bounds=Bounds(-100, 100)),
-            R("R3", 1*B + 1*C, 1*E, direction=Direction.reversible(), bounds=Bounds(-100, 100))]
+            R("R1", 1*a, 3*b, direction=fwd, bounds=Bounds(-100, 100)),
+            R("R2", 1*c, 3*b, direction=fwd, bounds=Bounds(-100, 100)),
+            R("R3", 1*b + 1*c, 1*e, direction=rev, bounds=Bounds(-100, 100))]
 
         import libsbml
         sbml = model.sbml()
@@ -443,3 +442,91 @@ R2 R1 1
 
         doc = libsbml.readSBMLFromString(sbml_export)
         self.assertEquals(0, doc.getNumErrors())
+
+        exp_export = """<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version3" level="2" version="3">
+  <model>
+    <listOfUnitDefinitions>
+      <unitDefinition id="mmol_per_gDW_per_hr">
+        <listOfUnits>
+          <unit kind="mole" scale="-3"/>
+          <unit kind="second" exponent="-1" multiplier="0.00027778"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="C_0000" name="c"/>
+      <compartment id="C_0001" name="e"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="M_0001" name="A_c" compartment="C_0000" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0002" name="B_c" compartment="C_0000" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0003" name="C_e" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0004" name="E_e" compartment="C_0001" initialAmount="0" boundaryCondition="true"/>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction id="R_0001" name="R1" reversible="false">
+        <listOfReactants>
+          <speciesReference species="M_0001" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_0002" stoichiometry="3"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="R_0001_LB" name="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="R_0001_UB" name="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="R_0001_OBJ" name="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="FLUX_VALUE" name="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_0002" name="R2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="M_0003" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_0002" stoichiometry="3"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="R_0002_LB" name="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="R_0002_UB" name="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="R_0002_OBJ" name="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="FLUX_VALUE" name="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+      <reaction id="R_0003" name="R3" reversible="true">
+        <listOfReactants>
+          <speciesReference species="M_0002" stoichiometry="1"/>
+          <speciesReference species="M_0003" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_0004" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="R_0003_LB" name="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="R_0003_UB" name="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="R_0003_OBJ" name="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="FLUX_VALUE" name="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
+"""
+
+
+        self.assertEquals(exp_export, sbml_export)

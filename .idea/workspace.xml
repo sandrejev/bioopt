@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17af2f7c-6622-43bd-8a30-50b467d8af53" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/bioopt2sbml.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/sandrejev.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/sandrejev.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/sandrejev.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_model.py" afterPath="$PROJECT_DIR$/tests/test_model.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="testing.iws" />
@@ -106,8 +106,8 @@
       <file leaf-file-name="test_model.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tests/test_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5325" vertical-offset="7165" max-vertical-offset="7565">
-              <caret line="440" column="27" selection-start-line="440" selection-start-column="27" selection-end-line="440" selection-end-column="27" />
+            <state vertical-scroll-proportion="0.375" vertical-offset="6106" max-vertical-offset="9044">
+              <caret line="374" column="0" selection-start-line="374" selection-start-column="0" selection-end-line="374" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -145,6 +145,7 @@
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
       <list>
+        <option value="Sergej Andrejev" />
         <option value="sandrejev" />
       </list>
     </option>
@@ -820,7 +821,11 @@
       <created>1404758907849</created>
       <updated>1404758907849</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Add stand-alone script to convert bioopt file to sbml file">
+      <created>1404758961741</created>
+      <updated>1404758961741</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -891,7 +896,8 @@
     <MESSAGE value="Changed __repr__ for Metabolite class and Model" />
     <MESSAGE value="Remove EMBL cluster configuration script" />
     <MESSAGE value="Add functionality to convert from bioopt to libsbml model" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add functionality to convert from bioopt to libsbml model" />
+    <MESSAGE value="Add stand-alone script to convert bioopt file to sbml file" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add stand-alone script to convert bioopt file to sbml file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1269,8 +1275,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5325" vertical-offset="7165" max-vertical-offset="7565">
-          <caret line="440" column="27" selection-start-line="440" selection-start-column="27" selection-end-line="440" selection-end-column="27" />
+        <state vertical-scroll-proportion="0.375" vertical-offset="6106" max-vertical-offset="9044">
+          <caret line="374" column="0" selection-start-line="374" selection-start-column="0" selection-end-line="374" selection-end-column="0" />
           <folding />
         </state>
       </provider>
