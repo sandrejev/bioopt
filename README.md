@@ -1,4 +1,6 @@
 bioopt
 ======
 
-Library for parsin bioopt format
+Library for parsing bioopt format
+
+
