@@ -971,8 +971,6 @@ class Model(object):
             r_id = self.__getValidSbmlId("R_" + ("{0:04d}".format(i) if reaction_id == "auto" else r.name), r_dict.keys())
             r_dict[r.name] = IdMap(r_id, r.name)
 
-            print r_dict[r.name].id
-
             reaction = model.createReaction()
             reaction.setId(r_dict[r.name].id)
             reaction.setName(r.name)
