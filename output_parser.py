@@ -10,6 +10,7 @@ class FbaParser(object):
         self.__stdout = None
         self.status = "Infeasible"
         self.objective = float("nan")
+        self.turnovers = []
         self.data = []
 
     def run(self, cmd):
@@ -22,9 +23,38 @@ class FbaParser(object):
         self.status = s['status']
         self.objective = s['objective']
         self.data = self.__parse_fluxes()
+        self.turnovers = self.__parse_turnovers()
+
+    def __parse_turnovers(self):
+        met_start = [x.start() for x in re.finditer('Metabolite', self.__stdout)]
+        fuxes_start = [x.start() for x in re.finditer('Flux', self.__stdout)]
+        if len(met_start):
+            end = fuxes_start[0] if len(fuxes_start) else len(self.__stdout)
+            s = self.__stdout[met_start[0]:end]
+        else:
+            s = ""
+
+        matches = re.findall(pattern=r"(?P<name>[^\s:]+)\s+:\s+(?P<turnover>[.0-9]*)", string=s)
+        res = []
+        for m in matches:
+            mm = {'name': m[0]}
+
+            try:
+                mm['turnover'] = float(m[1])
+            except ValueError, e:
+                mm['turnover'] = float("nan")
+
+            res.append(mm)
+
+        return res
 
     def __parse_fluxes(self):
-        s = self.__stdout
+        fuxes_start = [x.start() for x in re.finditer('Flux', self.__stdout)]
+        if len(fuxes_start):
+            s = self.__stdout[fuxes_start[0]:len(self.__stdout)]
+        else:
+            s = ""
+
         matches = re.findall(pattern=r"(?P<name>[^\s:]+)\s+:\s+(?P<flux>[.0-9]*)\s+(?P<cost>[.0-9]*)\s+(?P<min>[.0-9]*)\s+(?P<max>[.0-9]*)", string=s)
         res = []
         for m in matches:
