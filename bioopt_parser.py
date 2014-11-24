@@ -6,10 +6,11 @@ class BiooptParseWarning(Warning):
     pass
 
 class BiooptParser(object):
-    def __init__(self):
+    def __init__(self, inf=1000):
         # TODO: replace number with float() for performance reasons
         self.re_number = r"(?:[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)|(?:[-+]?(?:[0-9]*\.[0-9]+|[0-9]+))"
         self.re_member = r"(\(?(" + self.re_number + r") *\)? +)?(.*)"
+        self.inf = inf
 
     def parse_file(self, path):
         """
@@ -148,7 +149,12 @@ class BiooptParser(object):
 
         reaction_name, lb, ub = m.groups()
         reaction_name = reaction_name.strip()
-        bounds = Bounds(float(lb), float(ub))
+
+        lb = float(lb)
+        ub = float(ub)
+        lb = lb if abs(lb) < self.inf else math.copysign(Bounds.inf(), lb)
+        ub = ub if abs(ub) < self.inf else math.copysign(Bounds.inf(), ub)
+        bounds = Bounds(lb, ub)
 
         return Reaction(reaction_name, ReactionMemberList(), ReactionMemberList(), bounds.direction, bounds)
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-import sys,re
+import sys, re
 import thread
 import itertools
 import warnings
 import copy
 import math
+
 
 def _is_number(s):
     try:
@@ -12,6 +13,7 @@ def _is_number(s):
         return True
     except ValueError:
         return False
+
 
 class Bounds(object):
     def __init__(self, lb=float("-inf"), ub=float("inf")):
@@ -139,6 +141,7 @@ class Metabolite(object):
         b = "*" if self.boundary else ""
         return "{0}{1}".format(self.name, b)
 
+
 class ReactionMember(object):
     def __init__(self, metabolite, coefficient):
         self.__assert_metabolite(metabolite)
@@ -199,6 +202,7 @@ class ReactionMember(object):
         if coefficient <= 0:
             raise ValueError("Reaction member coefficient is not strictly positive: {0}".format(coefficient))
 
+
 class Direction(object):
     __lockObj = thread.allocate_lock()
     __forward = None
@@ -244,6 +248,7 @@ class Direction(object):
         if self.__type == "r":
             return "<->"
 
+
 class ReactionMemberList(list):
     def find_member(self, name):
         """
@@ -287,15 +292,18 @@ class ReactionMemberList(list):
     def __repr__(self):
         return " + ".join(m.__repr__() for m in self)
 
+
 # TODO: Add class ReactionList
 class Reaction(object):
-    def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None, bounds=None):
+    def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None,
+                 bounds=None):
         if bounds is None and direction is None:
             direction = Direction.reversible()
         if direction is None and bounds is not None:
             direction = bounds.direction
         if bounds is None and direction is not None:
-            bounds = Bounds(-float('inf'), float('inf')) if direction == Direction.reversible() else Bounds(0, float('inf'))
+            bounds = Bounds(-float('inf'), float('inf')) if direction == Direction.reversible() else Bounds(0, float(
+                'inf'))
 
         self.__assert_name(name)
         self.__assert_members(reactants)
@@ -412,7 +420,8 @@ class Reaction(object):
 
     def __assert_members(self, reactants):
         if not isinstance(reactants, (ReactionMemberList, ReactionMember)):
-            raise TypeError("Reaction reactants is not of type ReactionMemberList or ReactionMember: {0}".format(type(reactants)))
+            raise TypeError(
+                "Reaction reactants is not of type ReactionMemberList or ReactionMember: {0}".format(type(reactants)))
 
     def __assert_direction(self, direction):
         if not isinstance(direction, Direction):
@@ -423,7 +432,8 @@ class Reaction(object):
             raise TypeError("Reaction bounds is not of type bounds: {0}".format(type(bounds)))
 
     def __repr__(self):
-        return "{name}{bnds}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products, bnds=self.bounds)
+        return "{name}{bnds}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction,
+                                                        rhs=self.products, bnds=self.bounds)
 
     def __eq__(self, other):
         return type(self) == type(other) and \
@@ -581,7 +591,8 @@ class MathExpression(object):
 
     @staticmethod
     def format_var(var):
-        var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
+        var = "({0})".format(var) if isinstance(var,
+                                                MathExpression) and var.operation.priority > self.operation.priority else var
         var = var.name if isinstance(var, (Reaction, Metabolite)) else var
 
         return var
@@ -595,7 +606,9 @@ class MathExpression(object):
         else:
             operands = []
             for o in self.operands:
-                operands.append(o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__, self.format_var(o)))
+                operands.append(
+                    o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__,
+                                                                                                  self.format_var(o)))
 
             return "{0}(\n{1}\n)".format(
                 type(self).__name__,
@@ -611,7 +624,8 @@ class MathExpression(object):
         # TODO: test these exceptions
         if operation is None:
             if len(operands) != 1:
-                raise ValueError("Math expression not representing any operation (<None>) have number of operands different from one")
+                raise ValueError(
+                    "Math expression not representing any operation (<None>) have number of operands different from one")
         else:
             if operation.is_unary and len(operands) != 1:
                 raise ValueError("Unary operation have number of operands different from one")
@@ -667,7 +681,8 @@ class Model(object):
         """
         r = self.find_reactions(names)
         if len(r) > 1:
-            warnings.warn("Found {0} reactions corresponding to name '{1}'. Returning first!".format(len(r), names), RuntimeWarning)
+            warnings.warn("Found {0} reactions corresponding to name '{1}'. Returning first!".format(len(r), names),
+                          RuntimeWarning)
 
         return r[0] if len(r) else None
 
@@ -680,6 +695,7 @@ class Model(object):
             return []
 
         import collections
+
         if names is None:
             return [r for r in self.reactions]
         elif isinstance(names, str):
@@ -734,7 +750,8 @@ class Model(object):
         """
         m = self.find_metabolites(names)
         if len(m) > 1:
-            warnings.warn("Found {0} metabolites corresponding to name '{1}'. Returning first!".format(len(m), names), RuntimeWarning)
+            warnings.warn("Found {0} metabolites corresponding to name '{1}'. Returning first!".format(len(m), names),
+                          RuntimeWarning)
 
         return m[0] if len(m) else None
 
@@ -753,6 +770,7 @@ class Model(object):
                     metabolites.append(rm.metabolite)
 
         import collections
+
         if names is None:
             return metabolites
         elif isinstance(names, str):
@@ -802,8 +820,13 @@ class Model(object):
                 m_out.name = env_prefix + m.name
                 m_out.boundary = True
 
-                r_out = Reaction(model_prefix.format(i) + 'OUT_' + m.name, ReactionMemberList([ReactionMember(m_in, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward(), Bounds(0, Bounds.inf()))
-                r_in = Reaction(model_prefix.format(i) + 'IN_' + m.name, ReactionMemberList([ReactionMember(m_out, 1)]), ReactionMemberList([ReactionMember(m_in, 1)]), Direction.forward(), Bounds(0, Bounds.inf()))
+                r_out = Reaction(model_prefix.format(i) + 'OUT_' + m.name,
+                                 ReactionMemberList([ReactionMember(m_in, 1)]),
+                                 ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward(),
+                                 Bounds(0, Bounds.inf()))
+                r_in = Reaction(model_prefix.format(i) + 'IN_' + m.name, ReactionMemberList([ReactionMember(m_out, 1)]),
+                                ReactionMemberList([ReactionMember(m_in, 1)]), Direction.forward(),
+                                Bounds(0, Bounds.inf()))
                 env_reactions.extend([r_out, r_in])
 
             for r in mod_new.reactions:
@@ -812,7 +835,6 @@ class Model(object):
             for m in mod_new.find_metabolites():
                 m.name = model_prefix.format(i) + m.name
                 m.boundary = False
-
 
             model.reactions.extend(mod_new.reactions)
             model.reactions.extend(env_reactions)
@@ -826,10 +848,12 @@ class Model(object):
             m_ext.name = "{0}xtX".format(m_ext.name)
             m_ext.boundary = True
 
-            r_out = Reaction(m_out.name+"xtO", ReactionMemberList([ReactionMember(m_out, 1)]), ReactionMemberList([ReactionMember(m_ext, 1)]), Direction.forward())
+            r_out = Reaction(m_out.name + "xtO", ReactionMemberList([ReactionMember(m_out, 1)]),
+                             ReactionMemberList([ReactionMember(m_ext, 1)]), Direction.forward())
             model.reactions.append(r_out)
 
-            r_in = Reaction(m_out.name+"xtI", ReactionMemberList([ReactionMember(m_ext, 1)]), ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward())
+            r_in = Reaction(m_out.name + "xtI", ReactionMemberList([ReactionMember(m_ext, 1)]),
+                            ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward())
             model.reactions.append(r_in)
 
         return model
@@ -841,8 +865,12 @@ class Model(object):
     def save(self, path=None, inf=1000):
         ret = "-REACTIONS\n"
         for r in self.reactions:
-            reactants = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.reactants)
-            products = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.products)
+            reactants = " + ".join(
+                "{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name)
+                for m in r.reactants)
+            products = " + ".join(
+                "{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name)
+                for m in r.products)
             dir = "->" if r.direction is Direction.forward() else "<->"
             ret += "{name}\t:\t{lhs} {dir} {rhs}".format(name=r.name, lhs=reactants, dir=dir, rhs=products) + "\n"
         ret += "\n"
@@ -887,15 +915,18 @@ class Model(object):
         if '0' <= name[count] <= '9':
             idStream.append('_')
 
-        for count in range (0, end):
+        last_character = ''
+        for count in range(0, end):
             if '0' <= name[count] <= '9' or 'a' <= name[count] <= 'z' or 'A' <= name[count] <= 'Z':
-                idStream.append(name[count])
-            else:
+                last_character = name[count]
+                idStream.append(last_character)
+            elif last_character != '_':
                 idStream.append('_')
+                last_character = '_'
 
         id = ''.join(idStream)
         if id[len(id) - 1] != '_':
-           return id
+            return id
 
         return id[:-1]
 
@@ -904,16 +935,18 @@ class Model(object):
         id = baseString
 
         count = 1
-        while existingIds.count(id) != 0:
+        while id in existingIds:
             id = "{0}_{1}".format(baseString, count)
             count += 1
 
         return id
 
-    def sbml(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto", metabolite_id="auto", compartment_id="auto"):
+    def sbml(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto",
+             metabolite_id="auto", compartment_id="auto", compartment_suffix=True):
         """@type : libsbml.SBMLDocument"""
 
         import libsbml
+
         doc = libsbml.SBMLDocument(level, version)
         model = doc.createModel()
 
@@ -928,20 +961,23 @@ class Model(object):
         second.setMultiplier(0.00027778)
         second.setExponent(-1)
 
-
         if compartment_pattern:
             compartment_pattern = re.compile(compartment_pattern)
 
         c_dict = {}
+        mc_dict = {}
         m_dict = {}
         r_dict = {}
 
         class IdMap:
-            def __init__(self, id, name):
+            def __init__(self, id, name, short=None):
                 self.id = id
                 self.name = name
+                self.short = short if short else name
 
-        for i, m in enumerate(self.find_metabolites(), start=1):
+        # Find all compartments
+        metabolites = self.find_metabolites()
+        for i, m in enumerate(metabolites, start=1):
             if compartment_pattern:
                 c_pattern_res = compartment_pattern.search(m.name)
                 if c_pattern_res:
@@ -952,23 +988,48 @@ class Model(object):
                 c_name = "cell"
 
             if c_name not in c_dict:
-                c_id = self.__getValidSbmlId("C_" + ("{0:04d}".format(len(c_dict)+1) if compartment_id == "auto" else c_name), c_dict.keys())
+                c_id = self.__getValidSbmlId(
+                    "C_" + ("{0:04d}".format(len(c_dict) + 1) if compartment_id == "auto" else c_name), c_dict.keys())
                 c_dict[c_name] = IdMap(c_id, c_name)
                 compartment = model.createCompartment()
                 compartment.setId(c_dict[c_name].id)
                 compartment.setName(c_dict[c_name].name)
 
-            m_id = self.__getValidSbmlId("M_" + ("{0:04d}".format(i) if metabolite_id == "auto" else m.name), m_dict.keys())
+            mc_dict[m.name] = c_dict[c_name]
+
+        if "boundary" not in c_dict:
+            c_dict["boundary"] = IdMap("boundary", "boundary")
+
+        # Assign abbreviations to compartments
+        for c_name, c in c_dict.iteritems():
+            for i in xrange(1, (len(c_name)-1)):
+                short = c_name[0:(0+i)]
+                if short not in (v.short for v in c_dict.itervalues()):
+                    c.short = short
+                    break
+
+        mids_set = set()
+        for i, m in enumerate(metabolites, start=1):
+            m_id = "M_" + ("{0:04d}".format(i) if metabolite_id == "auto" else m.name)
+            m_suffix = "_" + (c_dict["boundary"].short if m.boundary else mc_dict[m.name].short)
+            abbr = compartment_suffix and not m_id.endswith(m_suffix)
+            if abbr:
+                m_id += m_suffix
+
+            m_id = self.__getValidSbmlId(m_id, mids_set)
+            mids_set.add(m_id)
+
             m_dict[m.name] = IdMap(m_id, m.name)
             species = model.createSpecies()
             species.setId(m_dict[m.name].id)
             species.setName(m_dict[m.name].name)
             species.setBoundaryCondition(m.boundary)
-            species.setCompartment(c_dict[c_name].id)
+            species.setCompartment(mc_dict[m.name].id)
             species.setInitialAmount(0)
 
         for i, r in enumerate(self.reactions, start=1):
-            r_id = self.__getValidSbmlId("R_" + ("{0:04d}".format(i) if reaction_id == "auto" else r.name), r_dict.keys())
+            r_id = self.__getValidSbmlId("R_" + ("{0:04d}".format(i) if reaction_id == "auto" else r.name),
+                                         r_dict.keys())
             r_dict[r.name] = IdMap(r_id, r.name)
 
             reaction = model.createReaction()
@@ -993,21 +1054,22 @@ class Model(object):
             ast_flux.setName("FLUX_VALUE")
             law.setMath(ast_flux)
 
+            r_lb = r.bounds.lb if abs(r.bounds.lb) != Bounds.inf() else math.copysign(inf, r.bounds.lb)
+            r_ub = r.bounds.ub if abs(r.bounds.ub) != Bounds.inf() else math.copysign(inf, r.bounds.ub)
+            # print "{0}: [{1}, {2}]".format(r_id, r_lb, r_ub)
+
             lower_bound = law.createParameter()
-            lower_bound.setId("{0}_LB".format(r_dict[r.name].id))
-            lower_bound.setName("LOWER_BOUND")
+            lower_bound.setId("LOWER_BOUND")
             lower_bound.setUnits("mmol_per_gDW_per_hr")
-            lower_bound.setValue(r.bounds.lb if abs(r.bounds.lb) != Bounds.inf() else math.copysign(inf, r.bounds.lb))
+            lower_bound.setValue(r_lb)
 
             upper_bound = law.createParameter()
-            upper_bound.setId("{0}_UB".format(r_dict[r.name].id))
-            upper_bound.setName("UPPER_BOUND")
+            upper_bound.setId("UPPER_BOUND")
             upper_bound.setUnits("mmol_per_gDW_per_hr")
-            upper_bound.setValue(r.bounds.ub if abs(r.bounds.ub) != Bounds.inf() else math.copysign(inf, r.bounds.ub))
+            upper_bound.setValue(r_ub)
 
             objective = law.createParameter()
-            objective.setId("{0}_OBJ".format(r_dict[r.name].id))
-            objective.setName("OBJECTIVE_COEFFICIENT")
+            objective.setId("OBJECTIVE_COEFFICIENT")
             objective.setUnits("dimensionless")
             objective.setValue(0)
             o = self.objective is not None and self.objective.operands is not None and len(self.objective.operands) and \
@@ -1016,7 +1078,6 @@ class Model(object):
 
             flux = law.createParameter()
             flux.setId("FLUX_VALUE")
-            flux.setName("FLUX_VALUE")
             flux.setUnits("mmol_per_gDW_per_hr")
             flux.setValue(0)
 
@@ -1025,7 +1086,8 @@ class Model(object):
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
         ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.bounds) for r in self.reactions))
-        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format("\n".join(m.__repr__() for m in self.find_boundary_metabolites()))
+        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format(
+            "\n".join(m.__repr__() for m in self.find_boundary_metabolites()))
         ret += "-OBJECTIVE\n{0}\n\n".format(self.objective)
         ret += "-DESIGN OBJECTIVE\n{0}\n\n".format(self.design_objective)
 

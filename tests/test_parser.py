@@ -141,7 +141,7 @@ R2 R1 1
         self.assertEquals(R("A", bounds=Bounds(-1, 1)), parser.parse_constraint("A\t[\t-1\t, \t1\t]\t"))
         self.assertEquals(R("A", bounds=Bounds(-1, 1)), parser.parse_constraint("A\t[ -1, 1 ]"))
         self.assertEquals(R("3\"-something[e]", bounds=Bounds(1, 10)), parser.parse_constraint("3\"-something[e] [1, 10]"))
-        self.assertEquals(R("H2O[e]", bounds=Bounds(-1.4, 2500)), parser.parse_constraint("H2O[e] [-14e-1, 25e+2]"))
+        self.assertEquals(R("H2O[e]", bounds=Bounds(-1.4, Bounds.inf())), parser.parse_constraint("H2O[e] [-14e-1, 25e+2]"))
 
     def test_parse_constraints_section(self):
         constraints_section = """
@@ -153,7 +153,7 @@ R2 R1 1
 
         parser = BiooptParser()
         cons = parser.parse_constraints_section(constraints_section)
-        self.assertEquals(Reaction("R1", bounds=Bounds(-1000, 1000)), cons[0])
+        self.assertEquals(Reaction("R1", bounds=Bounds(-Bounds.inf(), Bounds.inf())), cons[0])
         self.assertEquals(Reaction("R2", bounds=Bounds(-100, 100)), cons[1])
 
     def test_parse_external_metabolites_section(self):

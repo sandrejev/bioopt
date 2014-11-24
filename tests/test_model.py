@@ -459,67 +459,67 @@ R2 R1 1
       <compartment id="C_0002" name="e"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="M_0001" name="A_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0002" name="B_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0003" name="C_e" compartment="C_0002" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0004" name="E_e" compartment="C_0002" initialAmount="0" boundaryCondition="true"/>
+      <species id="M_0001_c" name="A_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0002_c" name="B_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0003_e" name="C_e" compartment="C_0002" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0004_b" name="E_e" compartment="C_0002" initialAmount="0" boundaryCondition="true"/>
     </listOfSpecies>
     <listOfReactions>
       <reaction id="R_0001" name="R1" reversible="false">
         <listOfReactants>
-          <speciesReference species="M_0001" stoichiometry="1"/>
+          <speciesReference species="M_0001_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_0002" stoichiometry="3"/>
+          <speciesReference species="M_0002_c" stoichiometry="3"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="R_0001_LB" name="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
-            <parameter id="R_0001_UB" name="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
-            <parameter id="R_0001_OBJ" name="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="FLUX_VALUE" name="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_0002" name="R2" reversible="false">
         <listOfReactants>
-          <speciesReference species="M_0003" stoichiometry="1"/>
+          <speciesReference species="M_0003_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_0002" stoichiometry="3"/>
+          <speciesReference species="M_0002_c" stoichiometry="3"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="R_0002_LB" name="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
-            <parameter id="R_0002_UB" name="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
-            <parameter id="R_0002_OBJ" name="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="FLUX_VALUE" name="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
       <reaction id="R_0003" name="R3" reversible="true">
         <listOfReactants>
-          <speciesReference species="M_0002" stoichiometry="1"/>
-          <speciesReference species="M_0003" stoichiometry="1"/>
+          <speciesReference species="M_0002_c" stoichiometry="1"/>
+          <speciesReference species="M_0003_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_0004" stoichiometry="1"/>
+          <speciesReference species="M_0004_b" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
             <ci> FLUX_VALUE </ci>
           </math>
           <listOfParameters>
-            <parameter id="R_0003_LB" name="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
-            <parameter id="R_0003_UB" name="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
-            <parameter id="R_0003_OBJ" name="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
-            <parameter id="FLUX_VALUE" name="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="LOWER_BOUND" value="-100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="100" units="mmol_per_gDW_per_hr"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="dimensionless"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
           </listOfParameters>
         </kineticLaw>
       </reaction>
