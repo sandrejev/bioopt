@@ -12,9 +12,9 @@ if __name__ == "__main__":
     parser.add_argument('--inf', dest="inf", default=1000, action='store', type=float, help='Infinity value for a new model (default: 1000)')
     parser.add_argument('--level', '-l', dest="level", default=2, action='store', type=int, help='SBML level')
     parser.add_argument('--version', '-v', dest="version", default=3, action='store', type=int, help='SBML version')
-    parser.add_argument('--reaction-id', dest="reaction_id", default="name", action='store', help='SBML version')
-    parser.add_argument('--metabolite-id', dest="metabolite_id", default="auto", action='store', help='SBML version')
-    parser.add_argument('--compartment-id', dest="compartment_id", default="name", action='store', help='SBML version')
+    parser.add_argument('--reaction-id', dest="reaction_id", default="name", action='store', help="Strategy to generate unique reaction id. Specify 'name' to use reaction name as SBML id or 'auto' to use auto-incrementing id R_XXXX. (default: name)")
+    parser.add_argument('--metabolite-id', dest="metabolite_id", default="auto", action='store', help="Strategy to generate unique metabolite id. Specify 'name' to use metabolite name as SBML id or 'auto' to use auto-incrementing id M_XXXX. (default: auto)")
+    parser.add_argument('--compartment-id', dest="compartment_id", default="name", action='store', help="Strategy to generate unique compartment id. Specify 'name' to use compartment name as SBML id or 'auto' to use auto-incrementing id C_XXXX. (default: name)")
 
     args = parser.parse_args()
 

@@ -879,6 +879,37 @@ class Model(object):
         else:
             return ret
 
+    def __toSbmlId(self, name):
+        idStream = []
+        count = 0
+        end = len(name)
+
+        if '0' <= name[count] <= '9':
+            idStream.append('_')
+
+        for count in range (0, end):
+            if '0' <= name[count] <= '9' or 'a' <= name[count] <= 'z' or 'A' <= name[count] <= 'Z':
+                idStream.append(name[count])
+            else:
+                idStream.append('_')
+
+        id = ''.join(idStream)
+        if id[len(id) - 1] != '_':
+           return id
+
+        return id[:-1]
+
+    def __getValidSbmlId(self, name, existingIds=()):
+        baseString = self.__toSbmlId(name)
+        id = baseString
+
+        count = 1
+        while existingIds.count(id) != 0:
+            id = "{0}_{1}".format(baseString, count)
+            count += 1
+
+        return id
+
     def sbml(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto", metabolite_id="auto", compartment_id="auto"):
         """@type : libsbml.SBMLDocument"""
 
@@ -903,6 +934,7 @@ class Model(object):
 
         c_dict = {}
         m_dict = {}
+        r_dict = {}
 
         class IdMap:
             def __init__(self, id, name):
@@ -920,13 +952,13 @@ class Model(object):
                 c_name = "cell"
 
             if c_name not in c_dict:
-                c_id = "C_{0:04d}".format(len(c_dict)+1) if compartment_id == "auto" else c_name
+                c_id = self.__getValidSbmlId("C_" + ("{0:04d}".format(len(c_dict)+1) if compartment_id == "auto" else c_name), c_dict.keys())
                 c_dict[c_name] = IdMap(c_id, c_name)
                 compartment = model.createCompartment()
                 compartment.setId(c_dict[c_name].id)
                 compartment.setName(c_dict[c_name].name)
 
-            m_id = "M_{0:04d}".format(i) if metabolite_id == "auto" else m.name
+            m_id = self.__getValidSbmlId("M_" + ("{0:04d}".format(i) if metabolite_id == "auto" else m.name), m_dict.keys())
             m_dict[m.name] = IdMap(m_id, m.name)
             species = model.createSpecies()
             species.setId(m_dict[m.name].id)
@@ -936,10 +968,13 @@ class Model(object):
             species.setInitialAmount(0)
 
         for i, r in enumerate(self.reactions, start=1):
-            r_id = "R_{0:04d}".format(i) if reaction_id == "auto" else r.name
+            r_id = self.__getValidSbmlId("R_" + ("{0:04d}".format(i) if reaction_id == "auto" else r.name), r_dict.keys())
+            r_dict[r.name] = IdMap(r_id, r.name)
+
+            print r_dict[r.name].id
 
             reaction = model.createReaction()
-            reaction.setId(r_id)
+            reaction.setId(r_dict[r.name].id)
             reaction.setName(r.name)
             reaction.setCompartment(compartment.getId())
             reaction.setReversible(r.direction == Direction.reversible())
@@ -961,19 +996,19 @@ class Model(object):
             law.setMath(ast_flux)
 
             lower_bound = law.createParameter()
-            lower_bound.setId("{0}_LB".format(r_id))
+            lower_bound.setId("{0}_LB".format(r_dict[r.name].id))
             lower_bound.setName("LOWER_BOUND")
             lower_bound.setUnits("mmol_per_gDW_per_hr")
             lower_bound.setValue(r.bounds.lb if abs(r.bounds.lb) != Bounds.inf() else math.copysign(inf, r.bounds.lb))
 
             upper_bound = law.createParameter()
-            upper_bound.setId("{0}_UB".format(r_id))
+            upper_bound.setId("{0}_UB".format(r_dict[r.name].id))
             upper_bound.setName("UPPER_BOUND")
             upper_bound.setUnits("mmol_per_gDW_per_hr")
             upper_bound.setValue(r.bounds.ub if abs(r.bounds.ub) != Bounds.inf() else math.copysign(inf, r.bounds.ub))
 
             objective = law.createParameter()
-            objective.setId("{0}_OBJ".format(r_id))
+            objective.setId("{0}_OBJ".format(r_dict[r.name].id))
             objective.setName("OBJECTIVE_COEFFICIENT")
             objective.setUnits("dimensionless")
             objective.setValue(0)
