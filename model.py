@@ -1,25 +1,32 @@
 #!/usr/bin/env python
-import sys, re
+import sys,re
 import thread
 import itertools
 import warnings
 import copy
 import math
 
-
 def _is_number(s):
+    if s in ['0', '1', '2', '1000']:
+        return True
+
     try:
         float(s)
         return True
     except ValueError:
         return False
 
+def _starts_with_number(s):
+    return s[0] in ['-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 
 class Bounds(object):
     def __init__(self, lb=float("-inf"), ub=float("inf")):
         self.__assert_valid(lb, ub)
         self.__lb = lb
         self.__ub = ub
+
+    def copy(self):
+        return Bounds(self.__lb, self.__ub)
 
     @property
     def lb(self):
@@ -80,6 +87,12 @@ class Metabolite(object):
         self.__boundary = boundary
         self.__order_boundary = 0
 
+    def copy(self):
+        m = Metabolite(self.__name, self.__boundary)
+        m.order_boundary = self.__order_boundary
+
+        return m
+
     @property
     def name(self):
         return self.__name
@@ -124,7 +137,8 @@ class Metabolite(object):
             raise ValueError("Metabolite name is empty string")
         if re.search("\s+", name):
             warnings.warn("Metabolite '{0}' contains spaces".format(name), UserWarning)
-        if _is_number(name):
+        # TODO: Do we need this?
+        if _starts_with_number(name) and _is_number(name):
             warnings.warn("Metabolite name is a number: '{0}'".format(name), UserWarning)
 
     def __assert_boundary(self, boundary):
@@ -141,14 +155,18 @@ class Metabolite(object):
         b = "*" if self.boundary else ""
         return "{0}{1}".format(self.name, b)
 
-
 class ReactionMember(object):
-    def __init__(self, metabolite, coefficient):
+    def __init__(self, metabolite, coefficient=1):
         self.__assert_metabolite(metabolite)
         self.__assert_coefficient(coefficient)
 
         self.__metabolite = metabolite
         self.__coefficient = float(coefficient)
+
+    def copy(self):
+        rm = ReactionMember(self.__metabolite.copy(), self.__coefficient)
+
+        return rm
 
     @property
     def metabolite(self):
@@ -202,7 +220,6 @@ class ReactionMember(object):
         if coefficient <= 0:
             raise ValueError("Reaction member coefficient is not strictly positive: {0}".format(coefficient))
 
-
 class Direction(object):
     __lockObj = thread.allocate_lock()
     __forward = None
@@ -213,6 +230,9 @@ class Direction(object):
             raise ValueError("Invalid reaction direction type")
 
         self.__type = type
+
+    def copy(self):
+        return Direction(self.__type)
 
     @staticmethod
     def forward():
@@ -248,8 +268,13 @@ class Direction(object):
         if self.__type == "r":
             return "<->"
 
-
 class ReactionMemberList(list):
+    def copy(self):
+        rml = ReactionMemberList()
+        rml.extend(rm.copy() for rm in self)
+
+        return rml
+
     def find_member(self, name):
         """
         :rtype: ReactionMember
@@ -292,18 +317,15 @@ class ReactionMemberList(list):
     def __repr__(self):
         return " + ".join(m.__repr__() for m in self)
 
-
 # TODO: Add class ReactionList
 class Reaction(object):
-    def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None,
-                 bounds=None):
+    def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None, bounds=None):
         if bounds is None and direction is None:
             direction = Direction.reversible()
         if direction is None and bounds is not None:
             direction = bounds.direction
         if bounds is None and direction is not None:
-            bounds = Bounds(-float('inf'), float('inf')) if direction == Direction.reversible() else Bounds(0, float(
-                'inf'))
+            bounds = Bounds(-float('inf'), float('inf')) if direction == Direction.reversible() else Bounds(0, float('inf'))
 
         self.__assert_name(name)
         self.__assert_members(reactants)
@@ -324,6 +346,13 @@ class Reaction(object):
             self.__products = ReactionMemberList([products])
         else:
             self.__products = products
+
+    def copy(self):
+        reactants = self.__reactants.copy()
+        products = self.__products.copy()
+        bounds = self.__bounds.copy()
+        r = Reaction(self.name, reactants, products, direction=self.__direction.copy(), bounds=bounds)
+        return r
 
     @property
     def name(self):
@@ -388,6 +417,12 @@ class Reaction(object):
         self.__assert_bounds(bounds)
         self.__bounds = bounds
 
+    def bounds_reset(self):
+        if self.direction == Direction.forward():
+            self.bounds = Bounds(0, Bounds.inf())
+        else:
+            self.bounds = Bounds(-Bounds.inf(), Bounds.inf())
+
     def find_effective_bounds(self):
         """
         :rtype: Bounds
@@ -415,13 +450,13 @@ class Reaction(object):
             raise ValueError("Reaction name is empty string")
         if re.search("\s+", name):
             warnings.warn("Reaction '{0}' contains spaces".format(name), UserWarning)
-        if _is_number(name):
+        # TODO: Do we need this?
+        if _starts_with_number(name) and _is_number(name):
             warnings.warn("Reaction name is a number: '{0}'".format(name), UserWarning)
 
     def __assert_members(self, reactants):
         if not isinstance(reactants, (ReactionMemberList, ReactionMember)):
-            raise TypeError(
-                "Reaction reactants is not of type ReactionMemberList or ReactionMember: {0}".format(type(reactants)))
+            raise TypeError("Reaction reactants is not of type ReactionMemberList or ReactionMember: {0}".format(type(reactants)))
 
     def __assert_direction(self, direction):
         if not isinstance(direction, Direction):
@@ -432,8 +467,7 @@ class Reaction(object):
             raise TypeError("Reaction bounds is not of type bounds: {0}".format(type(bounds)))
 
     def __repr__(self):
-        return "{name}{bnds}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction,
-                                                        rhs=self.products, bnds=self.bounds)
+        return "{name}{bnds}: {lhs} {dir} {rhs}".format(name=self.name, lhs=self.reactants, dir=self.direction, rhs=self.products, bnds=self.bounds)
 
     def __eq__(self, other):
         return type(self) == type(other) and \
@@ -591,8 +625,7 @@ class MathExpression(object):
 
     @staticmethod
     def format_var(var):
-        var = "({0})".format(var) if isinstance(var,
-                                                MathExpression) and var.operation.priority > self.operation.priority else var
+        var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
         var = var.name if isinstance(var, (Reaction, Metabolite)) else var
 
         return var
@@ -606,9 +639,7 @@ class MathExpression(object):
         else:
             operands = []
             for o in self.operands:
-                operands.append(
-                    o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__,
-                                                                                                  self.format_var(o)))
+                operands.append(o.__repr__(tree=True) if isinstance(o, MathExpression) else "{0}({1})".format(type(o).__name__, self.format_var(o)))
 
             return "{0}(\n{1}\n)".format(
                 type(self).__name__,
@@ -624,8 +655,7 @@ class MathExpression(object):
         # TODO: test these exceptions
         if operation is None:
             if len(operands) != 1:
-                raise ValueError(
-                    "Math expression not representing any operation (<None>) have number of operands different from one")
+                raise ValueError("Math expression not representing any operation (<None>) have number of operands different from one")
         else:
             if operation.is_unary and len(operands) != 1:
                 raise ValueError("Unary operation have number of operands different from one")
@@ -675,19 +705,18 @@ class Model(object):
         self.__assert_objective(design_objective)
         self.__design_objective = design_objective
 
-    def find_reaction(self, names=None):
+    def find_reaction(self, names=None, regex=False):
         """
         :rtype: Reaction
         """
-        r = self.find_reactions(names)
+        r = self.find_reactions(names, regex=regex)
         if len(r) > 1:
-            warnings.warn("Found {0} reactions corresponding to name '{1}'. Returning first!".format(len(r), names),
-                          RuntimeWarning)
+            warnings.warn("Found {0} reactions corresponding to name '{1}'. Returning first!".format(len(r), names), RuntimeWarning)
 
         return r[0] if len(r) else None
 
 
-    def find_reactions(self, names=None):
+    def find_reactions(self, names=None, regex=False):
         """
         :rtype: list of Reaction
         """
@@ -695,17 +724,24 @@ class Model(object):
             return []
 
         import collections
-
         if names is None:
             return [r for r in self.reactions]
         elif isinstance(names, str):
-            for r in self.reactions:
-                if r.name == names:
-                    return [r]
+            if regex:
+                names = re.compile(names)
+                return [r for r in self.reactions if names.search(r.name)]
+            else:
+                for r in self.reactions:
+                    if r.name == names:
+                        return [r]
             return []
         elif isinstance(names, collections.Iterable):
             names = set(names)
-            return [r for r in self.reactions if r.name in names]
+            if regex:
+                names = [re.compile(n) for n in names]
+                return [r for r in self.reactions if any(n.search(r.name) for n in names)]
+            else:
+                return [r for r in self.reactions if r.name in names]
         else:
             raise TypeError("Names argument should be iterable, string or <None>")
 
@@ -744,20 +780,19 @@ class Model(object):
                     expression.operands[i] = reactions[o.name]
 
 
-    def find_metabolite(self, names=None):
+    def find_metabolite(self, names=None, regex=False):
         """
         :rtype: Reaction
         """
-        m = self.find_metabolites(names)
+        m = self.find_metabolites(names, regex=regex)
         if len(m) > 1:
-            warnings.warn("Found {0} metabolites corresponding to name '{1}'. Returning first!".format(len(m), names),
-                          RuntimeWarning)
+            warnings.warn("Found {0} metabolites corresponding to name '{1}'. Returning first!".format(len(m), names), RuntimeWarning)
 
         return m[0] if len(m) else None
 
     # TODO: Test with multiple instances of the same metabolite (result should contain two instances)
     # TODO: Test with no reaction section. Metabolite present in ext. metabolites should be accessible
-    def find_metabolites(self, names=None):
+    def find_metabolites(self, names=None, regex=False):
         """
         :rtype: list of Metabolite
         """
@@ -770,17 +805,24 @@ class Model(object):
                     metabolites.append(rm.metabolite)
 
         import collections
-
         if names is None:
             return metabolites
         elif isinstance(names, str):
-            for m in metabolites:
-                if m.name == names:
-                    return [m]
+            if regex:
+                names = re.compile(names)
+                return [m for m in metabolites if names.search(m.name)]
+            else:
+                for m in metabolites:
+                    if m.name == names:
+                        return [m]
             return []
         elif isinstance(names, collections.Iterable):
             names = set(names)
-            return [m for m in metabolites if m.name in names]
+            if regex:
+                names = [re.compile(n) for n in names]
+                return [m for m in metabolites if any(n.search(m.name) for n in names)]
+            else:
+                return [m for m in metabolites if m.name in names]
         else:
             raise TypeError("Names argument should be iterable, string or <None>")
 
@@ -805,56 +847,66 @@ class Model(object):
         return mb
 
     @staticmethod
-    def commune(models, model_prefix="ML{0:04d}_", env_prefix="ENV_"):
+    def commune(models, model_prefix="ML{0:04d}_", env_prefix="ENV_", block=[]):
+        """
+        :rtype: Model
+        """
+        block = [block] if not isinstance(block, list) else block
+        block = [re.compile(b) for b in block]
+
+        boundary_metabolites = {}
+
+        fwd = Direction.forward()
+
         model = Model()
         for i, mod in enumerate(models):
-            mod_new = copy.deepcopy(mod)
-
             env_reactions = []
             for m in mod.find_boundary_metabolites():
-                m_in = copy.deepcopy(m)
-                m_in.name = model_prefix.format(i) + m.name
-                m_in.boundary = False
+                m_in = Metabolite(model_prefix.format(i) + m.name)
+                m_out = Metabolite(env_prefix + m.name)
+                boundary_metabolites[m_out.name] = m_out
 
-                m_out = copy.deepcopy(m)
-                m_out.name = env_prefix + m.name
-                m_out.boundary = True
-
-                r_out = Reaction(model_prefix.format(i) + 'OUT_' + m.name,
-                                 ReactionMemberList([ReactionMember(m_in, 1)]),
-                                 ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward(),
-                                 Bounds(0, Bounds.inf()))
+                r_out = Reaction(model_prefix.format(i) + 'OUT_' + m.name, ReactionMemberList([ReactionMember(m_in, 1)]),
+                    ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward(), Bounds(0, Bounds.inf()))
                 r_in = Reaction(model_prefix.format(i) + 'IN_' + m.name, ReactionMemberList([ReactionMember(m_out, 1)]),
-                                ReactionMemberList([ReactionMember(m_in, 1)]), Direction.forward(),
-                                Bounds(0, Bounds.inf()))
+                    ReactionMemberList([ReactionMember(m_in, 1)]), Direction.forward(), Bounds(0, Bounds.inf()))
                 env_reactions.extend([r_out, r_in])
 
-            for r in mod_new.reactions:
+            reactions = []
+            metabolites = set()
+            for r in mod.reactions:
+                r = r.copy()
                 r.name = model_prefix.format(i) + r.name
+                for m in r.find_participants():
+                    metabolites.add(m.metabolite)
 
-            for m in mod_new.find_metabolites():
+                reactions.append(r)
+
+            for m in metabolites:
                 m.name = model_prefix.format(i) + m.name
                 m.boundary = False
 
-            model.reactions.extend(mod_new.reactions)
-            model.reactions.extend(env_reactions)
+            for r in reactions:
+                if not any(b.search(r.name) for b in block):
+                    model.reactions.append(r)
+
+            for r in env_reactions:
+                if not any(b.search(r.name) for b in block):
+                    model.reactions.append(r)
 
         model.unify_references()
 
-        for m_out in model.find_boundary_metabolites():
-            m_out.boundary = False
+        for m_name, m_out in boundary_metabolites.items():
+            m_ext = Metabolite("{0}xtX".format(m_name), True)
 
-            m_ext = copy.deepcopy(m_out)
-            m_ext.name = "{0}xtX".format(m_ext.name)
-            m_ext.boundary = True
+            r_out = Reaction(m_out.name+"xtO", ReactionMemberList([ReactionMember(m_out)]), ReactionMemberList([ReactionMember(m_ext)]), fwd)
+            r_in = Reaction(m_out.name+"xtI", ReactionMemberList([ReactionMember(m_ext)]), ReactionMemberList([ReactionMember(m_out)]), fwd)
 
-            r_out = Reaction(m_out.name + "xtO", ReactionMemberList([ReactionMember(m_out, 1)]),
-                             ReactionMemberList([ReactionMember(m_ext, 1)]), Direction.forward())
-            model.reactions.append(r_out)
+            if not any(b.search(r_out.name) for b in block):
+                model.reactions.append(r_out)
 
-            r_in = Reaction(m_out.name + "xtI", ReactionMemberList([ReactionMember(m_ext, 1)]),
-                            ReactionMemberList([ReactionMember(m_out, 1)]), Direction.forward())
-            model.reactions.append(r_in)
+            if not any(b.search(r_in.name) for b in block):
+                model.reactions.append(r_in)
 
         return model
 
@@ -865,13 +917,9 @@ class Model(object):
     def save(self, path=None, inf=1000):
         ret = "-REACTIONS\n"
         for r in self.reactions:
-            reactants = " + ".join(
-                "{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name)
-                for m in r.reactants)
-            products = " + ".join(
-                "{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name)
-                for m in r.products)
-            dir = "->" if r.direction is Direction.forward() else "<->"
+            reactants = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.reactants)
+            products = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.products)
+            dir = "->" if r.direction == Direction.forward() else "<->"
             ret += "{name}\t:\t{lhs} {dir} {rhs}".format(name=r.name, lhs=reactants, dir=dir, rhs=products) + "\n"
         ret += "\n"
 
@@ -1082,12 +1130,10 @@ class Model(object):
             flux.setValue(0)
 
         return doc
-
     def __repr__(self):
         ret = "-REACTIONS\n{0}\n\n".format("\n".join(r.__repr__() for r in self.reactions))
         ret += "-CONSTRAINTS\n{0}\n\n".format("\n".join("{0}\t{1}".format(r.name, r.bounds) for r in self.reactions))
-        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format(
-            "\n".join(m.__repr__() for m in self.find_boundary_metabolites()))
+        ret += "-EXTERNAL METABOLITES\n{0}\n\n".format("\n".join(m.__repr__() for m in self.find_boundary_metabolites()))
         ret += "-OBJECTIVE\n{0}\n\n".format(self.objective)
         ret += "-DESIGN OBJECTIVE\n{0}\n\n".format(self.design_objective)
 
