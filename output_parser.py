@@ -90,8 +90,8 @@ class FbaParser(object):
         for line in iter(p.stdout.readline, b''):
             res += line
 
-        p.stdout.close()
         p.communicate()
+        p.stdout.close()
 
         return res
 
