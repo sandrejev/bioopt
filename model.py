@@ -833,6 +833,13 @@ class Model(object):
         """
         return [m for m in self.find_metabolites() if m.boundary]
 
+
+    def find_boundary_reactions(self):
+        """
+        :rtype: list of Reaction
+        """
+        return [r for r in self.reactions if any(m.metabolite.boundary for m in r.find_participants())]
+
     def get_max_bound(self):
         mb = 0
         for r in self.reactions:
@@ -927,7 +934,10 @@ class Model(object):
         for r in self.reactions:
             lb = -inf if r.bounds.lb == -Bounds.inf() else r.bounds.lb
             ub = inf if r.bounds.ub == Bounds.inf() else r.bounds.ub
-            ret += "{0}\t[{1:.5g}, {2:.5g}]".format(r.name, lb, ub) + "\n"
+            if not (r.bounds.direction == Direction.forward() and r.bounds == Bounds(0)) and \
+                    not (r.bounds.direction == Direction.reversible() and r.bounds == Bounds()):
+                ret += "{0}\t[{1:.5g}, {2:.5g}]".format(r.name, lb, ub) + "\n"
+
         ret += "\n"
 
         ret += "-EXTERNAL METABOLITES\n"

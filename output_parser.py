@@ -13,12 +13,14 @@ class FbaParser(object):
         self.turnovers = []
         self.data = []
 
-    def run(self, cmd):
-        self.__p = subprocess.Popen (
-            cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE
-        )
-
+    def run(self, cmd, debug=False):
+        print "{0} '{1}'".format(cmd[0], "' '".join(cmd[1:]))
+        self.__p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, close_fds=True)
         self.__stdout = self.__read_stdout(self.__p)
+
+        if debug:
+            print self.__stdout
+
         s = self.__parse_status(self.__stdout)
         self.status = s['status']
         self.objective = s['objective']
@@ -34,7 +36,7 @@ class FbaParser(object):
         else:
             s = ""
 
-        matches = re.findall(pattern=r"(?P<name>[^\s:]+)\s+:\s+(?P<turnover>[.0-9]*)", string=s)
+        matches = re.findall(pattern=r"([^ \r\n]+) +: +([^ \r\n]*)", string=s)
         res = []
         for m in matches:
             mm = {'name': m[0]}
@@ -55,7 +57,7 @@ class FbaParser(object):
         else:
             s = ""
 
-        matches = re.findall(pattern=r"(?P<name>[^\s:]+)\s+:\s+(?P<flux>[.0-9]*)\s+(?P<cost>[.0-9]*)\s+(?P<min>[.0-9]*)\s+(?P<max>[.0-9]*)", string=s)
+        matches = re.findall(pattern=r"([^ \r\n]+) +: +([^ \r\n]*) +([^ \r\n]*) *([^ \r\n]*) *([^ \r\n]*)", string=s)
         res = []
         for m in matches:
             mm = {'name': m[0]}
@@ -87,6 +89,8 @@ class FbaParser(object):
         res = ""
         for line in iter(p.stdout.readline, b''):
             res += line
+
+        p.stdout.close()
         p.communicate()
 
         return res
@@ -97,7 +101,7 @@ class FbaParser(object):
         if m:
             res['status'] = m[0]
 
-        m = re.findall(pattern="Solution value\s+=\s+([0-9.]+)", string=str)
+        m = re.findall(pattern="Solution value\s+=\s+(.*)[\r\n]", string=str)
         res['objective'] = float(m[0]) if res['status'] == "Optimal" and m else float('nan')
 
         return res
