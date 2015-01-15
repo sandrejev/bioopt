@@ -1,0 +1,33 @@
+-REACTIONS
+
+R1: A <-> 2 B
+R2: A -> C
+R3: B + C -> D
+A_xtI : A_xtX -> A
+A_xtO : A -> A_xtX
+B_xtI : B_xtX -> B
+B_xtO : B -> B_xtX
+C_xtI : C_xtX -> C
+C_xtO : C -> C_xtX
+D_xtI : D_xtX -> D
+D_xtO : D -> D_xtX
+
+
+-CONSTRAINS
+
+A_xtI [0, 1]
+B_xtI [0, 1]
+C_xtI [0, 1]
+
+
+-EXTERNAL METABOLITES
+
+A_xtX
+B_xtX
+C_xtX
+D_xtX
+
+
+-OBJ
+
+R3 1 1
