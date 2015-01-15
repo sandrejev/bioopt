@@ -31,7 +31,6 @@ Because reactions in BioOpt library are regular lists they can be accessed by in
 a model can be searched for a specific reaction using reaction name or regular expression. Finally, there is a
 special function to search all export reactions
 
-
 .. code:: python
 
     print(model.find_reaction("R1"))

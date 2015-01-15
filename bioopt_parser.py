@@ -24,7 +24,7 @@ class BiooptParser(object):
 
     def parse_reactions_section(self, section_text):
         """
-        :rtype: list of Reaction
+        :rtype: list of :class:`Reaction`
         """
         return list(r for r, i in self.__parse_reactions_section(section_text))
 
@@ -163,7 +163,7 @@ class BiooptParser(object):
 
     def parse_constraints_section(self, section_text):
         """
-        :rtype: list of Bounds
+        :rtype: list of :class:`Bounds`
         """
         return list(c for c, i in self.__parse_constraints_section(section_text))
 
@@ -223,7 +223,7 @@ class BiooptParser(object):
 
     def parse_external_metabolites_section(self, section_text):
         """
-        :rtype: list of Metabolite
+        :rtype: list of :class:`Metabolite`
         """
         return list(e for e, i in self.__parse_external_metabolites_section(section_text))
 

@@ -171,8 +171,8 @@ class TestReaction(TestCase):
         self.assertEquals(r.name, name)
         self.assertEquals(r.reactants, reactants)
         self.assertEquals(r.products, products)
-        self.assertTrue(all(reactant in r.find_participants() for reactant in reactants))
-        self.assertTrue(all(product in r.find_participants() for product in products))
+        self.assertTrue(all(reactant in r.participants for reactant in reactants))
+        self.assertTrue(all(product in r.participants for product in products))
         self.assertEquals(r.direction, direction)
         self.assertEquals(r.bounds, bounds)
         self.assertEquals(r.find_effective_bounds().lb, 0)
@@ -407,7 +407,6 @@ R2	:	B + C <-> E
 
 -CONSTRAINTS
 R1	[-100, 100]
-R2	[-1000, 1000]
 
 -EXTERNAL METABOLITES
 E
@@ -437,7 +436,8 @@ R2 R1 1
             R("R3", 1*b + 1*c, 1*e, direction=rev, bounds=Bounds(-100, 100))]
 
         import libsbml
-        sbml = model.sbml()
+        import converter
+        sbml = converter.Bioopt2SbmlConverter().convert(model)
         sbml_export = libsbml.writeSBMLToString(sbml)
 
         doc = libsbml.readSBMLFromString(sbml_export)

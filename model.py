@@ -20,16 +20,32 @@ def _starts_with_number(s):
     return s[0] in ['-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 
 class Bounds(object):
+    """
+    :class:`Bounds` holds description of reactions constraints
+
+    :param lb: Minimal amount of of flux that can go through a reaction (Lower bound). Negative numbers denote reverse direction.
+    :param ub: Maximal amount of of flux that can go through a reaction (Upper bound). Negative numbers denote reverse direction.
+    :return: :class:`Bounds`
+    """
+
     def __init__(self, lb=float("-inf"), ub=float("inf")):
         self.__assert_valid(lb, ub)
         self.__lb = lb
         self.__ub = ub
 
     def copy(self):
+        """
+        Create a deep copy of current object
+
+        :rtype: :class:`Bounds`
+        """
         return Bounds(self.__lb, self.__ub)
 
     @property
     def lb(self):
+        """
+        Minimal amount of of flux that can go through a reaction (Lower bound). Negative numbers denote reverse direction.
+        """
         return self.__lb
 
     @lb.setter
@@ -39,6 +55,9 @@ class Bounds(object):
 
     @property
     def ub(self):
+        """
+        Maximal amount of of flux that can go through a reaction (Upper bound). Negative numbers denote reverse direction.
+        """
         return self.__ub
 
     @ub.setter
@@ -49,12 +68,21 @@ class Bounds(object):
     @property
     def direction(self):
         """
-        :rtype: Direction
+        Suggested reaction direction. If lower bound is negative the reaction is suggested to be reversible. Otherwise
+        irreversibility is implied. This is only a suggestion to :class:`Reaction` class and this suggestion can be
+        broken by enabling reaction reversibility through :attr:`Reaction.direction`
+
+        :rtype: :class:`Direction`
         """
         return Direction.forward() if self.lb >= 0 else Direction.reversible()
 
     @staticmethod
     def inf():
+        """
+        Returns infinity
+
+        :return: :class:`float`
+        """
         return float("Inf")
 
     def __assert_valid(self, lb, ub):
@@ -80,6 +108,15 @@ class Bounds(object):
 
 
 class Metabolite(object):
+    """
+    :class:`Metabolite` holds information about metabolite. Currently only supported information is metabolite name
+    and whether metabolite satisfies boundary condition (imported/exported)
+
+    :param name: Metabolite name. Metabolite name should be a non-empty string.
+    :param boundary: Boundary condition (imported/exported - True; otherwise - false)
+
+    :return: :class:`Metabolite`
+    """
     def __init__(self, name, boundary=False):
         self.__assert_name(name)
         self.__assert_boundary(boundary)
@@ -88,6 +125,11 @@ class Metabolite(object):
         self.__order_boundary = 0
 
     def copy(self):
+        """
+        Create a deep copy of current object
+
+        :rtype: :class:`Metabolite`
+        """
         m = Metabolite(self.__name, self.__boundary)
         m.order_boundary = self.__order_boundary
 
@@ -95,6 +137,9 @@ class Metabolite(object):
 
     @property
     def name(self):
+        """
+        Metabolite name. Metabolite name should be a non-empty string.
+        """
         return self.__name
 
     @name.setter
@@ -104,6 +149,9 @@ class Metabolite(object):
 
     @property
     def boundary(self):
+        """
+        Boundary condition (imported/exported - True; otherwise - false)
+        """
         return self.__boundary
 
     @boundary.setter
@@ -113,6 +161,10 @@ class Metabolite(object):
 
     @property
     def order_boundary(self):
+        """
+        Priority of displaying this metabolite. Metabolites with higher priority (lower numbers) are displayed earlier
+        in "-External Metabolites" section
+        """
         return self.__order_boundary
 
     @order_boundary.setter
@@ -156,6 +208,15 @@ class Metabolite(object):
         return "{0}{1}".format(self.name, b)
 
 class ReactionMember(object):
+    """
+    :class:`Bounds` is a wrapper for :class:`Metabolite` object when used in reaction reactants or products. It
+    contains reference to the metabolite itself and to it's coefficient in the reaction.
+
+    :param metabolite: Reference to :class:`Metabolite` object
+    :param coefficient: Multiplier associated with metabolite
+    :return: :class:`ReactionMember`
+    """
+
     def __init__(self, metabolite, coefficient=1):
         self.__assert_metabolite(metabolite)
         self.__assert_coefficient(coefficient)
@@ -164,6 +225,11 @@ class ReactionMember(object):
         self.__coefficient = float(coefficient)
 
     def copy(self):
+        """
+        Create a deep copy of current object
+
+        :rtype: :class:`ReactionMember`
+        """
         rm = ReactionMember(self.__metabolite.copy(), self.__coefficient)
 
         return rm
@@ -171,7 +237,9 @@ class ReactionMember(object):
     @property
     def metabolite(self):
         """
-        :rtype: Metabolite
+        Reference to metabolite
+
+        :rtype: :class:`Metabolite`
         """
         return self.__metabolite
 
@@ -182,6 +250,9 @@ class ReactionMember(object):
 
     @property
     def coefficient(self):
+        """
+        Multiplier associated with metabolite
+        """
         return self.__coefficient
 
     @coefficient.setter
@@ -221,21 +292,39 @@ class ReactionMember(object):
             raise ValueError("Reaction member coefficient is not strictly positive: {0}".format(coefficient))
 
 class Direction(object):
+    """
+    Describe reaction directionality. Don't use this class directly! Use factory constructors
+    :meth:`Direction.forward` and  :meth:`Direction.reversible`
+
+    :param type: f - Irreversible (**f** orward); r - Reversible (**r** eversible)
+    :return: :class:`Direction`
+    """
+
     __lockObj = thread.allocate_lock()
     __forward = None
     __reversible = None
 
     def __init__(self, type):
         if not type in ["f", "r"]:
-            raise ValueError("Invalid reaction direction type")
+            raise ValueError("Invalid reaction direction type. Allowed values are: {0}".format(', '.join(type)))
 
         self.__type = type
 
     def copy(self):
+        """
+        Create a deep copy of current object
+
+        :rtype: :class:`Direction`
+        """
         return Direction(self.__type)
 
     @staticmethod
     def forward():
+        """
+        Returns irreversible directionality descriptor singleton of type :class:`Direction`
+
+        :return: :class:`Direction`
+        """
         Direction.__lockObj.acquire()
         try:
             if Direction.__forward is None:
@@ -247,6 +336,11 @@ class Direction(object):
 
     @staticmethod
     def reversible():
+        """
+        Returns reversible directionality descriptor singleton of type :class:`Direction`
+
+        :return: :class:`Direction`
+        """
         Direction.__lockObj.acquire()
         try:
             if Direction.__reversible is None:
@@ -269,7 +363,16 @@ class Direction(object):
             return "<->"
 
 class ReactionMemberList(list):
+    """
+    :class:`ReactionMemberList` is a list of :class:`ReactionMember` instances. :class:`ReactionMemberList` inherits
+    from :class:`list` all the usual functions to manage a list
+    """
     def copy(self):
+        """
+        Create a deep copy of current object
+
+        :rtype: :class:`ReactionMemberList`
+        """
         rml = ReactionMemberList()
         rml.extend(rm.copy() for rm in self)
 
@@ -277,7 +380,9 @@ class ReactionMemberList(list):
 
     def find_member(self, name):
         """
-        :rtype: ReactionMember
+        Find metabolite by name in the list
+
+        :rtype: :class:`ReactionMember`
         """
         for mb in self:
             if mb.metabolite.name == name:
@@ -317,8 +422,18 @@ class ReactionMemberList(list):
     def __repr__(self):
         return " + ".join(m.__repr__() for m in self)
 
-# TODO: Add class ReactionList
+
 class Reaction(object):
+    """
+    :class:`Reaction` class holds information about reaction including reaction name, members, directionality and constraints
+
+    :param name: Reaction name. Reaction name should be non-empty string
+    :param reactants: Reaction left-hand-side. Object of class :class:`ReactionMemberList`.
+    :param products: Reaction right-hand-side. Object of class :class:`ReactionMemberList`.
+    :param direction: Reaction direction. Object of class :class:`Direction`.
+    :param bounds: Reaction constraints. Object of class :class:`Bounds`.
+    :rtype: :class:`Reaction`
+    """
     def __init__(self, name, reactants=ReactionMemberList(), products=ReactionMemberList(), direction=None, bounds=None):
         if bounds is None and direction is None:
             direction = Direction.reversible()
@@ -348,6 +463,11 @@ class Reaction(object):
             self.__products = products
 
     def copy(self):
+        """
+        Create a deep copy of current object
+
+        :rtype: :class:`Reaction`
+        """
         reactants = self.__reactants.copy()
         products = self.__products.copy()
         bounds = self.__bounds.copy()
@@ -356,6 +476,9 @@ class Reaction(object):
 
     @property
     def name(self):
+        """
+        Reaction name
+        """
         return self.__name
 
     @name.setter
@@ -366,7 +489,9 @@ class Reaction(object):
     @property
     def reactants(self):
         """
-        :rtype: ReactionMemberList
+        Reactants
+
+        :rtype: :class:`ReactionMemberList`
         """
         return self.__reactants
 
@@ -378,13 +503,21 @@ class Reaction(object):
         else:
             self.__reactants = reactants
 
-    def find_participants(self):
+    @property
+    def participants(self):
+        """
+        A combined list of reactants and products
+
+        :rtype: :class:`ReactionMemberList`
+        """
         return ReactionMemberList(itertools.chain(self.__reactants, self.__products))
 
     @property
     def products(self):
         """
-        :rtype: ReactionMemberList
+        Products
+
+        :rtype: :class:`ReactionMemberList`
         """
         return self.__products
 
@@ -398,6 +531,11 @@ class Reaction(object):
 
     @property
     def direction(self):
+        """
+        Reaction direction
+
+        :rtype: :class:`Direction`
+        """
         return self.__direction
 
     @direction.setter
@@ -408,7 +546,9 @@ class Reaction(object):
     @property
     def bounds(self):
         """
-        :rtype: Bounds
+        Reaction constraints
+
+        :rtype: :class:`Bounds`
         """
         return self.__bounds
 
@@ -418,14 +558,22 @@ class Reaction(object):
         self.__bounds = bounds
 
     def bounds_reset(self):
+        """
+        Reset bounds to predefined default. For reversible reaction defaults bounds are **[-inf, +inf]**. For forward
+        reactions it is **[0, +inf]**
+        """
         if self.direction == Direction.forward():
             self.bounds = Bounds(0, Bounds.inf())
         else:
             self.bounds = Bounds(-Bounds.inf(), Bounds.inf())
 
+
     def find_effective_bounds(self):
         """
-        :rtype: Bounds
+        Find effective bounds. For example if reaction is described as irreversible but constraints are [-10, 10] the
+        effective bounds would be [0, 10]
+
+        :rtype: :class:`Bounds`
         """
         lb = 0 if self.__direction == Direction.forward() and self.__bounds.lb < 0 else self.__bounds.lb
         ub = self.__bounds.ub
@@ -433,6 +581,11 @@ class Reaction(object):
         return Bounds(lb, ub)
 
     def reverse(self):
+        """
+        Reverse reactions. This functions change reactants and products places and inverses constraints so that reaction
+        would go other way
+        """
+
         if self.direction != Direction.reversible():
             raise RuntimeError("Reaction direction is not reversible. Only reversible reactions can be reversed")
         if self.bounds.lb > 0 and self.bounds.ub > 0:
@@ -482,6 +635,20 @@ class Reaction(object):
 
 
 class Operation(object):
+    """
+    Object describing operation type. **Don't use this class directly! Instead use factory constructors:**
+
+    * :meth:`Operation.addition`
+    * :meth:`Operation.subtraction`
+    * :meth:`Operation.multiplication`
+    * :meth:`Operation.division`
+    * :meth:`Operation.negation` (Unary operation)
+
+    :param operation: String describing the operation (binary operations: +-/*, unary operations: -)
+    :param is_unary: Describes what type of operation is created. Unary operations support only one argument, while binary support two.
+    :return: :class:`Operation`
+    """
+
     __lockObj = thread.allocate_lock()
     __addition = []
     __subtraction = []
@@ -524,48 +691,78 @@ class Operation(object):
 
     @property
     def is_unary(self):
+        """
+        Is operation unary. True - unary; otherwise False
+        :return: :class:`bool`
+        """
         return self.__is_unary
 
     @property
     def symbol(self):
+        """
+        Short description of operation
+
+        * + Addition
+        * - Subtraction
+        * / Division
+        * * Multiplication
+        * - Negation
+
+        :rtype: :class:`Operation`
+        """
         return self.__operation
 
     @property
     def priority(self):
+        """
+        Operation priority. Operations with higher priority (lower numbers) are executed before lower priority operations
+
+        :rtype: :class:`Operation`
+        """
         return self.__priority
 
     @staticmethod
     def addition():
         """
-        :rtype: Operation
+        Returns addition operation singleton
+
+        :rtype: :class:`Operation`
         """
         return Operation.__create_singleton(False, "+", Operation.__addition)
 
     @staticmethod
     def subtraction():
         """
-        :rtype: Operation
+        Returns subtraction operation singleton
+
+        :rtype: :class:`Operation`
         """
         return Operation.__create_singleton(False, "-", Operation.__subtraction)
 
     @staticmethod
     def multiplication():
         """
-        :rtype: Operation
+        Returns multiplication operation singleton
+
+        :rtype: :class:`Operation`
         """
         return Operation.__create_singleton(False, "*", Operation.__multiplication)
 
     @staticmethod
     def division():
         """
-        :rtype: Operation
+        Returns division operation singleton
+
+        :rtype: :class:`Operation`
         """
         return Operation.__create_singleton(False, "/", Operation.__division)
 
     @staticmethod
     def negation():
         """
-        :rtype: Operation
+        Returns negation operation (unary) singleton
+
+        :rtype: :class:`Operation`
         """
         return Operation.__create_singleton(True, "-", Operation.__negation)
 
@@ -575,6 +772,14 @@ class Operation(object):
 
 class MathExpression(object):
     def __init__(self, operation, operands):
+        """
+        Class describing mathematical expression
+
+        :param operation: Reference to :class:`Operation`
+        :param operands: A list of operands (two for binary, one for unary). An operand can be a constant (number) or
+        another :class:`MathExpression`
+        :return: :class:`MathExpression`
+        """
         self.__assert_valid(operation, operands)
 
         self.__operands = operands
@@ -583,7 +788,9 @@ class MathExpression(object):
     @property
     def operation(self):
         """
-        :rtype: Operation
+        Reference to :class:`Operation`
+
+        :rtype: :class:`Operation`
         """
         return self.__operation
 
@@ -594,6 +801,12 @@ class MathExpression(object):
 
     @property
     def operands(self):
+        """
+        A list of operands (two for binary, one for unary). An operand can be a constant (number) or
+        another :class:`MathExpression`
+
+        :rtype: list of :class:`Operation`
+        """
         return self.__operands
 
     @operands.setter
@@ -625,7 +838,7 @@ class MathExpression(object):
 
     @staticmethod
     def format_var(var):
-        var = "({0})".format(var) if isinstance(var, MathExpression) and var.operation.priority > self.operation.priority else var
+        var = "({0})".format(var) if isinstance(var, MathExpression) else var
         var = var.name if isinstance(var, (Reaction, Metabolite)) else var
 
         return var
@@ -664,6 +877,10 @@ class MathExpression(object):
 
 
 class Model(object):
+    """
+    BioOpt model is a main class in package. It contains list of reactions in the model and other additional information.
+    """
+
     def __init__(self):
         self.__reactions = list()
         self.__objective = None
@@ -672,7 +889,9 @@ class Model(object):
     @property
     def reactions(self):
         """
-        :rtype: list of Reaction
+        List of reactions in the model
+
+        :rtype: list of :class:`Reaction`
         """
         return self.__reactions
 
@@ -684,7 +903,9 @@ class Model(object):
     @property
     def objective(self):
         """
-        :rtype: list of MathExpression
+        Optimization target (i.e. Biomass)
+
+        :rtype: list of :class:`MathExpression`
         """
         return self.__objective
 
@@ -696,7 +917,9 @@ class Model(object):
     @property
     def design_objective(self):
         """
-        :rtype: list of MathExpression
+        Design optimization target (i.e. Ethanol)
+
+        :rtype: list of :class:`MathExpression`
         """
         return self.__design_objective
 
@@ -707,7 +930,13 @@ class Model(object):
 
     def find_reaction(self, names=None, regex=False):
         """
-        :rtype: Reaction
+        Searches model for reactions with specified names (patterns). If multiple reactions are found this function
+        returns only the first one.
+
+        :param names: name or list of names of reactions
+        :param regex: If True names argument is assumed to be a regular expression
+
+        :rtype: :class:`Reaction`
         """
         r = self.find_reactions(names, regex=regex)
         if len(r) > 1:
@@ -718,7 +947,13 @@ class Model(object):
 
     def find_reactions(self, names=None, regex=False):
         """
-        :rtype: list of Reaction
+        Searches model for reactions with specified names (patterns). This function is capable of returning multiple
+        reactions.
+
+        :param names: name or list of names of reactions
+        :param regex: If True names argument is assumed to be a regular expression
+
+        :rtype: list of :class:`Reaction`
         """
         if not self.reactions:
             return []
@@ -748,7 +983,7 @@ class Model(object):
     def unify_metabolite_references(self):
         metabolites = dict((m.name, m) for m in self.find_metabolites())
         for reaction in self.reactions:
-            for member in reaction.find_participants():
+            for member in reaction.participants:
                 member.metabolite = metabolites[member.metabolite.name]
 
     def __unify_objective_references(self, expression, reactions):
@@ -760,7 +995,6 @@ class Model(object):
                     if o.name in reactions:
                         expression.operands[i] = reactions[o.name]
 
-    # TODO: unit tests
     def unify_reaction_references(self):
         # TODO: What if more than one reaction with same name (Use first)
         reactions = dict((r.name, r) for r in self.reactions)
@@ -768,6 +1002,9 @@ class Model(object):
         self.__unify_objective_references(self.design_objective, reactions)
 
     def unify_references(self):
+        """
+        Find metabolite with identical names which are stored as different instances and unify instances.
+        """
         self.unify_metabolite_references()
         self.unify_reaction_references()
 
@@ -782,7 +1019,13 @@ class Model(object):
 
     def find_metabolite(self, names=None, regex=False):
         """
-        :rtype: Reaction
+        Searches model for metabolites with specified names (patterns). If multiple metabolites are found this function
+        returns only the first one.
+
+        :param names: name or list of names of metabolites
+        :param regex: If True names argument is assumed to be a regular expression
+
+        :rtype: :class:`Metabolite`
         """
         m = self.find_metabolites(names, regex=regex)
         if len(m) > 1:
@@ -794,12 +1037,18 @@ class Model(object):
     # TODO: Test with no reaction section. Metabolite present in ext. metabolites should be accessible
     def find_metabolites(self, names=None, regex=False):
         """
-        :rtype: list of Metabolite
+        Searches model for metabolites with specified names (patterns). This function is capable of returning multiple
+        metabolites.
+
+        :param names: name or list of names of metabolites
+        :param regex: If True names argument is assumed to be a regular expression
+
+        :rtype: list of :class:`Metabolite`
         """
         metabolites_set = set()
         metabolites = []
         for r in self.reactions:
-            for rm in r.find_participants():
+            for rm in r.participants:
                 if rm.metabolite not in metabolites_set:
                     metabolites_set.add(rm.metabolite)
                     metabolites.append(rm.metabolite)
@@ -829,16 +1078,20 @@ class Model(object):
 
     def find_boundary_metabolites(self):
         """
-        :rtype: list of Metabolite
+        Searches for imported/exported metabolites
+
+        :rtype: list of :class:`Metabolite`
         """
         return [m for m in self.find_metabolites() if m.boundary]
 
 
     def find_boundary_reactions(self):
         """
-        :rtype: list of Reaction
+        Searches for reactions exporting or importing metabolites
+
+        :rtype: list of :class:`Reaction`
         """
-        return [r for r in self.reactions if any(m.metabolite.boundary for m in r.find_participants())]
+        return [r for r in self.reactions if any(m.metabolite.boundary for m in r.participants)]
 
     def get_max_bound(self):
         mb = 0
@@ -856,7 +1109,21 @@ class Model(object):
     @staticmethod
     def commune(models, model_prefix="ML{0:04d}_", env_prefix="ENV_", block=[]):
         """
-        :rtype: Model
+        Merge two or more models into community model. Community model allows organisms represented by models to share
+        metabolites. Briefly, the algorithm first appends reaction and metabolite names in original models with ML****_
+        prefix. Then for every metabolite exported in original models boundary condition is set to :class:`False` and new
+        export reaction is created. This export reactions allows metabolites to travel from joined models into shared
+        environment and back. This setup allows organisms to exchange metabolites through common environment.
+
+        Originally this merging framework was described in `"OptCom: A Multi-Level Optimization Framework for the Metabolic Modeling and Analysis of Microbial Communities" <http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002363>`_
+        by Ali R. Zomorrodi and Costas D. Maranas.
+
+        :param models: List of :class:`Model` to join
+        :param model_prefix: Model prefix, Model prefix is added to all reaction names to avoid name collision in joined model.
+        :param env_prefix: Prefix of metabolites in shared environment.
+        :param block: List of names (in original models) of metabolites which should be not allowed to be exchanged between
+        organisms. An obvious example of such metabolite is biomass.
+        :rtype: :class:`Model`
         """
         block = [block] if not isinstance(block, list) else block
         block = [re.compile(b) for b in block]
@@ -884,7 +1151,7 @@ class Model(object):
             for r in mod.reactions:
                 r = r.copy()
                 r.name = model_prefix.format(i) + r.name
-                for m in r.find_participants():
+                for m in r.participants:
                     metabolites.add(m.metabolite)
 
                 reactions.append(r)
@@ -922,6 +1189,12 @@ class Model(object):
             raise TypeError("Objective is not None or <MathExpression>: {0}".format(type(objective)))
 
     def save(self, path=None, inf=1000):
+        """
+        Save model on disc in bioopt format
+
+        :param path: The name or full pathname of the file where the BioOpt model is to be written.
+        :param inf: Number which would be used for constraints with infinite bounds
+        """
         ret = "-REACTIONS\n"
         for r in self.reactions:
             reactants = " + ".join("{0}{1}".format("" if abs(m.coefficient) == 1 else "{0:.5g} ".format(m.coefficient), m.metabolite.name) for m in r.reactants)
