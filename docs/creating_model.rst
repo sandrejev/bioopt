@@ -28,12 +28,11 @@ First let's try to create a model using explicit notation
     products.append(ReactionMember(Metabolite("NaOH"), coefficient=2))
     products.append(ReactionMember(Metabolite("H2"), coefficient=1))
 
-    # Create constraints for reaction
-    constraint =
-
-    # Combine previously created objects into complete reaction definition
+    # Combine previously created objects into complete reaction definition.Note that direction and constraints are not
+    # required. By default reaction would be unconstrained and allow to flow both directions. However if direction is
+    # specified default constraints will reflect reaction directionality.
     r1 = Reaction("Burn", reactants, products, Direction.forward(), Bounds(-1, Bounds.inf())) # Lower bound will be reset to 0 because reaction is not reversible
-    r2 = Reaction("Break", products, reactants) # By default reactions are reversible and unconstrained.
+    r2 = Reaction("Break", products, reactants)
 
     # Let's now create model with this reaction
     m = Model()
@@ -54,7 +53,7 @@ First let's try to create a model using explicit notation
 Short-hand notation
 ==================
 
-Now let's create same reaction using short-hand notation. Notice how more convenient is notation for reactants and
+Now let's create same model using short-hand notation. Notice how more convenient is notation for reactants and
 products
 
 .. code:: python

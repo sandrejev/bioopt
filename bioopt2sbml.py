@@ -1,6 +1,7 @@
 from bioopt_parser import *
-import argparse
+from converter import *
 import libsbml
+import argparse
 
 warnings.simplefilter("ignore")
 
@@ -23,11 +24,14 @@ if __name__ == "__main__":
     parser = BiooptParser(inf=args.in_inf)
     model = parser.parse_file(args.bioopt)
 
-    sbml = model.sbml(level=args.level, version=args.version,
+    converter = Bioopt2SbmlConverter(level=args.level, version=args.version,
           compartment_pattern=args.c_pattern, inf=args.out_inf,
           reaction_id=args.reaction_id, metabolite_id=args.metabolite_id, compartment_id=args.compartment_id)
 
+    sbml = converter.convert(model)
     libsbml.writeSBMLToFile(sbml, args.sbml)
+
+    print "Finished converting {0} into SBML ({1})".format(args.bioopt, args.sbml)
 
 
 

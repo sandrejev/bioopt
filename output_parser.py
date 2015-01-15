@@ -1,6 +1,5 @@
 import subprocess
 import os
-import pandas as p
 import re
 
 
@@ -142,6 +141,8 @@ def r_str(model, r):
 
 class FcfrParser(object):
     def __init__(self):
+        import pandas as p
+
         self.__p = None
         self.data = p.DataFrame()
 
@@ -154,6 +155,7 @@ class FcfrParser(object):
         self.__p.wait()
 
     def read(self, path):
+        import pandas as p
         self.data = p.read_table("tmp/iFF708_bioopt.fcfr", header=0, index_col=0)
         self.data = self.data.applymap(self.__extract)
 
