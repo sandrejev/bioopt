@@ -1,5 +1,5 @@
 ================
- Creating model
+ Building model
 ================
 
 There is two ways to create models. Shorthand notation is useful for quickly prototyping models. It takes less space
@@ -51,7 +51,7 @@ First let's try to create a model using explicit notation
 
 
 Short-hand notation
-==================
+====================
 
 Now let's create same model using short-hand notation. Notice how more convenient is notation for reactants and
 products
@@ -66,4 +66,11 @@ products
     m.reactions = [r1, r2]
 
 
+Write BioOpt file
+=================
 
+Once you have a created BioOpt model it can be saved on disc by calling `save()` member function.
+
+.. code:: python
+
+    m.save("export.bioopt")

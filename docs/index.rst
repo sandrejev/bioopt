@@ -15,6 +15,7 @@ Contents:
 
    getting_started
    creating_model
+   convert_format
 
 Indices and tables
 ==================
