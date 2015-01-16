@@ -1,7 +1,8 @@
 BioOpt Classes (API)
 ---------------------
 
-.. automodule:: bioopt.model
+
+.. automodule:: model
     :members:
     :show-inheritance:
 
