@@ -5,6 +5,3 @@ BioOpt Model Classes (API)
     :members:
     :show-inheritance:
 
-
-
-#:undoc-members:
