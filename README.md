@@ -4,7 +4,7 @@ Library for parsing bioopt format.
 
 [Documentation](http://bioopt.readthedocs.org/en/latest/)
 
-Build status: ![Build status](https://travis-ci.org/sandrejev/bioopt.png)
+![Build status](https://travis-ci.org/sandrejev/bioopt.png)
 
 
 

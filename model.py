@@ -644,7 +644,7 @@ class Operation(object):
     * :meth:`Operation.division`
     * :meth:`Operation.negation` (Unary operation)
 
-    :param operation: String describing the operation (binary operations: +-/*, unary operations: -)
+    :param operation: String describing the operation (binary operations: ``+-/*``, unary operations: ``-``)
     :param is_unary: Describes what type of operation is created. Unary operations support only one argument, while binary support two.
     :return: :class:`Operation`
     """
@@ -1122,7 +1122,7 @@ class Model(object):
         :param model_prefix: Model prefix, Model prefix is added to all reaction names to avoid name collision in joined model.
         :param env_prefix: Prefix of metabolites in shared environment.
         :param block: List of names (in original models) of metabolites which should be not allowed to be exchanged between
-        organisms. An obvious example of such metabolite is biomass.
+                organisms. An obvious example of such metabolite is biomass.
         :rtype: :class:`Model`
         """
         block = [block] if not isinstance(block, list) else block

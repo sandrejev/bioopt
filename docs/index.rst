@@ -1,8 +1,3 @@
-.. BioOpt documentation master file, created by
-   sphinx-quickstart on Wed Jan 14 16:07:39 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to BioOpt's documentation!
 ==================================
 
@@ -17,4 +12,6 @@ Contents:
    getting_started
    creating_model
    convert_format
-   api_module
+   api
+
+* :ref:`genindex`

@@ -4,21 +4,28 @@ import re
 
 class Bioopt2SbmlConverter:
     """
-    Converts
+    Bioopt model object to libSBML document object converter. More details on SBML specification can be found
+    `online <http://sbml.org/Documents/Specifications>`_
 
-    :param level:
-    :param version:
-    :param compartment_pattern:
-    :param inf:
-    :param reaction_id:
-    :param metabolite_id:
-    :param compartment_id:
-    :param compartment_suffix:
-    :return:
+    :param level: SBML level from 1 to 3 (default: 2)
+    :param version: SBML version number (default: 3). Check SBML specification for details
+    :param inf: A number to substitute __infinity__ values. SBML doesn't have number __infinity__ so everywhere infinity
+            is used in BioOpt it will be replaced with this number (default: 1000)
+    :param reaction_id: Reaction id pattern. **"name"** - reaction name will be used as id. **"auto"** - an
+            auto-incremental "R_XXXX" value will be used for reaction id (default: **"auto"**)
+    :param metabolite_id: Metabolite id pattern. **"name"** - metabolite name will be used as id. **"auto"** - an
+            auto-incremental "M_XXXX" value will be used for metabolite id (default: **"auto"**)
+    :param compartment_id: Compartment id pattern. **"name"** - compartment name will be used as id. **"auto"** - an
+            auto-incremental "C_XXXX" value will be used for compartment id (default: **"auto"**)
+    :param compartment_suffix: Specifies whether metabolite names should be appended with compartment name
+    :param compartment_pattern: Regular expression pattern describing how to extract compartment information from
+            metabolite name. By default everything after last underscore ``_`` character is considered a compartment.
+            i.e., metabolite_e - is from compartment "e"
+    :rtype: :class:`Bioopt2SbmlConverter`
     """
 
-    def __init__(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto",
-             metabolite_id="auto", compartment_id="auto", compartment_suffix=True):
+    def __init__(self, level=2, version=3, inf=1000, reaction_id="auto",
+             metabolite_id="auto", compartment_id="auto", compartment_suffix=True, compartment_pattern=r"_(\w+)$"):
 
         if isinstance(level, int):
             self.level = level
@@ -60,7 +67,7 @@ class Bioopt2SbmlConverter:
             raise ValueError("Compartment id pattern can be either 'auto' or 'name' ('{0}' was specified)".format(compartment_id))
 
 
-        if isinstance(compartment_suffix, (float, int)):
+        if isinstance(compartment_suffix, bool):
             self.compartment_suffix = compartment_suffix
         else:
             raise ValueError("Expected boolean value for compartment_suffix ('{0}' was specified)".format(compartment_suffix))
@@ -100,8 +107,12 @@ class Bioopt2SbmlConverter:
         return id
 
     def convert(self, bmodel):
-        """@type : libsbml.SBMLDocument"""
+        """
+        Convert BioOpt model to libSBML document instance
 
+        :param bmodel: BioOpt model of type :class;`model.Model`
+        :rtype: :class:`libsbml.SBMLDocument`
+        """
         import libsbml
 
         doc = libsbml.SBMLDocument(self.level, self.version)
