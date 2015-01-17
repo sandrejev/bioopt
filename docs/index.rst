@@ -13,6 +13,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   install
    getting_started
    creating_model
    convert_format

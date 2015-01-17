@@ -1,5 +1,6 @@
-import re
 from model import *
+import re
+
 
 class Bioopt2SbmlConverter:
     def __init__(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto",
