@@ -3,6 +3,20 @@ import re
 
 
 class Bioopt2SbmlConverter:
+    """
+    Converts
+
+    :param level:
+    :param version:
+    :param compartment_pattern:
+    :param inf:
+    :param reaction_id:
+    :param metabolite_id:
+    :param compartment_id:
+    :param compartment_suffix:
+    :return:
+    """
+
     def __init__(self, level=2, version=3, compartment_pattern=r"_(\w+)$", inf=1000, reaction_id="auto",
              metabolite_id="auto", compartment_id="auto", compartment_suffix=True):
 

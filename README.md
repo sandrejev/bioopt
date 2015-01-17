@@ -1,7 +1,10 @@
-bioopt
-======
+#BioOpt 
 
-Library for parsing bioopt format. Documentation is available here:
+Library for parsing bioopt format. 
 
-http://bioopt.readthedocs.org/en/latest/
+[Documentation](http://bioopt.readthedocs.org/en/latest/)
+
+Build status: ![Build status](https://travis-ci.org/sandrejev/bioopt.png)
+
+
 

@@ -18,7 +18,7 @@ GNU/Linux
 ----------
 0. [install pip] (http://pip.readthedocs.org/en/latest/installing.html).
 1. You will need python C headers. On debian-based systems (including Ubuntu and Mint) this can be done by running
-   ```sudo apt-get install python-dev```
+   ``sudo apt-get install python-dev``
 2. Afterwards run ``sudo pip install cobra`` in terminal
 
 On Microsoft Windows
