@@ -2,6 +2,83 @@ from model import *
 import re
 
 
+# class Bioopt2CobraPy(object):
+#     def parse_file(self, filename = None, name = 'here sould be name of your model'):
+#
+#         from bioopt.bioopt_parser import BiooptParser
+#         import cobra
+#         model = BiooptParser().parse_file(filename)
+#
+#         cobra_model = cobra.Model(name)
+#         metabolites = {str(m.name): cobra.Metabolite(m.name) for m in model.find_metabolites()}
+#
+#         #metabols = dict((str(m.name), cobra.Metabolite(m.name)) for m in model.find_metabolites() if not m.boundary)
+#         for r in model.reactions:
+#             reaction = cobra.Reaction(r.name)
+#             bounds = r.find_effective_bounds()
+#             reaction.lower_buond = bounds.lb
+#             reaction.upper_bound = bounds.ub
+#             reaction.add_metabolites({metabolites[' '.join(str(rr).split(' ')[1::])] : -rr.coefficient*((rr in r.reactants)*2-1) for rr in [i for i in r.reactants + r.products if not i.boundary] })
+#             cobra_model.add_reaction(reaction)
+#             print reaction.reaction
+#         print('%i reaction in model' % len(cobra_model.reactions))
+#         print('%i metabolites in model' % len(cobra_model.metabolites))
+#         print('%i genes in model' % len(cobra_model.genes))
+#         print cobra_model.description
+#         return cobra_model
+
+class Bioopt2CobraPyConverter:
+    """
+    :param inf: A number to substitute __infinity__ values. SBML doesn't have number __infinity__  this number
+    (default: 1000) will be used instead
+    :rtype: :class:`Bioopt2COBRApyConverter`
+    """
+
+    def __init__(self, inf=1000, name = 'model'):
+        if isinstance(inf, (float, int)):
+            self.inf = inf
+        else:
+            raise ValueError("Infinity value '{0}' is not a number".format(int))
+
+        if isinstance(name, str):
+            self.name = name
+        else:
+            raise ValueError("Name '{0}' is not a string".format(name))
+
+    def parse_file(self, filename = None):
+        from bioopt.bioopt_parser import BiooptParser
+        import cobra
+        bioopt_model = BiooptParser().parse_file(filename)
+        cobra_model = cobra.Model(self.name)
+        metabolites = {str(m.name): cobra.Metabolite(m.name) for m in bioopt_model.find_metabolites()}
+        #metabols = dict((str(m.name), cobra.Metabolite(m.name)) for m in model.find_metabolites() if not m.boundary)
+        for bioopt_reaction in bioopt_model.reactions:
+            cobra_reaction = cobra.Reaction(bioopt_reaction.name)
+            bounds = str(bioopt_reaction.find_effective_bounds())[1:-1].split(', ')
+            cobra_reaction.lower_buond = bounds[0]
+            cobra_reaction.upper_bound = bounds[1]
+            #cobra_reaction.add_metabolites({metabolites[' '.join(str(rr).split(' ')[1::])] :
+             #                                   -rr.coefficient*((rr in bioopt_reaction.reactants)*2-1)
+              #                                  for rr in [i for i in bioopt_reaction.reactants + bioopt_reaction.products if not i.boundary] })
+            cobra_reaction.add_metabolites(self.__parse_bioopt_reaction(bioopt_reaction))
+            cobra_model.add_reaction(cobra_reaction)
+        return cobra_model
+
+    def __parse_bioopt_reaction(self, bioopt_reaction):
+        import cobra
+        #boundary reagents are not taken into account
+        meta_dict = {}
+        #print bioopt_reaction.boundary()
+        for participant in bioopt_reaction.participants:
+            if not participant.metabolite.boundary:
+                name = participant.metabolite
+                if participant in bioopt_reaction.products:
+                    coefficient = participant.coefficient
+                else:
+                    coefficient = -participant.coefficient
+                meta_dict[cobra.Metabolite(name)] = coefficient
+        return meta_dict
+
 class Bioopt2SbmlConverter:
     """
     Bioopt model object to libSBML document object converter. More details on SBML specification can be found
@@ -49,7 +126,7 @@ class Bioopt2SbmlConverter:
         if isinstance(inf, (float, int)):
             self.inf = inf
         else:
-            raise ValueError("Infinity value '{0}' is not a number".format(version))
+            raise ValueError("Infinity value '{0}' is not a number".format(inf))
 
         if reaction_id in ["auto", "name"]:
             self.reaction_id = reaction_id
