@@ -49,7 +49,7 @@ class Bioopt2CobraPyConverter:
             if participant.metabolite.boundary:
                 continue
 
-            name = participant.metabolite
+            name = participant.metabolite.name
             coefficient = (1 if participant in bioopt_reaction.products else -1) * participant.coefficient
             meta_dict[cobra.Metabolite(name)] = coefficient
 
