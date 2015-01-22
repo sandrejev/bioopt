@@ -25,8 +25,24 @@ class Bioopt2CobraPyConverter:
         :rtype: :class:`cobra.Model`
         """
         import cobra
+        from cobra.core import DictList
+
         cobra_model = cobra.Model(self.description)
 
+        # Precache converter metabolites for performance reasons !!!
+        metabolites = {}
+        for bm in bioopt_model.find_metabolites():
+            if bm.boundary:
+                continue
+
+            cobra_metabolite = cobra.Metabolite(bm.name)
+            cobra_metabolite._model = cobra_model
+            metabolites[bm] = cobra_metabolite
+
+        cobra_model.metabolites = DictList()
+        cobra_model.metabolites.extend(metabolites.values())
+
+        cobra_reactions = []
         for bioopt_reaction in bioopt_model.reactions:
             bounds = bioopt_reaction.find_effective_bounds()
 
@@ -35,25 +51,33 @@ class Bioopt2CobraPyConverter:
             cobra_reaction.lower_bound = bounds.lb if abs(bounds.lb) != inf else math.copysign(self.inf, bounds.lb)
             cobra_reaction.upper_bound = bounds.ub if abs(bounds.ub) != inf else math.copysign(self.inf, bounds.ub)
             cobra_reaction.objective_coefficient = bioopt_model.objective_dict.get(bioopt_reaction.name, 0)
-            cobra_reaction.add_metabolites(self.__parse_bioopt_reaction(bioopt_reaction))
-            cobra_model.add_reaction(cobra_reaction)
+
+            # Conversion is split into two loops for performance reasons !!!
+            meta_dict = {}
+            for member in bioopt_reaction.reactants:
+                if member.metabolite.boundary:
+                    continue
+
+                cobra_metabolite = metabolites[member.metabolite]
+                cobra_metabolite._reaction.add(cobra_reaction)
+                meta_dict[cobra_metabolite] = -member.coefficient
+
+            for member in bioopt_reaction.products:
+                if member.metabolite.boundary:
+                    continue
+
+                cobra_metabolite = metabolites[member.metabolite]
+                cobra_metabolite._reaction.add(cobra_reaction)
+                meta_dict[cobra_metabolite] = member.coefficient
+
+            cobra_reaction.add_metabolites(meta_dict, combine=False, add_to_container_model=False)
+            cobra_reactions.append(cobra_reaction)
+
+        #cobra_model.add_reactions(cobra_reactions)
+        cobra_model.reactions = DictList()
+        cobra_model.reactions.extend(cobra_reactions)
 
         return cobra_model
-
-    def __parse_bioopt_reaction(self, bioopt_reaction):
-        import cobra
-
-        # Boundary reagents are not taken into account
-        meta_dict = {}
-        for participant in bioopt_reaction.participants:
-            if participant.metabolite.boundary:
-                continue
-
-            name = participant.metabolite.name
-            coefficient = (1 if participant in bioopt_reaction.products else -1) * participant.coefficient
-            meta_dict[cobra.Metabolite(name)] = coefficient
-
-        return meta_dict
 
 
 class Bioopt2SbmlConverter:

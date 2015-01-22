@@ -186,7 +186,7 @@ class Metabolite(object):
             raise TypeError("Metabolite name is not a string: {0}".format(type(name)))
         if not len(name):
             raise ValueError("Metabolite name is empty string")
-        if re.search("\s+", name):
+        if name == "":
             warnings.warn("Metabolite '{0}' contains spaces".format(name), UserWarning)
         # TODO: Do we need this?
         if _starts_with_number(name) and _is_number(name):
@@ -600,7 +600,7 @@ class Reaction(object):
             raise TypeError("Reaction name is not a string: {0}".format(type(name)))
         if not len(name):
             raise ValueError("Reaction name is empty string")
-        if re.search("\s+", name):
+        if name == "":
             warnings.warn("Reaction '{0}' contains spaces".format(name), UserWarning)
         # TODO: Do we need this?
         if _starts_with_number(name) and _is_number(name):
@@ -1083,10 +1083,15 @@ class Model(object):
         metabolites_set = set()
         metabolites = []
         for r in self.reactions:
-            for rm in r.participants:
-                if rm.metabolite not in metabolites_set:
-                    metabolites_set.add(rm.metabolite)
-                    metabolites.append(rm.metabolite)
+            for rm in r.reactants:
+                metabolites_set.add(rm.metabolite)
+
+            for rm in r.products:
+                metabolites_set.add(rm.metabolite)
+            #if rm.metabolite not in metabolites_set:
+            #metabolites.append(rm.metabolite)
+
+        metabolites = list(metabolites_set)
 
         import collections
         if names is None:

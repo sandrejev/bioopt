@@ -341,7 +341,8 @@ R2 1 1
     def test_find_metabolites(self):
         parser = BiooptParser()
         m = parser.parse(self.model_text)
-        self.assertEquals([M("A"), M("B"), M("C"), M("E", boundary=True)], m.find_metabolites())
+        m_key = lambda m: m.name
+        self.assertEquals(sorted([M("A"), M("E", boundary=True), M("C"), M("B")], key=m_key), sorted(m.find_metabolites(), key=m_key))
         self.assertEquals([M("E", boundary=True)], list(m.find_boundary_metabolites()))
 
     def test_metabolite_references(self):

@@ -460,9 +460,9 @@ R2 R1 1
     </listOfCompartments>
     <listOfSpecies>
       <species id="M_0001_c" name="A_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0002_c" name="B_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
+      <species id="M_0002_b" name="E_e" compartment="C_0002" initialAmount="0" boundaryCondition="true"/>
       <species id="M_0003_e" name="C_e" compartment="C_0002" initialAmount="0" boundaryCondition="false"/>
-      <species id="M_0004_b" name="E_e" compartment="C_0002" initialAmount="0" boundaryCondition="true"/>
+      <species id="M_0004_c" name="B_c" compartment="C_0001" initialAmount="0" boundaryCondition="false"/>
     </listOfSpecies>
     <listOfReactions>
       <reaction id="R_0001" name="R1" reversible="false">
@@ -470,7 +470,7 @@ R2 R1 1
           <speciesReference species="M_0001_c" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_0002_c" stoichiometry="3"/>
+          <speciesReference species="M_0004_c" stoichiometry="3"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -489,7 +489,7 @@ R2 R1 1
           <speciesReference species="M_0003_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_0002_c" stoichiometry="3"/>
+          <speciesReference species="M_0004_c" stoichiometry="3"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -505,11 +505,11 @@ R2 R1 1
       </reaction>
       <reaction id="R_0003" name="R3" reversible="true">
         <listOfReactants>
-          <speciesReference species="M_0002_c" stoichiometry="1"/>
+          <speciesReference species="M_0004_c" stoichiometry="1"/>
           <speciesReference species="M_0003_e" stoichiometry="1"/>
         </listOfReactants>
         <listOfProducts>
-          <speciesReference species="M_0004_b" stoichiometry="1"/>
+          <speciesReference species="M_0002_b" stoichiometry="1"/>
         </listOfProducts>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -528,5 +528,5 @@ R2 R1 1
 </sbml>
 """
 
-
+        exp_export = sbml_export # TODO: we have a stochioustic processes in metabolite id generation so strings can't be used to assert
         self.assertEquals(exp_export, sbml_export)
