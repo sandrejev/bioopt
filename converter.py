@@ -34,6 +34,7 @@ class Bioopt2CobraPyConverter:
             cobra_reaction = cobra.Reaction(bioopt_reaction.name)
             cobra_reaction.lower_bound = bounds.lb if abs(bounds.lb) != inf else math.copysign(self.inf, bounds.lb)
             cobra_reaction.upper_bound = bounds.ub if abs(bounds.ub) != inf else math.copysign(self.inf, bounds.ub)
+            cobra_reaction.objective_coefficient = bioopt_model.objective_dict.get(bioopt_reaction.name, 0)
             cobra_reaction.add_metabolites(self.__parse_bioopt_reaction(bioopt_reaction))
             cobra_model.add_reaction(cobra_reaction)
 

@@ -9,7 +9,9 @@ BioOpt library comes with a toy model (toy.bioopt) which will be used through th
 .. code:: python
 
     from bioopt.bioopt_parser import BiooptParser
-    model = BiooptParser().parse_file("toy.bioopt")
+    from bioopt import toy_path
+
+    model = BiooptParser().parse_file(toy_path())
     print(model)
 
 

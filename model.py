@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-import sys,re
+import re
 import thread
 import itertools
 import warnings
-import copy
 import math
 
 def _is_number(s):
@@ -905,7 +904,7 @@ class Model(object):
         """
         Optimization target (i.e. Biomass)
 
-        :rtype: list of :class:`MathExpression`
+        :rtype: class:`MathExpression`
         """
         return self.__objective
 
@@ -913,6 +912,42 @@ class Model(object):
     def objective(self, objective):
         self.__assert_objective(objective)
         self.__objective = objective
+
+    @staticmethod
+    def __extract_expression(expression):
+        r = next(r for r in expression.operands if isinstance(r, Reaction))
+        c = next(r for r in expression.operands if isinstance(r, (int, float)))
+
+        return r, c
+
+    @staticmethod
+    def __extract_objective_dict(objective):
+        coefficients = {}
+        if objective.operation == Operation.addition():
+            for exp in objective.operands:
+                r, c = Model.__extract_expression(exp)
+                coefficients[r.name] = c
+        elif objective.operation == Operation.multiplication():
+            r, c = Model.__extract_expression(objective)
+            coefficients[r.name] = c
+
+        return coefficients
+
+    @property
+    def objective_dict(self):
+        return Model.__extract_objective_dict(self.objective)
+
+    @property
+    def design_objective_dict(self):
+        return Model.__extract_objective_dict(self.objective)
+
+    def get_objective_coefficient(self, reaction):
+        # TODO: Implement generic operation handling
+
+
+        self.objective
+        model.objective.operands[2]
+        pass
 
     @property
     def design_objective(self):

@@ -13,8 +13,9 @@ information on handling libSBML objects.
 
      from bioopt.bioopt_parser import BiooptParser
      from bioopt.converter import Bioopt2SbmlConverter
+     from bioopt import toy_path
 
-     model = BiooptParser().parse_file("toy.bioopt")
+     model = BiooptParser().parse_file(toy_path())
      converter = Bioopt2SbmlConverter(compartment_pattern=None)
      sbml = converter.convert(model)
 
