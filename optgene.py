@@ -1,14 +1,14 @@
 import argparse
 from bioopt_parser import BiooptParser
 from converter import Bioopt2CobraPyConverter
-import cobra.io, cobra.flux_analysis
+import cobra.io, cobra.flux_analysis, cobra.manipulation
 from deap import base, creator, tools
 import random
 
 class OptGene(object):
     def __init__(self, objective_reaction, objective_function, max_mutation,
                  target_type, generations, population_size, mutation_rate,
-                 cx_fraction, cxMethod, population, flux_calculation):
+                 cx_fraction, cx_method, population, flux_calculation):
         self.objective_reaction = objective_reaction
         self.objective_function = objective_function
         self.max_mutation = max_mutation
@@ -16,16 +16,17 @@ class OptGene(object):
         self.generations = generations
         self.population_size = population_size
         self.mutation_rate = mutation_rate
-        self.cx_fraction = cx_fraction # crossover fracton
-        self.cxMethod = cxMethod # crossover method, 'One', 'Two' or 'Uni'
+        self.cx_fraction = cx_fraction # crossover fraction
+        self.cx_method = cx_method # crossover method, 'One', 'Two' or 'Uni'
         self.population = population # when start from previous result
         self.flux_calculation = flux_calculation # ToDo: implement MOMA
 
     def optimize(self, bioopt_model):
         global model, target
-        model = self.reduceModel(bioopt_model)
-        target = self.preprocessing(model)
+        model = self.reduceModel(bioopt_model) # remove blocked reactions and reactions by isozymes
+        target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
 
+        # for details, see the documentation of DEAP (https://code.google.com/p/deap/)
         # create classes
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
         creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -40,24 +41,22 @@ class OptGene(object):
         # Operator registering
         toolbox.register("evaluate", self.__evaluation)
 
-        if self.cxMethod == 'Two':
+        if self.cx_method == 'Two':
             toolbox.register("mate", tools.cxTwoPoint)
-        elif self.cxMethod == 'One':
+        elif self.cx_method == 'One':
             toolbox.register("mate", tools.cxOnePoint)
-        elif self.cxMethod == 'Uni':
-            toolbox.register("mate", tools.cxUniform, indpb = 0.5)
+        elif self.cx_method == 'Uni':
+            toolbox.register("mate", tools.cxUniform, indpb=0.5)
         else:
-            print 'cxMethod of your choice is not registered'
+            print 'cx_method of your choice is not registered'
         toolbox.register("mutate", tools.mutFlipBit, indpb=self.mutation_rate)
         toolbox.register("repair", self.__repair)
         toolbox.register("select", tools.selRoulette)
 
-        # ToDo: Convert from bioopt to cobrapy
-
-        # random.seed()
-        if self.population == None:
+        # random.seed() # set seed when needed
+        if self.population == None: # start from WT
             pop = toolbox.population(n=self.population_size)
-        else:
+        else: # start from previous result
             pop = self.population
 
         Rec = [] # record the best fitness values in each generation here
@@ -72,7 +71,6 @@ class OptGene(object):
             else:
                 ind.fitness.values = toolbox.evaluate(ind)
                 Evaluated.append(ind)
-        # print len(Evaluated)
         hof.update(pop)
 
         print("  Evaluated %i individuals" % len(pop))
@@ -96,7 +94,7 @@ class OptGene(object):
 
             for mutant in offspring:
                 toolbox.mutate(mutant)
-                toolbox.repair(mutant)
+                toolbox.repair(mutant) # repair too many mutations
                 del mutant.fitness.values
 
 
@@ -108,7 +106,6 @@ class OptGene(object):
                 else:
                     ind.fitness.values = toolbox.evaluate(ind)
                     Evaluated.append(ind)
-            # print len(Evaluated)
 
             print("  Evaluated %i individuals" % len(invalid_ind))
 
@@ -117,7 +114,7 @@ class OptGene(object):
 
             hof.update(pop)
             currentBest = tools.selBest(pop, 1)[0]
-            Rec.append(currentBest.fitness.values[0])
+            Rec.append(currentBest.fitness.values[0]) # fitness value of the best individual in this generation is recorded
 
             # Gather all the fitnesses in one list and print the stats
             fits = [ind.fitness.values[0] for ind in pop]
@@ -140,7 +137,7 @@ class OptGene(object):
         delList = [target[i] for i, v in enumerate(best_ind) if not v]  # list of deletion for best individual
         print("Best individual is %s, %s" % (delList, best_ind.fitness.values))
 
-        ## show the progress until the end of the program
+        # show the progress until the end of the program
         # with open('Rec_SUCCxtO_Yield_m4_gene_uni.pickle', 'rb') as infile:
         #     Rec = load(infile)
         import matplotlib.pyplot as plt
@@ -185,7 +182,7 @@ class OptGene(object):
         # remove unnecessarily reactions
         model.remove_reactions(toRemove)
 
-        # find reactions that can't carry a flux in current conditions
+        # find reactions that can't carry a flux in current conditions (blocked reactions)
         flux_span_dict = cobra.flux_analysis.flux_variability_analysis(model, fraction_of_optimum=0.)
         blocked_reactions = [k for k, v in flux_span_dict.items() if max(map(abs, v.values())) < zero_cutoff]
         model.remove_reactions(blocked_reactions)
@@ -198,12 +195,12 @@ class OptGene(object):
         if self.target_type == 'Reaction':
             target = model.reactions.list_attr('id')
 
-            # remove exchange reactions
+            # remove exchange reactions from deletion target
             target = [r for r in target if not ('xtO' in r or 'xtI' in r)]
 
-            # remove lethal reactions from the target
+            # remove lethal reactions from deletion target
             sol = model.optimize()
-            tolerant_growth = sol.f * 0.01
+            tolerant_growth = sol.f * 0.01 # reaction is considered lethal when it's remocved the growth rate decrases to less than 1% of WT
             growth_rates, statuses = cobra.flux_analysis.single_deletion(model, target,
                                                                          method="fba", element_type='reaction')
             for k in growth_rates.iterkeys():
@@ -268,16 +265,26 @@ class OptGene(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run OptGene script')
     parser.add_argument('bioopt', action='store', help='Path to bioopt file')
-    parser.add_argument('--objective_reaction', '-objr', dest="objective_reaction", action='store', help='Reaction ID of reaction to optimize', type=str)
-    parser.add_argument('--objective_function', '-objf', dest="objective_function", action='store', help='"Yield" or "BPCY"', type=str)
-    parser.add_argument('--max_mutation', '-m', dest="max_mutation", default=3, action='store', help='Maximum mutation number', type=int)
-    parser.add_argument('--target_type', '-t', dest="target_type", default='Reaction', action='store', help='"Reaction" or "Gene"', type=str)
-    parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store', help='Number of generations', type=int)
-    parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store', help='Population size', type=int)
-    parser.add_argument('--mutation_rate', '-mRate', dest="mutation_rate", default=0.002, action='store', help='Mutation rate of each element', type=float)
-    parser.add_argument('--cx_fraction', '-cxf', dest="cx_fraction", default=0.8, action='store', help='Fraction of children generated by crossover', type=float)
-    parser.add_argument('--cxMethod', '-cxm', dest="cxMethod ", action='store', default='Two', help='"Crossover method ("One", "Two" or "Uni")', type=str)
-    parser.add_argument('--flux_calculation', '-fc', dest="flux_calculation", default='FBA', action='store', help='"Flux calculation method ("FBA" or "MOMA")', type=str)
+    parser.add_argument('--objective_reaction', '-objr', dest="objective_reaction", action='store',
+                        help='Reaction ID of reaction to optimize', type=str)
+    parser.add_argument('--objective_function', '-objf', dest="objective_function", action='store',
+                        help='"Yield" or "BPCY"', type=str)
+    parser.add_argument('--max_mutation', '-m', dest="max_mutation", default=3, action='store',
+                        help='Maximum mutation number (default: 3)', type=int)
+    parser.add_argument('--target_type', '-t', dest="target_type", default='Reaction', action='store',
+                        help='"Reaction" or "Gene" (default: "Reaction")', type=str)
+    parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store',
+                        help='Number of generations (default: 10000)', type=int)
+    parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store',
+                        help='Population size (default: 125)', type=int)
+    parser.add_argument('--mutation_rate', '-mRate', dest="mutation_rate", default=0.002, action='store',
+                        help='Mutation rate of each element (default: 0.002)', type=float)
+    parser.add_argument('--cx_fraction', '-cxf', dest="cx_fraction", default=0.8, action='store',
+                        help='Fraction of children generated by crossover (default: 0.8)', type=float)
+    parser.add_argument('--cx_method', '-cxm', dest="cx_method", default='Two', action='store',
+                        help='Crossover method ("One", "Two"(default) or "Uni")', type=str)
+    parser.add_argument('--flux_calculation', '-fc', dest="flux_calculation", default='FBA', action='store',
+                        help='"Flux calculation method ("FBA"(default) or "MOMA")', type=str)
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
 
     # optional
@@ -298,6 +305,7 @@ if __name__ == "__main__":
 
     optgene = OptGene(objective_reaction=args.objective_reaction, objective_function=args.objective_function,
                       max_mutation=args.max_mutation, target_type=args.target_type, generations=args.generations,
-                      population_size=args.population_size, mutation_rate=args.mutation_rate, cx_fraction=args.cx_fraction)
-                      # cxMethod=args.cxMethod)
+                      population_size=args.population_size, mutation_rate=args.mutation_rate,
+                      cx_fraction=args.cx_fraction,cx_method=args.cx_method, flux_calculation=args.flux_calculation,
+                      population=args.population)
     optgene.optimize(bioopt_model)
