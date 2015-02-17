@@ -2,29 +2,36 @@ import argparse
 from bioopt_parser import BiooptParser
 from converter import Bioopt2CobraPyConverter
 import cobra.io, cobra.flux_analysis, cobra.manipulation
+import moma
 from deap import base, creator, tools
 import random
 
 class OptGene(object):
     def __init__(self, objective_reaction, objective_function, max_mutation,
-                 target_type, generations, population_size, mutation_rate,
-                 cx_fraction, cx_method, population, flux_calculation):
+                 target_type, target_list, generations, population_size, mutation_rate,
+                 cx_fraction, cx_method, population, flux_calculation, wt_flux):
         self.objective_reaction = objective_reaction
         self.objective_function = objective_function
         self.max_mutation = max_mutation
         self.target_type = target_type
+        self.target_list = target_list
         self.generations = generations
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.cx_fraction = cx_fraction # crossover fraction
         self.cx_method = cx_method # crossover method, 'One', 'Two' or 'Uni'
         self.population = population # when start from previous result
-        self.flux_calculation = flux_calculation # ToDo: implement MOMA
+        self.flux_calculation = flux_calculation
+        self.wt_flux = wt_flux
+
 
     def optimize(self, bioopt_model):
         global model, target
+        #ToDo: modify to allow users to provide reduced model and target list
         model = self.reduceModel(bioopt_model) # remove blocked reactions and reactions by isozymes
         target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
+        if not self.wt_flux:
+            self.wt_flux = moma.optimize_minimum_flux(model)
 
         # for details, see the documentation of DEAP (https://code.google.com/p/deap/)
         # create classes
@@ -150,7 +157,6 @@ class OptGene(object):
 
     def reduceModel(self, bioopt_model, zero_cutoff=1e-9):
         global model
-        from bioopt.converter import Bioopt2SbmlConverter
         model = Bioopt2CobraPyConverter().convert(bioopt_model)
         print 'bioopt model successfully converted to cobra model'
         Reactions = model.reactions
@@ -196,6 +202,7 @@ class OptGene(object):
             target = model.reactions.list_attr('id')
 
             # remove exchange reactions from deletion target
+            # ToDo: make it possible to detect exchange reaction in model with other format
             target = [r for r in target if not ('xtO' in r or 'xtI' in r)]
 
             # remove lethal reactions from deletion target
@@ -236,18 +243,30 @@ class OptGene(object):
             for r in deletion_list:
                 delModel.reactions.get_by_id(r).knock_out()
         else:
-            print "target_type should be 'Gene' or 'Teaction'"
+            print "target_type should be 'Gene' or 'Reaction'"
 
         # caluculate the flux distribution by FBA
-        sol = delModel.optimize()
-        if sol.status == "infeasible" or sol.x_dict[self.objective_reaction] <= 1e-8 or sol.f < 1e-8:
-            return 1e-8, # fitness shouldn't be zero to use selRoulette for the selection
+        if self.flux_calculation == 'FBA':
+            sol = delModel.optimize()
+            growth = sol.f
+            status = sol.status
+            objective_flux = sol.x_dict[self.objective_reaction]
+
+        if self.flux_calculation == 'MOMA':
+            # ToDO: import moma module
+            sol_dict = moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
+            growth = sol_dict['objective_value']
+            status = sol_dict['status']
+            objective_flux = abs(sol_dict['the_problem'].x_dict[self.objective_reaction])
+
+        if status == "infeasible" or objective_flux <= 1e-8 or growth < 1e-8:
+                return 1e-8, # fitness shouldn't be zero to use selRoulette for the selection
 
         # return objective values
         if self.objective_function == "Yield":
-            return sol.x_dict[self.objective_reaction],
+            return objective_flux,
         elif self.objective_function == "BPCY":
-            return sol.x_dict[self.objective_reaction] * sol.f,
+            return objective_flux * growth,
         else:
             print "object_function should be 'Yield' or 'BPCY'"
 
@@ -273,6 +292,8 @@ if __name__ == "__main__":
                         help='Maximum mutation number (default: 3)', type=int)
     parser.add_argument('--target_type', '-t', dest="target_type", default='Reaction', action='store',
                         help='"Reaction" or "Gene" (default: "Reaction")', type=str)
+    parser.add_argument('--target_list', '-tl', dest="target_list", default=None, action='store',
+                        help='List of target id for deletion', type=list)
     parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store',
                         help='Number of generations (default: 10000)', type=int)
     parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store',
@@ -283,12 +304,13 @@ if __name__ == "__main__":
                         help='Fraction of children generated by crossover (default: 0.8)', type=float)
     parser.add_argument('--cx_method', '-cxm', dest="cx_method", default='Two', action='store',
                         help='Crossover method ("One", "Two"(default) or "Uni")', type=str)
+    parser.add_argument('--population', '-pop', dest="population", default=None, action='store',
+                        help='Population from which evolution start', type=list)
     parser.add_argument('--flux_calculation', '-fc', dest="flux_calculation", default='FBA', action='store',
                         help='"Flux calculation method ("FBA"(default) or "MOMA")', type=str)
+    parser.add_argument('--wt_flux', '-wt', dest="wt_flux", default=None, action='store',
+                        help='x_dict of wt-model used as the reference in MOMA', type=dict)
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
-
-    # optional
-    parser.add_argument('--population', '-pop', dest="population", default=None, action='store', help='Fraction of children generated by crossover', type=list)
 
     args = parser.parse_args()
 
@@ -304,8 +326,8 @@ if __name__ == "__main__":
     #     model = load(f)
 
     optgene = OptGene(objective_reaction=args.objective_reaction, objective_function=args.objective_function,
-                      max_mutation=args.max_mutation, target_type=args.target_type, generations=args.generations,
-                      population_size=args.population_size, mutation_rate=args.mutation_rate,
-                      cx_fraction=args.cx_fraction,cx_method=args.cx_method, flux_calculation=args.flux_calculation,
-                      population=args.population)
+                      max_mutation=args.max_mutation, target_type=args.target_type, target_list=args.target_list,
+                      generations=args.generations, population_size=args.population_size, mutation_rate=args.mutation_rate,
+                      cx_fraction=args.cx_fraction, cx_method=args.cx_method, flux_calculation=args.flux_calculation,
+                      population=args.population, wt_flux=args.wt_flux)
     optgene.optimize(bioopt_model)
