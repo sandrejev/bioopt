@@ -301,7 +301,7 @@ class OptGene(object):
                 status = sol_dict['status']
                 objective_flux = abs(sol_dict['the_problem'].x_dict[self.objective_reaction])
             except:
-                return 1e-16
+                return 1e-16,
 
         if status == "infeasible" or objective_flux <= 1e-16 or growth < 1e-16:
                 return 1e-16, # fitness shouldn't be zero to use selRoulette for the selection
