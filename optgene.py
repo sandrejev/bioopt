@@ -2,14 +2,15 @@ import argparse
 from bioopt_parser import BiooptParser
 from converter import Bioopt2CobraPyConverter
 import cobra.io, cobra.flux_analysis, cobra.manipulation
-import moma
+import moma # when run on cluster
 from deap import base, creator, tools
 import random
+from cPickle import load, dump
 
 class OptGene(object):
     def __init__(self, objective_reaction, objective_function, max_mutation,
                  target_type, target_list, generations, population_size, mutation_rate,
-                 cx_fraction, cx_method, population, flux_calculation, wt_flux):
+                 cx_fraction, cx_method, population, flux_calculation, wt_flux, reduced):
         self.objective_reaction = objective_reaction
         self.objective_function = objective_function
         self.max_mutation = max_mutation
@@ -23,15 +24,28 @@ class OptGene(object):
         self.population = population # when start from previous result
         self.flux_calculation = flux_calculation
         self.wt_flux = wt_flux
+        self.reduced = reduced
 
 
-    def optimize(self, bioopt_model):
+    def optimize(self, cobra_model):
         global model, target
-        #ToDo: modify to allow users to provide reduced model and target list
-        model = self.reduceModel(bioopt_model) # remove blocked reactions and reactions by isozymes
-        target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
+        # model = reduced model
+        if self.reduced:
+            model = cobra_model
+        else:
+            model = self.reduceModel(cobra_model) # remove blocked reactions and reactions by isozymes
+
         if not self.wt_flux:
             self.wt_flux = moma.optimize_minimum_flux(model)
+
+        # define target of deletion
+        if self.target_list:
+            with open(self.target_list, 'rb') as f:
+                target = load(f)
+        else:
+            target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
+
+
 
         # for details, see the documentation of DEAP (https://code.google.com/p/deap/)
         # create classes
@@ -136,6 +150,17 @@ class OptGene(object):
             print("  Avg %s" % mean)
             # print("  Std %s" % std)
 
+            if g != 0 and g % 500 == 0:
+                with open('population_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                                                                 self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o1,\
+                    open('Hof_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                                                                 self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o2,\
+                    open('Rec_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                                                                 self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o3:
+                    dump(pop, o1)
+                    dump(hof, o2)
+                    dump(Rec, o3)
+
 
         print("-- End of (successful) evolution --")
         print("%s different mutants were evaluated" % len(Evaluated))
@@ -147,18 +172,15 @@ class OptGene(object):
         # show the progress until the end of the program
         # with open('Rec_SUCCxtO_Yield_m4_gene_uni.pickle', 'rb') as infile:
         #     Rec = load(infile)
-        import matplotlib.pyplot as plt
-        plt.plot(Rec)
-        plt.xlabel('Generation')
-        plt.ylabel('Objective value')
-        # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
-        plt.show()
+        # import matplotlib.pyplot as plt
+        # plt.plot(Rec)
+        # plt.xlabel('Generation')
+        # plt.ylabel('Objective value')
+        # # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
+        # plt.show()
 
 
-    def reduceModel(self, bioopt_model, zero_cutoff=1e-9):
-        global model
-        model = Bioopt2CobraPyConverter().convert(bioopt_model)
-        print 'bioopt model successfully converted to cobra model'
+    def reduceModel(self, model, zero_cutoff=1e-16):
         Reactions = model.reactions
 
         # find same reaction with different names
@@ -198,35 +220,50 @@ class OptGene(object):
 
     def preprocessing(self, model):
         global target
-        if self.target_type == 'Reaction':
-            target = model.reactions.list_attr('id')
+        if self.target_type.lower() == 'reaction':
+            # ToDo: properly deal with reactions controlled by same genes
+            # geneList = [r.genes for r in Reactions if r.genes]
+            # uniqueGeneList = list(set(geneList))
 
-            # remove exchange reactions from deletion target
-            # ToDo: make it possible to detect exchange reaction in model with other format
-            target = [r for r in target if not ('xtO' in r or 'xtI' in r)]
+            # list of reactions, exchange reactions are not included
+            target = [r.id for r in model.reactions if len(r.metabolites) == 1]
 
-            # remove lethal reactions from deletion target
-            sol = model.optimize()
-            tolerant_growth = sol.f * 0.01 # reaction is considered lethal when it's remocved the growth rate decrases to less than 1% of WT
-            growth_rates, statuses = cobra.flux_analysis.single_deletion(model, target,
-                                                                         method="fba", element_type='reaction')
-            for k in growth_rates.iterkeys():
-                if growth_rates[k] < tolerant_growth:
-                    target.remove(k)
+        elif self.target_type.lower() == 'gene':
+            target = [g.id for g in model.genes if g.reactions]
 
-        # ToDo further reduce the number of target (non gene-associated reactions, transport reactions, reactions in unassociated subsystem )
+        # remove lethal reactions from the target
+        sol = model.optimize()
+        tolerant_growth = sol.f * 0.01
 
-        # ToDo preprocessing of genes
-        elif self.target_type == 'Gene':
-            genesToRemove = [g.id for g in model.genes if not g.reactions]
-            target = model.genes
+        if self.flux_calculation == 'FBA':
+            growth_rates, statuses = cobra.flux_analysis.single_deletion(model, target, method="FBA",
+                                                                         element_type=self.target_type)
 
-        else:
-            print "target_type should be 'Reaction' or 'Gene'"
+        elif self.flux_calculation == 'MOMA':
+            growth_rates, statuses = {}, {}
+            for t in target:
+                mutant = model.copy()
+                if self.target_type.lower() == 'gene':
+                    cobra.manipulation.delete_model_genes(mutant, [t], cumulative_deletions=False)
+                elif self.target_type.lower() == 'reaction':
+                    mutant.reactions.get_by_id(t).knock_out()
+
+                sol = moma.moma(model, mutant, norm_flux_dict=self.wt_flux)
+                try:
+                    growth_rates[t] = sol['objective_value']
+                    statuses[t] = sol['status']
+                except:
+                    growth_rates[t] = None
+                    statuses[t] = 'failed'
+
+        for k in growth_rates.iterkeys():
+            if growth_rates[k] < tolerant_growth:
+                target.remove(k)
+
+        # ToDo: further reduce the number of target (non gene-associated reactions, transport reactions, reactions in unassociated subsystem )
 
         print "pre-process finished successfully"
         return target
-
 
 
     def __evaluation(self, individual):
@@ -236,10 +273,10 @@ class OptGene(object):
 
         # deletion of genes (set upper and lower bound of reaction to zero according to gene-reaction rules)
         delModel = model.copy()
-        if self.target_type == 'Gene':
+        if self.target_type.lower() == 'gene':
             if not deletion_list == []: # avoid error in delete_model_genes
                 cobra.manipulation.delete_model_genes(delModel, deletion_list, cumulative_deletions=False)
-        elif self.target_type == 'Reaction':
+        elif self.target_type.lower() == 'reaction':
             for r in deletion_list:
                 delModel.reactions.get_by_id(r).knock_out()
         else:
@@ -252,8 +289,7 @@ class OptGene(object):
             status = sol.status
             objective_flux = sol.x_dict[self.objective_reaction]
 
-        if self.flux_calculation == 'MOMA':
-            # ToDO: import moma module
+        elif self.flux_calculation == 'MOMA':
             sol_dict = moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
             growth = sol_dict['objective_value']
             status = sol_dict['status']
@@ -293,7 +329,7 @@ if __name__ == "__main__":
     parser.add_argument('--target_type', '-t', dest="target_type", default='Reaction', action='store',
                         help='"Reaction" or "Gene" (default: "Reaction")', type=str)
     parser.add_argument('--target_list', '-tl', dest="target_list", default=None, action='store',
-                        help='List of target id for deletion', type=list)
+                        help='file name (.pickle) of list of target id for deletion', type=str)
     parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store',
                         help='Number of generations (default: 10000)', type=int)
     parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store',
@@ -311,14 +347,22 @@ if __name__ == "__main__":
     parser.add_argument('--wt_flux', '-wt', dest="wt_flux", default=None, action='store',
                         help='x_dict of wt-model used as the reference in MOMA', type=dict)
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
+    parser.add_argument('--cobra', dest="is_cobra", action='store_true', help='Is COBRA model file')
+    parser.add_argument('--reduced', dest="is_reduced", action='store_true', help='Model is already reduced')
 
     args = parser.parse_args()
 
     if args.is_sbml:
         # Convert to bioopt
         pass
+    elif args.is_cobra:
+        with open(args.bioopt, 'rb') as f:
+            cobra_model = load(f)
     else:
         bioopt_model = BiooptParser().parse_file(args.bioopt)
+        cobra_model = Bioopt2CobraPyConverter().convert(bioopt_model)
+        print 'bioopt model successfully converted to cobra model'
+
 
     ## Use pickled model
     # from cPickle import load
@@ -329,5 +373,5 @@ if __name__ == "__main__":
                       max_mutation=args.max_mutation, target_type=args.target_type, target_list=args.target_list,
                       generations=args.generations, population_size=args.population_size, mutation_rate=args.mutation_rate,
                       cx_fraction=args.cx_fraction, cx_method=args.cx_method, flux_calculation=args.flux_calculation,
-                      population=args.population, wt_flux=args.wt_flux)
-    optgene.optimize(bioopt_model)
+                      population=args.population, wt_flux=args.wt_flux, reduced=args.is_reduced)
+    optgene.optimize(cobra_model)
