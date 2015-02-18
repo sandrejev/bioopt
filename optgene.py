@@ -101,7 +101,12 @@ class OptGene(object):
             print("-- Generation %i --" % g)
 
             # Select the next generation individuals
-            offspring = toolbox.select(pop, len(pop))
+            if g == 0:
+                offspring = toolbox.select(pop, len(pop))
+            else:
+                offspring = toolbox.select(pop, len(pop)-2)
+                offspring.extend(hof[:2]) # two best individuals are automatically included
+
             # Clone the selected individuals
             offspring = list(map(toolbox.clone, offspring))
 
