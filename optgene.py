@@ -291,12 +291,15 @@ class OptGene(object):
 
         elif self.flux_calculation == 'MOMA':
             sol_dict = moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
-            growth = sol_dict['objective_value']
-            status = sol_dict['status']
-            objective_flux = abs(sol_dict['the_problem'].x_dict[self.objective_reaction])
+            try:
+                growth = sol_dict['objective_value']
+                status = sol_dict['status']
+                objective_flux = abs(sol_dict['the_problem'].x_dict[self.objective_reaction])
+            except:
+                return 1e-16
 
-        if status == "infeasible" or objective_flux <= 1e-8 or growth < 1e-8:
-                return 1e-8, # fitness shouldn't be zero to use selRoulette for the selection
+        if status == "infeasible" or objective_flux <= 1e-16 or growth < 1e-16:
+                return 1e-16, # fitness shouldn't be zero to use selRoulette for the selection
 
         # return objective values
         if self.objective_function == "Yield":
