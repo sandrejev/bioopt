@@ -1,8 +1,8 @@
 import argparse
-from bioopt_parser import BiooptParser
-from converter import Bioopt2CobraPyConverter
+# from bioopt_parser import BiooptParser
+# from converter import Bioopt2CobraPyConverter
 import cobra.io, cobra.flux_analysis, cobra.manipulation
-import moma # when run on cluster
+# import moma # when run on cluster
 from deap import base, creator, tools
 import random
 from cPickle import load, dump
@@ -35,12 +35,15 @@ class OptGene(object):
         else:
             model = self.reduceModel(cobra_model) # remove blocked reactions and reactions by isozymes
 
-        if not self.wt_flux:
-            self.wt_flux = moma.optimize_minimum_flux(model)
+        if self.wt_flux:
+            with open('%s.pickle' % self.wt_flux, 'rb') as f:
+                self.wt_flux = load(f)
+        else:
+            self.wt_flux = cobra.flux_analysis.moma.optimize_minimum_flux(model)
 
         # define target of deletion
         if self.target_list:
-            with open(self.target_list, 'rb') as f:
+            with open('%s.pickle' % self.target_list, 'rb') as f:
                 target = load(f)
         else:
             target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
@@ -155,7 +158,7 @@ class OptGene(object):
             print("  Avg %s" % mean)
             # print("  Std %s" % std)
 
-            if g != 0 and g % 500 == 0:
+            if g != 0 and (g+1) % 500 == 0:
                 with open('population_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o1,\
                     open('Hof_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
@@ -253,7 +256,7 @@ class OptGene(object):
                 elif self.target_type.lower() == 'reaction':
                     mutant.reactions.get_by_id(t).knock_out()
 
-                sol = moma.moma(model, mutant, norm_flux_dict=self.wt_flux)
+                sol = cobra.flux_analysis.moma.moma(model, mutant, norm_flux_dict=self.wt_flux)
                 try:
                     growth_rates[t] = sol['objective_value']
                     statuses[t] = sol['status']
@@ -295,7 +298,7 @@ class OptGene(object):
             objective_flux = sol.x_dict[self.objective_reaction]
 
         elif self.flux_calculation == 'MOMA':
-            sol_dict = moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
+            sol_dict = cobra.flux_analysis.moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
             try:
                 growth = sol_dict['objective_value']
                 status = sol_dict['status']
@@ -353,7 +356,7 @@ if __name__ == "__main__":
     parser.add_argument('--flux_calculation', '-fc', dest="flux_calculation", default='FBA', action='store',
                         help='"Flux calculation method ("FBA"(default) or "MOMA")', type=str)
     parser.add_argument('--wt_flux', '-wt', dest="wt_flux", default=None, action='store',
-                        help='x_dict of wt-model used as the reference in MOMA', type=dict)
+                        help='filename (.pickle) of wt-model flux distribution used as the reference in MOMA', type=str)
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
     parser.add_argument('--cobra', dest="is_cobra", action='store_true', help='Is COBRA model file')
     parser.add_argument('--reduced', dest="is_reduced", action='store_true', help='Model is already reduced')
