@@ -6,6 +6,8 @@ import cobra.io, cobra.flux_analysis, cobra.manipulation
 from deap import base, creator, tools
 import random
 from cPickle import load, dump
+import time
+time.clock()
 
 class OptGene(object):
     def __init__(self, objective_reaction, objective_function, max_mutation,
@@ -39,6 +41,7 @@ class OptGene(object):
             with open('%s.pickle' % self.wt_flux, 'rb') as f:
                 self.wt_flux = load(f)
         else:
+            # ToDo: figure out why cplex returns 'infeasible' when this is run on cluster
             self.wt_flux = cobra.flux_analysis.moma.optimize_minimum_flux(model)
 
         # define target of deletion
@@ -159,12 +162,15 @@ class OptGene(object):
             # print("  Std %s" % std)
 
             if g != 0 and (g+1) % 500 == 0:
-                with open('population_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
-                                                                 self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o1,\
-                    open('Hof_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
-                                                                 self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o2,\
-                    open('Rec_%s_%s_m%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
-                                                                 self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o3:
+                with open('population_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                                                                 self.max_mutation, self.target_type, self.flux_calculation,
+                                                                 int(time.clock())), 'wb') as o1,\
+                    open('Hof_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                                                                 self.max_mutation, self.target_type, self.flux_calculation,
+                                                                 int(time.clock())), 'wb') as o2,\
+                    open('Rec_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                                                                 self.max_mutation, self.target_type, self.flux_calculation,
+                                                                 int(time.clock())), 'wb') as o3:
                     dump(pop, o1)
                     dump(hof, o2)
                     dump(Rec, o3)
@@ -178,7 +184,7 @@ class OptGene(object):
         print("Best individual is %s, %s" % (delList, best_ind.fitness.values))
 
         # show the progress until the end of the program
-        # with open('Rec_SUCCxtO_Yield_m4_gene_uni.pickle', 'rb') as infile:
+        # with open('Rec_EX_mpa(e)_Yield_m4_Gene_FBA.pickle', 'rb') as infile:
         #     Rec = load(infile)
         # import matplotlib.pyplot as plt
         # plt.plot(Rec)
