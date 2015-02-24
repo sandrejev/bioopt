@@ -53,7 +53,7 @@ class OptGene(object):
 
         if not self.mutation_rate:
             self.mutation_rate = 1.0/len(target)
-        print self.mutation_rate
+        print 'mutarion rate: %s' % self.mutation_rate
         # for details, see the documentation of DEAP (https://code.google.com/p/deap/)
         # create classes
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -162,16 +162,18 @@ class OptGene(object):
             print("  Avg %s" % mean)
             # print("  Std %s" % std)
 
+            unique_num = int(time.clock())
+
             if g != 0 and (g+1) % 500 == 0:
                 with open('population_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
-                                                                 int(time.clock())), 'wb') as o1,\
+                                                                 unique_num), 'wb') as o1,\
                     open('Hof_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
-                                                                 int(time.clock())), 'wb') as o2,\
+                                                                 unique_num), 'wb') as o2,\
                     open('Rec_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
-                                                                 int(time.clock())), 'wb') as o3:
+                                                                 unique_num), 'wb') as o3:
                     dump(pop, o1)
                     dump(hof, o2)
                     dump(Rec, o3)
