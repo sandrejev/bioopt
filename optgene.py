@@ -1,8 +1,9 @@
 import argparse
+## these two imports are needed when model is in bioopt format
 # from bioopt_parser import BiooptParser
 # from converter import Bioopt2CobraPyConverter
 import cobra.io, cobra.flux_analysis, cobra.manipulation
-# import moma # when run on cluster
+import moma # when run on cluster
 from deap import base, creator, tools
 import random
 from cPickle import load, dump
@@ -31,7 +32,7 @@ class OptGene(object):
 
     def optimize(self, cobra_model):
         global model, target
-        # model = reduced model
+        # model: reduced model
         if self.reduced:
             model = cobra_model
         else:
@@ -42,7 +43,7 @@ class OptGene(object):
                 self.wt_flux = load(f)
         else:
             # ToDo: figure out why cplex returns 'infeasible' when this is run on cluster
-            self.wt_flux = cobra.flux_analysis.moma.optimize_minimum_flux(model)
+            self.wt_flux = moma.optimize_minimum_flux(model)
 
         # define target of deletion
         if self.target_list:
@@ -52,8 +53,9 @@ class OptGene(object):
             target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
 
         if not self.mutation_rate:
-            self.mutation_rate = 1.0/len(target)
+            self.mutation_rate = 1.0/len(target) # see paper
         print 'mutarion rate: %s' % self.mutation_rate
+
         # for details, see the documentation of DEAP (https://code.google.com/p/deap/)
         # create classes
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -162,6 +164,7 @@ class OptGene(object):
             print("  Avg %s" % mean)
             # print("  Std %s" % std)
 
+            # record every 500 generation
             if g != 0 and (g+1) % 500 == 0:
                 if g == 500:
                     unique_num = int(time.clock())
@@ -186,10 +189,10 @@ class OptGene(object):
         delList = [target[i] for i, v in enumerate(best_ind) if not v]  # list of deletion for best individual
         print("Best individual is %s, %s" % (delList, best_ind.fitness.values))
 
-        # show the progress until the end of the program
+        ## show the progress until the end of the program
+        # import matplotlib.pyplot as plt
         # with open('Rec_EX_mpa(e)_Yield_m4_Gene_FBA.pickle', 'rb') as infile:
         #     Rec = load(infile)
-        # import matplotlib.pyplot as plt
         # plt.plot(Rec)
         # plt.xlabel('Generation')
         # plt.ylabel('Objective value')
@@ -265,7 +268,7 @@ class OptGene(object):
                 elif self.target_type.lower() == 'reaction':
                     mutant.reactions.get_by_id(t).knock_out()
 
-                sol = cobra.flux_analysis.moma.moma(model, mutant, norm_flux_dict=self.wt_flux)
+                sol = moma.moma(model, mutant, norm_flux_dict=self.wt_flux)
                 try:
                     growth_rates[t] = sol['objective_value']
                     statuses[t] = sol['status']
