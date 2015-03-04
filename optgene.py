@@ -1,7 +1,7 @@
 import argparse
 ## these two imports are needed when model is in bioopt format
-# from bioopt_parser import BiooptParser
-# from converter import Bioopt2CobraPyConverter
+from bioopt_parser import BiooptParser
+from converter import Bioopt2CobraPyConverter
 import cobra.io, cobra.flux_analysis, cobra.manipulation
 import moma # when run on cluster
 from deap import base, creator, tools
@@ -31,6 +31,11 @@ class OptGene(object):
 
 
     def optimize(self, cobra_model):
+        '''
+        Main function which uses genetic algorithm
+        :param cobra_model: cobra.Model object
+        :return: best individual
+        '''
         global model, target
         # model: reduced model
         if self.reduced:
@@ -38,19 +43,25 @@ class OptGene(object):
         else:
             model = self.reduceModel(cobra_model) # remove blocked reactions and reactions by isozymes
 
-        if self.wt_flux:
-            with open('%s.pickle' % self.wt_flux, 'rb') as f:
-                self.wt_flux = load(f)
-        else:
-            # ToDo: figure out why cplex returns 'infeasible' when this is run on cluster
-            self.wt_flux = moma.optimize_minimum_flux(model)
+        if self.flux_calculation.lower() == 'moma':
+            if self.wt_flux:
+                with open(self.wt_flux, 'rb') as f:
+                    self.wt_flux = load(f)
+            else:
+                # ToDo: figure out why cplex returns 'infeasible' when this is run on cluster
+                self.wt_flux = moma.optimize_minimum_flux(model)
 
         # define target of deletion
         if self.target_list:
-            with open('%s.pickle' % self.target_list, 'rb') as f:
-                target = load(f)
+            if self.target_list.endswith('.pickle'):
+                with open(self.target_list, 'rb') as f:
+                    target = load(f)
+            if self.target_list.endswith('.txt'):
+                with open(self.target_list) as f:
+                    target = [line.strip() for line in f]
         else:
             target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
+        print 'number of target: %s' % len(target)
 
         if not self.mutation_rate:
             self.mutation_rate = 1.0/len(target) # see paper
@@ -201,6 +212,11 @@ class OptGene(object):
 
 
     def reduceModel(self, model, zero_cutoff=1e-12):
+        '''
+        :param model: cobra.Model object
+        :param zero_cutoff: reactions which can't have flux larger than this value are removed
+        :return: reduced model
+        '''
         Reactions = model.reactions
 
         # find same reaction with different names
@@ -230,17 +246,30 @@ class OptGene(object):
         # remove unnecessarily reactions
         model.remove_reactions(toRemove)
 
+
         # find reactions that can't carry a flux in current conditions (blocked reactions)
         flux_span_dict = cobra.flux_analysis.flux_variability_analysis(model, fraction_of_optimum=0.)
         blocked_reactions = [k for k, v in flux_span_dict.items() if max(map(abs, v.values())) < zero_cutoff]
         model.remove_reactions(blocked_reactions)
-        print 'model reduced successfully'
+        print 'model reduced successfully: %s reactions removed' % (len(toRemove) + len(blocked_reactions))
         return model
 
 
-    def preprocessing(self, model):
+    def preprocessing(self, model, target_type=None, method=None, tolerant_growth=None):
+        '''
+        Remove exchange reactions and computationally lethal reactions / genes from the target
+        :param model: cobra.Model object
+        :param  tolerant_growth: To find lethal reactions/genes (default: 1% of maximum growth)
+        :return: target list
+        '''
         global target
-        if self.target_type.lower() == 'reaction':
+        if not target_type:
+            target_type = self.target_type.lower()
+
+        if not method:
+            method = self.flux_calculation.lower()
+
+        if target_type.lower() == 'reaction':
             # ToDo: properly deal with reactions controlled by same genes
             # geneList = [r.genes for r in Reactions if r.genes]
             # uniqueGeneList = list(set(geneList))
@@ -248,24 +277,25 @@ class OptGene(object):
             # list of reactions, exchange reactions are not included
             target = [r.id for r in model.reactions if len(r.metabolites) == 1]
 
-        elif self.target_type.lower() == 'gene':
+        elif target_type.lower() == 'gene':
             target = [g.id for g in model.genes if g.reactions]
 
         # remove lethal reactions from the target
-        sol = model.optimize()
-        tolerant_growth = sol.f * 0.01
+        if not tolerant_growth:
+            sol = model.optimize()
+            tolerant_growth = sol.f * 0.01
 
-        if self.flux_calculation == 'FBA':
-            growth_rates, statuses = cobra.flux_analysis.single_deletion(model, target, method="FBA",
-                                                                         element_type=self.target_type)
+        if method.lower() == 'fba':
+            growth_rates, statuses = cobra.flux_analysis.single_deletion(model, target, method='fba',
+                                                                         element_type=target_type)
 
-        elif self.flux_calculation == 'MOMA':
+        elif method.lower() == 'moma':
             growth_rates, statuses = {}, {}
             for t in target:
                 mutant = model.copy()
-                if self.target_type.lower() == 'gene':
+                if target_type.lower() == 'gene':
                     cobra.manipulation.delete_model_genes(mutant, [t], cumulative_deletions=False)
-                elif self.target_type.lower() == 'reaction':
+                elif target_type.lower() == 'reaction':
                     mutant.reactions.get_by_id(t).knock_out()
 
                 sol = moma.moma(model, mutant, norm_flux_dict=self.wt_flux)
@@ -303,13 +333,13 @@ class OptGene(object):
             print "target_type should be 'Gene' or 'Reaction'"
 
         # caluculate the flux distribution by FBA
-        if self.flux_calculation == 'FBA':
+        if self.flux_calculation.lower() == 'fba':
             sol = delModel.optimize()
             growth = sol.f
             status = sol.status
             objective_flux = sol.x_dict[self.objective_reaction]
 
-        elif self.flux_calculation == 'MOMA':
+        elif self.flux_calculation.lower() == 'moma':
             sol_dict = cobra.flux_analysis.moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
             try:
                 growth = sol_dict['objective_value']
@@ -322,9 +352,9 @@ class OptGene(object):
                 return 1e-16, # fitness shouldn't be zero to use selRoulette for the selection
 
         # return objective values
-        if self.objective_function == "Yield":
+        if self.objective_function.lower() == "yield":
             return objective_flux,
-        elif self.objective_function == "BPCY":
+        elif self.objective_function.lower() == "bpcy":
             return objective_flux * growth,
         else:
             print "object_function should be 'Yield' or 'BPCY'"
@@ -352,7 +382,7 @@ if __name__ == "__main__":
     parser.add_argument('--target_type', '-t', dest="target_type", default='Reaction', action='store',
                         help='"Reaction" or "Gene" (default: "Reaction")', type=str)
     parser.add_argument('--target_list', '-tl', dest="target_list", default=None, action='store',
-                        help='file name (.pickle) of list of target id for deletion', type=str)
+                        help='file name of list of target id for deletion (.txt or .pickle)', type=str)
     parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store',
                         help='Number of generations (default: 10000)', type=int)
     parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store',
@@ -368,7 +398,7 @@ if __name__ == "__main__":
     parser.add_argument('--flux_calculation', '-fc', dest="flux_calculation", default='FBA', action='store',
                         help='"Flux calculation method ("FBA"(default) or "MOMA")', type=str)
     parser.add_argument('--wt_flux', '-wt', dest="wt_flux", default=None, action='store',
-                        help='filename (.pickle) of wt-model flux distribution used as the reference in MOMA', type=str)
+                        help='filename of wt-model flux distribution used as the reference in MOMA', type=str)
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
     parser.add_argument('--cobra', dest="is_cobra", action='store_true', help='Is COBRA model file')
     parser.add_argument('--reduced', dest="is_reduced", action='store_true', help='Model is already reduced')
