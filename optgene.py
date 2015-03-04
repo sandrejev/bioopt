@@ -162,9 +162,9 @@ class OptGene(object):
             print("  Avg %s" % mean)
             # print("  Std %s" % std)
 
-            unique_num = int(time.clock())
-
             if g != 0 and (g+1) % 500 == 0:
+                if g == 500:
+                    unique_num = int(time.clock())
                 with open('population_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
                                                                  unique_num), 'wb') as o1,\
