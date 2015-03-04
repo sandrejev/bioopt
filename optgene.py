@@ -45,8 +45,18 @@ class OptGene(object):
 
         if self.flux_calculation.lower() == 'moma':
             if self.wt_flux:
-                with open(self.wt_flux, 'rb') as f:
-                    self.wt_flux = load(f)
+                if self.wt_flux.endswith('.pickle'):
+                    with open(self.wt_flux, 'rb') as f:
+                        self.wt_flux = load(f)
+                elif self.wt_flux.endswith('.txt'):
+                    with open(self.wt_flux) as f:
+                        self.wt_flux = {}
+                        for line in f:
+                            rid, flux = line.split()
+                            self.wt_flux[rid] = float(flux)
+                else:
+                    raise ValueError("wild type flux data should be .txt or .pickle file")
+
             else:
                 # ToDo: figure out why cplex returns 'infeasible' when this is run on cluster
                 self.wt_flux = moma.optimize_minimum_flux(model)
@@ -56,16 +66,19 @@ class OptGene(object):
             if self.target_list.endswith('.pickle'):
                 with open(self.target_list, 'rb') as f:
                     target = load(f)
-            if self.target_list.endswith('.txt'):
+            elif self.target_list.endswith('.txt'):
                 with open(self.target_list) as f:
                     target = [line.strip() for line in f]
+            else:
+                raise ValueError("target list should be .txt or .pickle file")
+
         else:
             target = self.preprocessing(model) # define deletion target list, exchange reactions and lethal reactions are removed from target
         print 'number of target: %s' % len(target)
 
         if not self.mutation_rate:
             self.mutation_rate = 1.0/len(target) # see paper
-        print 'mutarion rate: %s' % self.mutation_rate
+        print 'mutation rate: %s' % self.mutation_rate
 
         # for details, see the documentation of DEAP (https://code.google.com/p/deap/)
         # create classes
@@ -382,7 +395,7 @@ if __name__ == "__main__":
     parser.add_argument('--target_type', '-t', dest="target_type", default='Reaction', action='store',
                         help='"Reaction" or "Gene" (default: "Reaction")', type=str)
     parser.add_argument('--target_list', '-tl', dest="target_list", default=None, action='store',
-                        help='file name of list of target id for deletion (.txt or .pickle)', type=str)
+                        help='file name of list of target id for deletion (.txt (one reaction ID in each line) or .pickle)', type=str)
     parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store',
                         help='Number of generations (default: 10000)', type=int)
     parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store',
