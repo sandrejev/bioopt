@@ -213,15 +213,13 @@ class OptGene(object):
         delList = [target[i] for i, v in enumerate(best_ind) if not v]  # list of deletion for best individual
         print("Best mutation combination is %s, %s" % (delList, best_ind.fitness.values))
 
-        ## show the progress until the end of the program
-        # import matplotlib.pyplot as plt
-        # with open('Rec_EX_mpa(e)_Yield_m4_Gene_FBA.pickle', 'rb') as infile:
-        #     Rec = load(infile)
-        # plt.plot(Rec)
-        # plt.xlabel('Generation')
-        # plt.ylabel('Objective value')
-        # # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
-        # plt.show()
+        # show the progress until the end of the program
+        import matplotlib.pyplot as plt
+        plt.plot(Rec)
+        plt.xlabel('Generation')
+        plt.ylabel('Objective value')
+        # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
+        plt.show()
 
 
     def reduceModel(self, model, zero_cutoff=1e-12):
@@ -350,7 +348,10 @@ class OptGene(object):
             sol = delModel.optimize()
             growth = sol.f
             status = sol.status
-            objective_flux = sol.x_dict[self.objective_reaction]
+            try:
+                objective_flux = sol.x_dict[self.objective_reaction]
+            except TypeError:
+                return 1e-16,
 
         elif self.flux_calculation.lower() == 'moma':
             sol_dict = moma.moma(model, delModel, minimize_norm=True, norm_flux_dict=self.wt_flux)
