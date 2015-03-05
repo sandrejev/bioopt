@@ -214,12 +214,15 @@ class OptGene(object):
         print("Best mutation combination is %s, %s" % (delList, best_ind.fitness.values))
 
         # show the progress until the end of the program
-        import matplotlib.pyplot as plt
-        plt.plot(Rec)
-        plt.xlabel('Generation')
-        plt.ylabel('Objective value')
-        # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
-        plt.show()
+        try:
+            import matplotlib.pyplot as plt
+            plt.plot(Rec)
+            plt.xlabel('Generation')
+            plt.ylabel('Objective value')
+            # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
+            plt.show()
+        except:
+            pass
 
 
     def reduceModel(self, model, zero_cutoff=1e-12):
