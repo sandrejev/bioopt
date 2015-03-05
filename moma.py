@@ -31,34 +31,18 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
     Segre et al 2002 PNAS 99(23): 15112-7.
 
     wt_model: A cobra.Model object
-
     mutant_model: A cobra.Model object with different reaction bounds vs wt_model.
-    To simulate deletions
-
     objective_sense: 'maximize' or 'minimize'
-
-    solver: 'gurobi', 'cplex', or 'glpk'.  Note: glpk cannot be used with
-    norm_type 'euclidean'
-
+    solver: 'gurobi', 'cplex', or 'glpk'.  Note: glpk cannot be used with norm_type 'euclidean'
     tolerance_optimality: Solver tolerance for optimality.
-
     tolerance_feasibility: Solver tolerance for feasibility.
-
     the_problem: None or a problem object for the specific solver that can be
     used to hot start the next solution.
-
     lp_method: The method to use for solving the problem.  Depends on the solver.  See
     the cobra.flux_analysis.solvers.py file for more info.
         For norm_type == 'euclidean':
             the primal simplex works best for the test model (gurobi: lp_method=0, cplex: lp_method=1)
-    
-    combined_model: an output from moma that represents the combined optimization
-    to be solved.  when this is not none.  only assume that bounds have changed
-    for the mutant or wild-type.  This saves 0.2 seconds in stacking matrices.
-
-
-    NOTE: Current function makes too many assumptions about the structures of the models
-
+    combined_model: an output from moma that represents the combined optimization to be solved.
 
     """
     if solver is None:
@@ -101,6 +85,20 @@ def moma(wt_model, mutant_model, objective_sense='maximize', solver=None,
             optimize_minimum_flux(wt_model, objective_sense='maximize',
                                   tolerance_feasibility=tolerance_feasibility)
             norm_flux_dict = wt_model.solution.x_dict
+
+        else:
+            # update the solution of wt model according to norm_flux_dict
+            wt_model.optimize() # this is just to make sure wt_model.solution and mutant_model.solution refer to different object.
+            objective_reaction_coefficient_dict = dict([(x.id, x.objective_coefficient)
+                                                        for x in wt_model.reactions
+                                                        if x.objective_coefficient])
+            try:
+                wt_model.solution.f = sum([norm_flux_dict[k] * v for k, v in
+                                           objective_reaction_coefficient_dict.items()])
+                wt_model.solution.x_dict = norm_flux_dict
+            except:
+                print('incorrect norm_flux_dict')
+                raise
 
         # formulate qMOMA using wt_flux as reference
         # make a copy not to change the objective coefficients of original mutant model
