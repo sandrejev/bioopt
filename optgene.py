@@ -10,7 +10,7 @@ from cPickle import load, dump
 class OptGene(object):
     def __init__(self, objective_function='Yield', max_mutation=3, target_type='reaction',
                  target_list=None, generations=5000, population_size=125, mutation_rate=None, cx_fraction=0.8,
-                 cx_method='Two', population=None, flux_calculation='FBA', wt_flux=None, reduced=False, record_interval=0):
+                 cx_method='Two', record_file=None, flux_calculation='FBA', wt_flux=None, reduced=False, record_interval=0):
         self.objective_function = objective_function
         self.max_mutation = max_mutation
         self.target_type = target_type
@@ -20,7 +20,7 @@ class OptGene(object):
         self.mutation_rate = mutation_rate
         self.cx_fraction = cx_fraction # crossover fraction
         self.cx_method = cx_method # crossover method, 'One', 'Two' or 'Uni'
-        self.population = population # when start from previous result
+        self.record_file = record_file # when start from previous result
         self.flux_calculation = flux_calculation
         self.wt_flux = wt_flux
         self.reduced = reduced
@@ -106,13 +106,18 @@ class OptGene(object):
         toolbox.register("select", tools.selRoulette)
 
         # random.seed() # set seed when needed
-        if self.population is None: # start from WT
+        if self.record_file is None: # start from WT
             pop = toolbox.population(n=self.population_size)
-        else: # start from previous result
-            pop = self.population
+            hof = tools.HallOfFame(5)  # the list of five best individuals found so far
+            progress = [] # record the best fitness values in each generation here
 
-        Rec = [] # record the best fitness values in each generation here
-        hof = tools.HallOfFame(5)  # the list of five best individuals found so far
+        else: # start from previous result
+            with open(self.record_file) as f:
+                Rec = load(f)
+            pop = Rec['population']
+            hof = Rec['hof']
+            progress = Rec['progress']
+
 
         print("Start of evolution")
         # Evaluate the entire population
@@ -171,7 +176,7 @@ class OptGene(object):
 
             hof.update(pop)
             currentBest = tools.selBest(pop, 1)[0]
-            Rec.append(currentBest.fitness.values[0]) # fitness value of the best individual in this generation is recorded
+            progress.append(currentBest.fitness.values[0]) # fitness value of the best individual in this generation is recorded
 
             # Gather all the fitnesses in one list and print the stats
             fits = [ind.fitness.values[0] for ind in pop]
@@ -190,15 +195,10 @@ class OptGene(object):
             if self.record_interval:
                 try:
                     if g != 0 and (g+1) % self.record_interval == 0:
-                        with open('population_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
-                                                                         self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o1,\
-                            open('Hof_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
-                                                                         self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o2,\
-                            open('Rec_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
-                                                                         self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o3:
-                            dump(pop, o1)
-                            dump(hof, o2)
-                            dump(Rec, o3)
+                        with open('Rec_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
+                                                                      self.max_mutation, self.target_type,
+                                                                      self.flux_calculation), 'wb') as o1:
+                            dump({'population': pop, 'hof': hof, 'progress': progress}, o1)
                 except:
                     print('improper record interval')
 
@@ -212,12 +212,12 @@ class OptGene(object):
         # show the progress until the end of the program
         try:
             import matplotlib.pyplot as plt
-            plt.plot(Rec)
+            plt.plot(progress)
             plt.xlabel('Generation')
             plt.ylabel('Objective value')
             # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
             # plt.show()
-            file_name = 'Rec_%s_%s_m%s_%s_%s.png' % (objective_reaction, self.objective_function,
+            file_name = 'progress_%s_%s_m%s_%s_%s.png' % (objective_reaction, self.objective_function,
                                                         self.max_mutation, self.target_type, self.flux_calculation)
             plt.savefig(file_name)
             print("Progress curve was saved as %s" % file_name)
@@ -410,8 +410,8 @@ if __name__ == "__main__":
                         help='Fraction of children generated by crossover (default: 0.8)', type=float)
     parser.add_argument('--cx_method', '-cxm', dest="cx_method", default='Two', action='store',
                         help='Crossover method ("One", "Two"(default) or "Uni")', type=str)
-    parser.add_argument('--population', '-pop', dest="population", default=None, action='store',
-                        help='Population from which evolution start', type=list)
+    parser.add_argument('--record_file', '-rec', dest="record_file", default=None, action='store',
+                        help='File name of record file if run from past record', type=str)
     parser.add_argument('--flux_calculation', '-fc', dest="flux_calculation", default='FBA', action='store',
                         help='"Flux calculation method ("FBA"(default) or "MOMA")', type=str)
     parser.add_argument('--wt_flux', '-wt', dest="wt_flux", default=None, action='store',
@@ -419,7 +419,7 @@ if __name__ == "__main__":
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
     parser.add_argument('--cobra', dest="is_cobra", action='store_true', help='Is COBRA model file')
     parser.add_argument('--reduced', dest="is_reduced", action='store_true', help='Model is already reduced')
-    parser.add_argument('--record_interval', '-rec', dest="record_interval", default=0, action='store',
+    parser.add_argument('--record_interval', '-rec_step', dest="record_interval", default=0, action='store',
                         help='interval of recording results (default: no recording)', type=int)
 
     args = parser.parse_args()
@@ -445,5 +445,5 @@ if __name__ == "__main__":
                       max_mutation=args.max_mutation, target_type=args.target_type, target_list=args.target_list,
                       generations=args.generations, population_size=args.population_size, mutation_rate=args.mutation_rate,
                       cx_fraction=args.cx_fraction, cx_method=args.cx_method, flux_calculation=args.flux_calculation,
-                      population=args.population, wt_flux=args.wt_flux, reduced=args.is_reduced, record_interval=args.record_interval)
+                      record_file=args.record_file, wt_flux=args.wt_flux, reduced=args.is_reduced, record_interval=args.record_interval)
     optgene.optimize(cobra_model, objective_reaction=args.objective_reaction)
