@@ -1,5 +1,4 @@
 import argparse
-## these two imports are needed when model is in bioopt format
 from bioopt_parser import BiooptParser
 from converter import Bioopt2CobraPyConverter
 import cobra.io, cobra.flux_analysis, cobra.manipulation
@@ -11,10 +10,9 @@ import time
 time.clock()
 
 class OptGene(object):
-    def __init__(self, objective_reaction, objective_function, max_mutation,
-                 target_type, target_list, generations, population_size, mutation_rate,
-                 cx_fraction, cx_method, population, flux_calculation, wt_flux, reduced):
-        self.objective_reaction = objective_reaction
+    def __init__(self, objective_function='Yield', max_mutation=3, target_type='reaction',
+                 target_list=None, generations=5000, population_size=125, mutation_rate=None, cx_fraction=0.8,
+                 cx_method='Two', population=None, flux_calculation='FBA', wt_flux=None, reduced=False):
         self.objective_function = objective_function
         self.max_mutation = max_mutation
         self.target_type = target_type
@@ -30,10 +28,11 @@ class OptGene(object):
         self.reduced = reduced
 
 
-    def optimize(self, cobra_model):
+    def optimize(self, cobra_model, objective_reaction):
         '''
         Main function which uses genetic algorithm
         :param cobra_model: cobra.Model object
+        :param objective_reaction: reaction ID of design objective
         :return: best individual
         '''
         global model, target
@@ -93,7 +92,7 @@ class OptGene(object):
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         # Operator registering
-        toolbox.register("evaluate", self.__evaluation)
+        toolbox.register("evaluate", self.__evaluation, objective_reaction=objective_reaction)
 
         if self.cx_method == 'Two':
             toolbox.register("mate", tools.cxTwoPoint)
@@ -192,13 +191,13 @@ class OptGene(object):
             if g != 0 and (g+1) % 500 == 0:
                 if g == 500:
                     unique_num = int(time.clock())
-                with open('population_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                with open('population_%s_%s_m%s_%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
                                                                  unique_num), 'wb') as o1,\
-                    open('Hof_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                    open('Hof_%s_%s_m%s_%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
                                                                  unique_num), 'wb') as o2,\
-                    open('Rec_%s_%s_m%s_%s_%s_%s.pickle' % (self.objective_reaction, self.objective_function,
+                    open('Rec_%s_%s_m%s_%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
                                                                  self.max_mutation, self.target_type, self.flux_calculation,
                                                                  unique_num), 'wb') as o3:
                     dump(pop, o1)
@@ -221,7 +220,7 @@ class OptGene(object):
             plt.ylabel('Objective value')
             # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
             # plt.show()
-            file_name = 'Rec_%s_%s_m%s_%s_%s.png' % (self.objective_reaction, self.objective_function,
+            file_name = 'Rec_%s_%s_m%s_%s_%s.png' % (objective_reaction, self.objective_function,
                                                         self.max_mutation, self.target_type, self.flux_calculation)
             plt.savefig(file_name)
             print("Progress curve was saved as %s" % file_name)
@@ -293,7 +292,7 @@ class OptGene(object):
             # uniqueGeneList = list(set(geneList))
 
             # list of reactions, exchange reactions are not included
-            target = [r.id for r in model.reactions if len(r.metabolites) == 1]
+            target = [r.id for r in model.reactions if not len(r.metabolites) == 1]
 
         elif target_type.lower() == 'gene':
             target = [g.id for g in model.genes if g.reactions]
@@ -334,7 +333,7 @@ class OptGene(object):
         return target
 
 
-    def __evaluation(self, individual):
+    def __evaluation(self, individual, objective_reaction):
         global model, target
         # get the index of deleted elements
         deletion_list = [target[i] for i, v in enumerate(individual) if not v]
@@ -356,7 +355,7 @@ class OptGene(object):
             growth = sol.f
             status = sol.status
             try:
-                objective_flux = sol.x_dict[self.objective_reaction]
+                objective_flux = sol.x_dict[objective_reaction]
             except TypeError:
                 return 1e-16,
 
@@ -365,7 +364,7 @@ class OptGene(object):
             try:
                 growth = sol_dict['objective_value']
                 status = sol_dict['status']
-                objective_flux = abs(sol_dict['the_problem'].x_dict[self.objective_reaction])
+                objective_flux = abs(sol_dict['the_problem'].x_dict[objective_reaction])
             except:
                 return 1e-16,
 
@@ -404,8 +403,8 @@ if __name__ == "__main__":
                         help='"Reaction" or "Gene" (default: "Reaction")', type=str)
     parser.add_argument('--target_list', '-tl', dest="target_list", default=None, action='store',
                         help='file name of list of target id for deletion (.txt (one reaction ID in each line) or .pickle)', type=str)
-    parser.add_argument('--generations', '-g', dest="generations", default=10000, action='store',
-                        help='Number of generations (default: 10000)', type=int)
+    parser.add_argument('--generations', '-g', dest="generations", default=5000, action='store',
+                        help='Number of generations (default: 5000)', type=int)
     parser.add_argument('--population-size', '-p', dest="population_size", default=125, action='store',
                         help='Population size (default: 125)', type=int)
     parser.add_argument('--mutation_rate', '-mRate', dest="mutation_rate", default=None, action='store',
@@ -443,9 +442,9 @@ if __name__ == "__main__":
     # with open(args.bioopt, 'rb') as f:
     #     model = load(f)
 
-    optgene = OptGene(objective_reaction=args.objective_reaction, objective_function=args.objective_function,
+    optgene = OptGene(objective_function=args.objective_function,
                       max_mutation=args.max_mutation, target_type=args.target_type, target_list=args.target_list,
                       generations=args.generations, population_size=args.population_size, mutation_rate=args.mutation_rate,
                       cx_fraction=args.cx_fraction, cx_method=args.cx_method, flux_calculation=args.flux_calculation,
                       population=args.population, wt_flux=args.wt_flux, reduced=args.is_reduced)
-    optgene.optimize(cobra_model)
+    optgene.optimize(cobra_model, objective_reaction=args.objective_reaction)
