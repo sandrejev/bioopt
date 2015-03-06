@@ -220,7 +220,11 @@ class OptGene(object):
             plt.xlabel('Generation')
             plt.ylabel('Objective value')
             # plt.axis([0, Generations, 0, Hof[0].fitness.values[0]])
-            plt.show()
+            # plt.show()
+            file_name = 'Rec_%s_%s_m%s_%s_%s.png' % (self.objective_reaction, self.objective_function,
+                                                        self.max_mutation, self.target_type, self.flux_calculation)
+            plt.savefig(file_name)
+            print("Progress curve was saved as %s" % file_name)
         except:
             pass
 
