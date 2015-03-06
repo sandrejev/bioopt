@@ -6,13 +6,11 @@ import moma # when run on cluster
 from deap import base, creator, tools
 import random
 from cPickle import load, dump
-import time
-time.clock()
 
 class OptGene(object):
     def __init__(self, objective_function='Yield', max_mutation=3, target_type='reaction',
                  target_list=None, generations=5000, population_size=125, mutation_rate=None, cx_fraction=0.8,
-                 cx_method='Two', population=None, flux_calculation='FBA', wt_flux=None, reduced=False):
+                 cx_method='Two', population=None, flux_calculation='FBA', wt_flux=None, reduced=False, record_interval=0):
         self.objective_function = objective_function
         self.max_mutation = max_mutation
         self.target_type = target_type
@@ -26,6 +24,7 @@ class OptGene(object):
         self.flux_calculation = flux_calculation
         self.wt_flux = wt_flux
         self.reduced = reduced
+        self.record_interval = record_interval
 
 
     def optimize(self, cobra_model, objective_reaction):
@@ -187,23 +186,21 @@ class OptGene(object):
             print("  Avg %s" % mean)
             print("  Std %s" % std)
 
-            # record every 500 generation
-            if g != 0 and (g+1) % 500 == 0:
-                if g == 500:
-                    unique_num = int(time.clock())
-                with open('population_%s_%s_m%s_%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
-                                                                 self.max_mutation, self.target_type, self.flux_calculation,
-                                                                 unique_num), 'wb') as o1,\
-                    open('Hof_%s_%s_m%s_%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
-                                                                 self.max_mutation, self.target_type, self.flux_calculation,
-                                                                 unique_num), 'wb') as o2,\
-                    open('Rec_%s_%s_m%s_%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
-                                                                 self.max_mutation, self.target_type, self.flux_calculation,
-                                                                 unique_num), 'wb') as o3:
-                    dump(pop, o1)
-                    dump(hof, o2)
-                    dump(Rec, o3)
-
+            # record results every specified generation
+            if self.record_interval:
+                try:
+                    if g != 0 and (g+1) % self.record_interval == 0:
+                        with open('population_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
+                                                                         self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o1,\
+                            open('Hof_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
+                                                                         self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o2,\
+                            open('Rec_%s_%s_m%s_%s_%s.pickle' % (objective_reaction, self.objective_function,
+                                                                         self.max_mutation, self.target_type, self.flux_calculation), 'wb') as o3:
+                            dump(pop, o1)
+                            dump(hof, o2)
+                            dump(Rec, o3)
+                except:
+                    print('improper record interval')
 
         print("-- End of (successful) evolution --")
         print("%s different mutants were evaluated" % len(Evaluated))
@@ -422,6 +419,8 @@ if __name__ == "__main__":
     parser.add_argument('--sbml', dest="is_sbml", action='store_true', help='Is SBML file')
     parser.add_argument('--cobra', dest="is_cobra", action='store_true', help='Is COBRA model file')
     parser.add_argument('--reduced', dest="is_reduced", action='store_true', help='Model is already reduced')
+    parser.add_argument('--record_interval', '-rec', dest="record_interval", default=0, action='store',
+                        help='interval of recording results (default: no recording)', type=int)
 
     args = parser.parse_args()
 
@@ -446,5 +445,5 @@ if __name__ == "__main__":
                       max_mutation=args.max_mutation, target_type=args.target_type, target_list=args.target_list,
                       generations=args.generations, population_size=args.population_size, mutation_rate=args.mutation_rate,
                       cx_fraction=args.cx_fraction, cx_method=args.cx_method, flux_calculation=args.flux_calculation,
-                      population=args.population, wt_flux=args.wt_flux, reduced=args.is_reduced)
+                      population=args.population, wt_flux=args.wt_flux, reduced=args.is_reduced, record_interval=args.record_interval)
     optgene.optimize(cobra_model, objective_reaction=args.objective_reaction)
