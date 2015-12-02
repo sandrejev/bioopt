@@ -41,6 +41,13 @@ class Bounds(object):
         return Bounds(self.__lb, self.__ub)
 
     @property
+    def lb_is_finite(self):
+        """
+        Returns inf False if lower bound is -infinity or +infinity
+        """
+        return self.__lb != self.inf() and self.__lb != -self.inf()
+
+    @property
     def lb(self):
         """
         Minimal amount of of flux that can go through a reaction (Lower bound). Negative numbers denote reverse direction.
@@ -51,6 +58,13 @@ class Bounds(object):
     def lb(self, lb):
         self.__assert_valid(lb, self.ub)
         self.__lb = float(lb)
+
+    @property
+    def ub_is_finite(self):
+        """
+        Returns inf False if upper bound is -infinity or +infinity
+        """
+        return self.__ub != self.inf() and self.__ub != -self.inf()
 
     @property
     def ub(self):
@@ -287,8 +301,6 @@ class ReactionMember(object):
     def __assert_coefficient(self, coefficient):
         if not isinstance(coefficient, (int, float)):
             raise TypeError("Reaction member coefficient is not a number: {0}".format(type(coefficient)))
-        if coefficient <= 0:
-            raise ValueError("Reaction member coefficient is not strictly positive: {0}".format(coefficient))
 
 class Direction(object):
     """
@@ -485,6 +497,7 @@ class Reaction(object):
         self.__assert_name(name)
         self.__name = name
 
+
     @property
     def reactants(self):
         """
@@ -509,7 +522,8 @@ class Reaction(object):
 
         :rtype: :class:`ReactionMemberList`
         """
-        return ReactionMemberList(itertools.chain(self.__reactants, self.__products))
+        return itertools.chain([ReactionMember(m.metabolite, -m.coefficient) for m in self.__reactants],
+                               [ReactionMember(m.metabolite, m.coefficient) for m in self.__products])
 
     @property
     def products(self):
