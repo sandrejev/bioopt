@@ -304,8 +304,8 @@ class FbaProblem:
         return active_reactions
 
 
-def bioopt2cplex(bioopt, split_reversible=False):
-    obj_reaction = bioopt.objective.operands[0].name
+def bioopt2cplex(bioopt, split_reversible=False, objective=None):
+    obj_reaction = bioopt.objective.operands[0].name if objective is None else objective
     all_reactions, columns, lb, ub, obj = [], [], [], [], []
 
     all_compounds_dict = {m.name: m for m in bioopt.find_metabolites()}
