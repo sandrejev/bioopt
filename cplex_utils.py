@@ -448,17 +448,24 @@ def summary(model, primal=False, dual=False):
     return ret
 
 
-def reaction_precursors(prob, reaction):
-    obj_bck = prob.model.objective.get_linear()
+def reaction_precursors(prob, reaction, hide_inf=True):
+    obj_bck = list(enumerate(prob.model.objective.get_linear()))
+    obj = [(i, 0.0) for i in xrange(prob.rxnnum)]
+    prob.model.objective.set_linear(obj)
 
-    cols = prob.model.variables.get_cols(prob.rxn2i[reaction])
-    obj = set(r_i for r_i, coef in zip(cols.ind, cols.val) if coef < 0)
-    prob.model.objective.set_linear([(i, i in obj) for i, v in enumerate(obj_bck)])
-    prob.model.solve()
+    rcol = prob.model.variables.get_cols(prob.rxn2i[reaction])
+    for cpd_i, coef in zip(rcol.ind, rcol.val):
+        if coef >= 0:
+            continue
 
-    values = dict(zip(prob.model.variables.get_names(), prob.model.solution.get_values()))
-    for r_i in obj:
-        rxn = prob.i2rxn[r_i]
-        print "{}\t{}".format(rxn, values[rxn])
+        cpd = prob.i2cpd[cpd_i]
 
-    prob.model.objective.set_linear([(i, v) for i, v in enumerate(obj_bck)])
+        prob.model.variables.add(lb=[0], ub=[1000], names=["MET_EXPORT_TEST"], columns=[cplex.SparsePair([cpd_i], [-1])], obj=[1])
+        prob.model.solve()
+
+        obj = prob.model.solution.get_objective_value()
+        if not is_optimal(prob.model) or (is_optimal(prob.model) and (not hide_inf or obj < 100)):
+            print "{} {}: {}".format(coef, cpd, summary(prob.model))
+        prob.model.variables.delete(prob.rxnnum)
+
+    prob.model.objective.set_linear(obj_bck)
