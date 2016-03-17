@@ -122,11 +122,14 @@ class FbaProblem:
         raw_lb = self.model.variables.get_lower_bounds(indices_range)
         raw_ub = self.model.variables.get_upper_bounds(indices_range)
 
+        inf = float("Inf")
+
         backup_lb, backup_ub = {}, {}
         new_lb, new_ub = [], []
         for i in indices_range:
             ub_bin = int(raw_ub[i] != 0)
             ub = values[i] if values else self.i2bounds[i].ub
+            ub = ub if ub < inf else cplex.infinity
             ub_changed = ub_bin != indices[i] or (values and raw_ub[i] != ub)
             if ub_changed:
                 backup_ub[i] = raw_ub[i]
@@ -134,6 +137,7 @@ class FbaProblem:
 
             lb_bin = int(raw_lb[i] != 0)
             lb = -values[i] if values and self.i2bounds[i].lb < 0 and -values[i] else self.i2bounds[i].lb
+            lb = lb if lb > -inf else -cplex.infinity
             if lb > ub: lb = self.i2bounds[i].lb
             lb_changed = lb_bin != indices[i] or (values and raw_lb[i] != lb)
             if lb_changed:
@@ -303,9 +307,75 @@ class FbaProblem:
 
         return active_reactions
 
+def sbml2cplex(model, objective=None):
+    obj_reaction = objective
+    all_reactions, columns, lb, ub, obj = [], [], [], [], []
+
+    all_compounds_dict = {m.id: m for m in model.species}
+    all_compounds_set = set(m.id for m in model.species)
+    all_compounds = list(all_compounds_set)
+    all_compounds_ind = {cpd: i for i, cpd in enumerate(all_compounds)}
+    all_reactions_ind, rxn2external, rxn2compound, rxn2bounds = {}, {}, {}, {}
+
+    rxn2dir = {}
+    r_i = 0
+    for r in model.reactions:
+        rxn2dir[r.id] = {dir_fwd: r.id}
+        rxn2external[r.id] = False
+        all_reactions.append(r.id)
+        all_reactions_ind[r.id] = r_i
+
+        cpds = []
+        coefs = []
+        for m in r.reactants:
+            cpds.append(all_compounds_ind[m.species])
+            coefs.append(-m.stoichiometry)
+        for m in r.products:
+            cpds.append(all_compounds_ind[m.species])
+            coefs.append(m.stoichiometry)
+
+        columns.append(cplex.SparsePair(cpds, coefs))
+        r_bounds = FbaBounds(0 if r.reversible else -cplex.infinity, cplex.infinity)
+        rxn2bounds[r.id] = r_bounds
+        lb.append(r_bounds.lb)
+        ub.append(r_bounds.ub)
+        obj.append(float(r.id == obj_reaction))
+
+        r_i += 1
+
+    for cpd in all_compounds:
+        if not all_compounds_dict[cpd].boundary_condition:
+            continue
+
+        r_id = "EX_{}".format(cpd)
+        all_reactions.append(r_id)
+        rxn2external[r_id] = True
+        all_reactions_ind[r_id] = len(all_reactions_ind)
+        rxn2bounds[r_id] = FbaBounds(-cplex.infinity, cplex.infinity)
+        rxn2compound[r_id] = cpd
+        columns.append(cplex.SparsePair([all_compounds_ind[cpd]], [1]))
+        lb.append(-cplex.infinity)
+        ub.append(cplex.infinity)
+        obj.append(0)
+
+    prob = cplex.Cplex()
+    prob.objective.set_sense(prob.objective.sense.maximize)
+    prob.linear_constraints.add(rhs=[0]*len(all_compounds), senses='E'*len(all_compounds), names=all_compounds)
+    prob.variables.add(ub=ub, lb=lb, names=all_reactions, columns=columns, obj=obj)
+    #prob.parameters.lpmethod.set(prob.parameters.lpmethod.values.auto)
+    #prob.parameters.preprocessing.reduce.set(3)
+    prob.parameters.advance.set(0)
+    prob.set_log_stream(None)
+    prob.set_error_stream(None)
+    prob.set_warning_stream(None)
+    prob.set_results_stream(None)
+
+    return FbaProblem(model=prob, rxn2i=all_reactions_ind, cpd2i=all_compounds_ind, rxn2ext=rxn2external, rxn2cpd=rxn2compound,
+               rxn2bounds=rxn2bounds, rxn2dir=rxn2dir, obj=obj_reaction)
+
 
 def bioopt2cplex(bioopt, split_reversible=False, objective=None):
-    obj_reaction = bioopt.objective.operands[0].name if objective is None else objective
+    obj_reaction = bioopt.objective.operands[0].name if objective is None and bioopt.objective is not None else objective
     all_reactions, columns, lb, ub, obj = [], [], [], [], []
 
     all_compounds_dict = {m.name: m for m in bioopt.find_metabolites()}
@@ -317,7 +387,6 @@ def bioopt2cplex(bioopt, split_reversible=False, objective=None):
     rxn2dir = {}
     r_i = 0
     for r in bioopt.reactions:
-
         if split_reversible and r.direction == dir_rev and obj_reaction != r.name:
             rxn2dir[r.name] = {}
             for dir in [dir_fwd, dir_rev]:
@@ -334,7 +403,8 @@ def bioopt2cplex(bioopt, split_reversible=False, objective=None):
                     cpds.append(all_compounds_ind[m.metabolite.name])
                     coefs.append((1-int(dir == dir_rev)*2)*m.coefficient)
 
-                r_lb, r_ub = 0.0, r.bounds.ub if dir == dir_fwd else r.bounds.ub
+                r_lb = 0.0
+                r_ub = r.bounds.ub if dir == dir_fwd else r.bounds.ub
                 r_ub = r_ub if r_ub != r.bounds.inf() else cplex.infinity
 
                 columns.append(cplex.SparsePair(cpds, coefs))
@@ -357,8 +427,10 @@ def bioopt2cplex(bioopt, split_reversible=False, objective=None):
                 coefs.append(m.coefficient)
 
             columns.append(cplex.SparsePair(cpds, coefs))
-            lb.append(r.bounds.lb if r.bounds.lb_is_finite else -cplex.infinity)
-            ub.append(r.bounds.ub if r.bounds.ub_is_finite else cplex.infinity)
+            r_lb = r.bounds.lb if r.bounds.lb_is_finite else -cplex.infinity
+            r_ub = r.bounds.ub if r.bounds.ub_is_finite else cplex.infinity
+            lb.append(r_lb)
+            ub.append(r_ub)
             rxn2bounds[r.name] = FbaBounds(r.bounds.lb, r.bounds.ub)
             obj.append(float(r.name == obj_reaction))
 
@@ -412,25 +484,28 @@ def bioopt2cplex(bioopt, split_reversible=False, objective=None):
                rxn2bounds=rxn2bounds, rxn2dir=rxn2dir, obj=obj_reaction)
 
 
-def summary_dual(model):
+def summary_dual(model, map={}):
     str = ""
-    for name, dual in zip(model.linear_constraints.get_names(), model.solution.get_dual_values()):
-        if dual != 0:
-            str += "{:<20}{}\n".format(name, dual)
+    res = zip([map.get(n, n) for n in model.linear_constraints.get_names()], model.solution.get_dual_values())
+    res = sorted([(n, dual) for n, dual in res if dual != 0], key=lambda x: x[0])
+    res_str = "{{:<{}}} --> {{}}\n".format(max(len(n) for n, dual in res))
+
+    for name, dual in res:
+        str += res_str.format(name, dual)
 
     return str
 
 
-def summary_primal(model):
+def summary_primal(model, map={}):
     str = ""
     for rxn, val in zip(model.variables.get_names(), model.solution.get_values()):
         if val != 0:
-            str += "{:<20}{}\n".format(rxn, val)
+            str += "{:<20}{}\n".format(map.get(rxn, rxn), val)
 
     return str
 
 
-def summary(model, primal=False, dual=False):
+def summary(model, primal=False, dual=False, map={}):
     status = model.solution.get_status_string()
 
     if status == "optimal":
@@ -438,24 +513,25 @@ def summary(model, primal=False, dual=False):
         ret = "{} ({})".format(status, obj)
         if primal:
             ret += "\nPrimal\n=================\n"
-            ret += summary_primal(model)
+            ret += summary_primal(model, map=map)
         if dual:
             ret += "\nDual\n=================\n"
-            ret += summary_dual(model)
+            ret += summary_dual(model, map=map)
     else:
         ret = status
 
     return ret
 
 
-def reaction_precursors(prob, reaction, hide_inf=True):
+def reaction_precursors(prob, reaction, hide_inf=True, map={}):
     obj_bck = list(enumerate(prob.model.objective.get_linear()))
     obj = [(i, 0.0) for i in xrange(prob.rxnnum)]
     prob.model.objective.set_linear(obj)
 
     rcol = prob.model.variables.get_cols(prob.rxn2i[reaction])
+    res = []
     for cpd_i, coef in zip(rcol.ind, rcol.val):
-        if coef >= 0:
+        if coef == 0:
             continue
 
         cpd = prob.i2cpd[cpd_i]
@@ -465,7 +541,16 @@ def reaction_precursors(prob, reaction, hide_inf=True):
 
         obj = prob.model.solution.get_objective_value()
         if not is_optimal(prob.model) or (is_optimal(prob.model) and (not hide_inf or obj < 100)):
-            print "{} {}: {}".format(coef, cpd, summary(prob.model))
+            res.append((cpd, coef, summary(prob.model)))
         prob.model.variables.delete(prob.rxnnum)
 
     prob.model.objective.set_linear(obj_bck)
+
+    res = [(cpd + ":" + map.get(cpd, cpd), coef, sol) for cpd, coef, sol in res]
+    cmd_max = max([len(c[0]) for c in res])
+    res_str = "{{:>{}}} {{:>8}}: {{}}".format(cmd_max)
+
+    res = sorted(res, key=lambda x: x[0])
+    for cpd, coef, sol in res:
+        print res_str.format(cpd, coef, sol)
+
