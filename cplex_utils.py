@@ -95,23 +95,30 @@ class FbaProblem:
         return self.coupling['allow'].get(rxn, {dir_fwd: set(), dir_rev: set()})[direction]
 
     def set_media(self, media):
-        media_dict = {r['COMPOUND']: FbaBounds(r['LB'], r['UB']) for r in media}
+        media_dict = {r['UPTAKE']: FbaBounds(r['LB'], r['UB']) for r in media}
         cplex_lb = []
         cplex_ub = []
         default_bounds = FbaBounds(-cplex.infinity, 0)
 
-        for rxn, i in self.rxn2i_external.iteritems():
+        for rxn, i in self.rxn2i.iteritems():
             if rxn == self.obj:
                 continue
 
-            cpd = self.rxn2cpd[rxn]
-            lb = media_dict.get(cpd, default_bounds).lb
-            ub = media_dict.get(cpd, default_bounds).ub
-            cplex_lb.append((i, -cplex.infinity if lb <= 100 else lb))
-            cplex_ub.append((i, cplex.infinity if ub >= 100 else ub))
+            if rxn in media_dict:
+                lb = media_dict.get(rxn, default_bounds).lb
+                ub = media_dict.get(rxn, default_bounds).ub
 
-        self.model.variables.set_lower_bounds(cplex_lb)
-        self.model.variables.set_upper_bounds(cplex_ub)
+                if self.rxn2bounds[rxn].lb != lb:
+                    cplex_lb.append((i, -cplex.infinity if lb <= 100 else lb))
+
+                if self.rxn2bounds[rxn].ub != ub:
+                    cplex_ub.append((i, cplex.infinity if ub >= 100 else ub))
+
+        if cplex_lb:
+            self.model.variables.set_lower_bounds(cplex_lb)
+
+        if cplex_ub:
+            self.model.variables.set_upper_bounds(cplex_ub)
 
     def switch_reactions(self, indices, values=None):
         """
