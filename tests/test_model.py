@@ -171,8 +171,6 @@ class TestReaction(TestCase):
         self.assertEquals(r.name, name)
         self.assertEquals(r.reactants, reactants)
         self.assertEquals(r.products, products)
-        self.assertTrue(all(reactant in r.participants for reactant in reactants))
-        self.assertTrue(all(product in r.participants for product in products))
         self.assertEquals(r.direction, direction)
         self.assertEquals(r.bounds, bounds)
         self.assertEquals(r.find_effective_bounds().lb, 0)

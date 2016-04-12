@@ -406,9 +406,12 @@ def bioopt2cplex(bioopt, split_reversible=False, objective=None):
 
                 cpds = []
                 coefs = []
-                for m in r.participants:
+                for m in r.reactants:
                     cpds.append(all_compounds_ind[m.metabolite.name])
-                    coefs.append((1-int(dir == dir_rev)*2)*m.coefficient)
+                    coefs.append(-m.coefficient)
+                for m in r.products:
+                    cpds.append(all_compounds_ind[m.metabolite.name])
+                    coefs.append(m.coefficient)
 
                 r_lb = 0.0
                 r_ub = r.bounds.ub if dir == dir_fwd else r.bounds.ub
@@ -429,7 +432,10 @@ def bioopt2cplex(bioopt, split_reversible=False, objective=None):
 
             cpds = []
             coefs = []
-            for m in r.participants:
+            for m in r.reactants:
+                cpds.append(all_compounds_ind[m.metabolite.name])
+                coefs.append(-m.coefficient)
+            for m in r.products:
                 cpds.append(all_compounds_ind[m.metabolite.name])
                 coefs.append(m.coefficient)
 

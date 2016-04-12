@@ -516,16 +516,6 @@ class Reaction(object):
             self.__reactants = reactants
 
     @property
-    def participants(self):
-        """
-        A combined list of reactants and products
-
-        :rtype: :class:`ReactionMemberList`
-        """
-        return itertools.chain([ReactionMember(m.metabolite, -m.coefficient) for m in self.__reactants],
-                               [ReactionMember(m.metabolite, m.coefficient) for m in self.__products])
-
-    @property
     def products(self):
         """
         Products
@@ -1032,7 +1022,9 @@ class Model(object):
     def unify_metabolite_references(self):
         metabolites = dict((m.name, m) for m in self.find_metabolites())
         for reaction in self.reactions:
-            for member in reaction.participants:
+            for member in reaction.reactants:
+                member.metabolite = metabolites[member.metabolite.name]
+            for member in reaction.products:
                 member.metabolite = metabolites[member.metabolite.name]
 
     def __unify_objective_references(self, expression, reactions):
@@ -1098,9 +1090,13 @@ class Model(object):
         metabolites = []
         for r in self.reactions:
             for rm in r.reactants:
+                if rm.metabolite.name == "atp_c":
+                    pass
                 metabolites_set.add(rm.metabolite)
 
             for rm in r.products:
+                if rm.metabolite.name == "atp_c":
+                    pass
                 metabolites_set.add(rm.metabolite)
             #if rm.metabolite not in metabolites_set:
             #metabolites.append(rm.metabolite)
@@ -1145,7 +1141,7 @@ class Model(object):
 
         :rtype: list of :class:`Reaction`
         """
-        return [r for r in self.reactions if any(m.metabolite.boundary for m in r.participants)]
+        return [r for r in self.reactions if any(m.metabolite.boundary for m in r.reactants) or any(m.metabolite.boundary for m in r.products)]
 
     def get_max_bound(self):
         mb = 0
@@ -1205,7 +1201,9 @@ class Model(object):
             for r in mod.reactions:
                 r = r.copy()
                 r.name = model_prefix.format(i) + r.name
-                for m in r.participants:
+                for m in r.reactants:
+                    metabolites.add(m.metabolite)
+                for m in r.products:
                     metabolites.add(m.metabolite)
 
                 reactions.append(r)

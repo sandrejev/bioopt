@@ -37,7 +37,7 @@ class Bioopt2CobraPyConverter:
 
             cobra_metabolite = cobra.Metabolite(bm.name)
             cobra_metabolite._model = cobra_model
-            metabolites[bm] = cobra_metabolite
+            metabolites[bm.name] = cobra_metabolite
 
         cobra_model.metabolites = DictList()
         cobra_model.metabolites.extend(metabolites.values())
@@ -58,7 +58,7 @@ class Bioopt2CobraPyConverter:
                 if member.metabolite.boundary:
                     continue
 
-                cobra_metabolite = metabolites[member.metabolite]
+                cobra_metabolite = metabolites[member.metabolite.name]
                 cobra_metabolite._reaction.add(cobra_reaction)
                 meta_dict[cobra_metabolite] = -member.coefficient
 
@@ -66,7 +66,7 @@ class Bioopt2CobraPyConverter:
                 if member.metabolite.boundary:
                     continue
 
-                cobra_metabolite = metabolites[member.metabolite]
+                cobra_metabolite = metabolites[member.metabolite.name]
                 cobra_metabolite._reaction.add(cobra_reaction)
                 meta_dict[cobra_metabolite] = member.coefficient
 
