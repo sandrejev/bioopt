@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17af2f7c-6622-43bd-8a30-50b467d8af53" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/converter.py" afterPath="$PROJECT_DIR$/converter.py" />
     </list>
@@ -60,8 +59,8 @@
       <file leaf-file-name="converter.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/converter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="213">
-              <caret line="272" column="0" selection-start-line="272" selection-start-column="0" selection-end-line="272" selection-end-column="0" />
+            <state relative-caret-position="365">
+              <caret line="247" column="63" selection-start-line="247" selection-start-column="63" selection-end-line="247" selection-end-column="63" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -1044,7 +1043,14 @@
       <option name="project" value="LOCAL" />
       <updated>1460455112220</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Sort metabolites and compartments when converting to SBML&#10;">
+      <created>1460626329595</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1460626329595</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1082,7 +1088,7 @@
     <frame x="-1" y="0" width="1718" height="1023" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19109793" sideWeight="0.6226054" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19109793" sideWeight="0.6226054" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3284169" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.37513173" sideWeight="0.5" order="13" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45814478" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -1119,7 +1125,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Parse reaction member" />
     <MESSAGE value="Test parsing when some one of the sections is missing" />
     <MESSAGE value="add __ne__ methods to accomodate __eq__ methods. Add __eq__ to Direction class" />
     <MESSAGE value="Changed __repr__ for Metabolite class and Model" />
@@ -1144,7 +1149,8 @@
     <MESSAGE value="Create script to replace fba_cplex" />
     <MESSAGE value="GTRASS simplify" />
     <MESSAGE value="Remove reaction participants property because changes to it's contents could break the behaviour of the model. Also unify_metabolites method was corrected (related to problem with participants)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove reaction participants property because changes to it's contents could break the behaviour of the model. Also unify_metabolites method was corrected (related to problem with participants)" />
+    <MESSAGE value="Sort metabolites and compartments when converting to SBML&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sort metabolites and compartments when converting to SBML&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1592,8 +1598,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/converter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="213">
-          <caret line="272" column="0" selection-start-line="272" selection-start-column="0" selection-end-line="272" selection-end-column="0" />
+        <state relative-caret-position="365">
+          <caret line="247" column="63" selection-start-line="247" selection-start-column="63" selection-end-line="247" selection-end-column="63" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
