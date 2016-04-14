@@ -253,7 +253,7 @@ class Bioopt2SbmlConverter:
                     break
 
         mids_set = set()
-        for i, m in enumerate(sorted(metabolites, key=_("name")), start=1):
+        for i, m in enumerate(sorted(metabolites, key=lambda x: x.name), start=1):
             m_id = "M_" + ("{0:04d}".format(i) if self.metabolite_id == "auto" else m.name)
             m_suffix = "_" + (c_dict["boundary"].short if m.boundary else mc_dict[m.name].short)
             abbr = self.compartment_suffix and not m_id.endswith(m_suffix)
