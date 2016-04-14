@@ -245,7 +245,7 @@ class Bioopt2SbmlConverter:
             c_dict["boundary"] = IdMap("boundary", "boundary")
 
         # Assign abbreviations to compartments
-        for c_name, c in sorted(c_dict.iteritems(), key=_("name")):
+        for c_name, c in sorted(c_dict.iteritems(), key=_(0)):
             for i in xrange(1, (len(c_name)-1)):
                 short = c_name[0:(0+i)]
                 if short not in (v.short for v in c_dict.itervalues()):
