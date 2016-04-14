@@ -1,5 +1,6 @@
 from model import *
 import re
+from operator import itemgetter as _
 
 class Bioopt2CobraPyConverter:
     """
@@ -244,7 +245,7 @@ class Bioopt2SbmlConverter:
             c_dict["boundary"] = IdMap("boundary", "boundary")
 
         # Assign abbreviations to compartments
-        for c_name, c in c_dict.iteritems():
+        for c_name, c in sorted(c_dict.iteritems(), key=_(0)):
             for i in xrange(1, (len(c_name)-1)):
                 short = c_name[0:(0+i)]
                 if short not in (v.short for v in c_dict.itervalues()):
@@ -252,7 +253,7 @@ class Bioopt2SbmlConverter:
                     break
 
         mids_set = set()
-        for i, m in enumerate(metabolites, start=1):
+        for i, m in enumerate(sorted(metabolites, key=_(0)), start=1):
             m_id = "M_" + ("{0:04d}".format(i) if self.metabolite_id == "auto" else m.name)
             m_suffix = "_" + (c_dict["boundary"].short if m.boundary else mc_dict[m.name].short)
             abbr = self.compartment_suffix and not m_id.endswith(m_suffix)
