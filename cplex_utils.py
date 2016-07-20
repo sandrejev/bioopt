@@ -536,7 +536,7 @@ def summary(model, primal=False, dual=False, map={}):
     return ret
 
 
-def reaction_precursors(prob, reaction, hide_inf=True, map={}):
+def reaction_members(prob, reaction, hide_inf=True, map={}, members="all", print_results=True):
     obj_bck = list(enumerate(prob.model.objective.get_linear()))
     obj = [(i, 0.0) for i in xrange(prob.rxnnum)]
     prob.model.objective.set_linear(obj)
@@ -547,6 +547,12 @@ def reaction_precursors(prob, reaction, hide_inf=True, map={}):
         if coef == 0:
             continue
 
+        if members == "products" and coef < 0:
+            continue
+
+        if members == "reactants" and coef > 0:
+            continue
+
         cpd = prob.i2cpd[cpd_i]
 
         prob.model.variables.add(lb=[0], ub=[1000], names=["MET_EXPORT_TEST"], columns=[cplex.SparsePair([cpd_i], [-1])], obj=[1])
@@ -554,16 +560,20 @@ def reaction_precursors(prob, reaction, hide_inf=True, map={}):
 
         obj = prob.model.solution.get_objective_value()
         if not is_optimal(prob.model) or (is_optimal(prob.model) and (not hide_inf or obj < 100)):
-            res.append((cpd, coef, summary(prob.model)))
+            status = prob.model.solution.get_status_string()
+            value = prob.model.solution.get_objective_value() if status.startswith("optimal") else 0
+            res.append((cpd, coef, status, value))
         prob.model.variables.delete(prob.rxnnum)
 
     prob.model.objective.set_linear(obj_bck)
 
-    res = [(cpd + ":" + map.get(cpd, cpd), coef, sol) for cpd, coef, sol in res]
     cmd_max = max([len(c[0]) for c in res])
-    res_str = "{{:>{}}} {{:>8}}: {{}}".format(cmd_max)
+    res_str = "{{:>{}}} {{:>8}}: {{}}({{}})".format(cmd_max)
 
     res = sorted(res, key=lambda x: x[0])
-    for cpd, coef, sol in res:
-        print res_str.format(cpd, coef, sol)
+    if print_results:
+        for cpd, coef, status, value in res:
+            print res_str.format(cpd + ":" + map.get(cpd, cpd), coef, status, value)
 
+
+    return res

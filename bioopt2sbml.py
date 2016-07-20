@@ -17,6 +17,7 @@ if __name__ == "__main__":
     parser.add_argument('--reaction-id', dest="reaction_id", default="name", action='store', help="Strategy to generate unique reaction id. Specify 'name' to use reaction name as SBML id or 'auto' to use auto-incrementing id R_XXXX. (default: name)")
     parser.add_argument('--metabolite-id', dest="metabolite_id", default="name", action='store', help="Strategy to generate unique metabolite id. Specify 'name' to use metabolite name as SBML id or 'auto' to use auto-incrementing id M_XXXX. (default: name)")
     parser.add_argument('--compartment-id', dest="compartment_id", default="name", action='store', help="Strategy to generate unique compartment id. Specify 'name' to use compartment name as SBML id or 'auto' to use auto-incrementing id C_XXXX. (default: name)")
+    parser.add_argument('--metabolite-map', dest="metabolite_map", action='store', help="Map metabolite identifiers to names")
 
     args = parser.parse_args()
 
@@ -24,8 +25,17 @@ if __name__ == "__main__":
     parser = BiooptParser(inf=args.in_inf)
     model = parser.parse_file(args.bioopt)
 
+    metabolite_map = {}
+    if args.metabolite_map:
+        for i, line in enumerate(open(args.metabolite_map)):
+            l = re.split("\t", line.rstrip())
+            if len(l) >= 2:
+                metabolite_map[l[0]] = l[1]
+            else:
+                raise RuntimeError("Error on line {} in '{}' file. Map file should have more than 2 columns".format(i, args.metabolite_map))
+
     converter = Bioopt2SbmlConverter(level=args.level, version=args.version,
-          compartment_pattern=args.c_pattern, inf=args.out_inf,
+          compartment_pattern=args.c_pattern, inf=args.out_inf, metabolite_map=metabolite_map,
           reaction_id=args.reaction_id, metabolite_id=args.metabolite_id, compartment_id=args.compartment_id)
 
     sbml = converter.convert(model)

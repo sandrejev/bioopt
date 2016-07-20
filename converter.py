@@ -104,7 +104,8 @@ class Bioopt2SbmlConverter:
     """
 
     def __init__(self, level=2, version=3, inf=1000, reaction_id="auto",
-             metabolite_id="auto", compartment_id="auto", compartment_suffix=True, compartment_pattern=r"_(\w+)$"):
+             metabolite_id="auto", compartment_id="auto", compartment_suffix=True, compartment_pattern=r"_(\w+)$",
+             simulate_boundary=False, metabolite_map={}):
 
         if isinstance(level, int):
             self.level = level
@@ -130,6 +131,11 @@ class Bioopt2SbmlConverter:
         else:
             raise ValueError("Infinity value '{0}' is not a number".format(inf))
 
+        if isinstance(metabolite_map, (dict)):
+            self.metabolite_map = metabolite_map
+        else:
+            raise ValueError("Metabolite map is not a dictionary")
+
         if reaction_id in ["auto", "name"]:
             self.reaction_id = reaction_id
         else:
@@ -150,6 +156,8 @@ class Bioopt2SbmlConverter:
             self.compartment_suffix = compartment_suffix
         else:
             raise ValueError("Expected boolean value for compartment_suffix ('{0}' was specified)".format(compartment_suffix))
+
+        self.simulate_boundary = simulate_boundary
 
     def __to_sbml_id(self, name):
         idStream = []
@@ -219,8 +227,13 @@ class Bioopt2SbmlConverter:
                 self.name = name
                 self.short = short if short else name
 
+
+        compartment_names = {'e': "Extracellular", 'p': "Peroxisome", 'm': "Mitochondria", 'c': "Cytosol",
+                             'l': "Lysosome", 'r': "Endoplasmic reticulum", 'g': "Golgi apparatus",
+                             'n': "Nucleus", 'x': "Boundary"}
+
         # Find all compartments
-        metabolites = bioopt_model.find_metabolites()
+        metabolites = sorted(bioopt_model.find_metabolites(), key=lambda x: x.name)
         for i, m in enumerate(metabolites, start=1):
             if self.compartment_pattern:
                 c_pattern_res = self.compartment_pattern.search(m.name)
@@ -231,31 +244,39 @@ class Bioopt2SbmlConverter:
             else:
                 c_name = "cell"
 
+            if not c_name:
+                pass
+
             if c_name not in c_dict:
                 c_id = self.__get_valid_sbml_id(
                     "C_" + ("{0:04d}".format(len(c_dict) + 1) if self.compartment_id == "auto" else c_name), c_dict.keys())
-                c_dict[c_name] = IdMap(c_id, c_name)
+
+
+                c_dict[c_name] = IdMap(c_id, compartment_names.get(c_name, c_name))
                 compartment = model.createCompartment()
                 compartment.setId(c_dict[c_name].id)
                 compartment.setName(c_dict[c_name].name)
 
             mc_dict[m.name] = c_dict[c_name]
 
-        if "boundary" not in c_dict:
-            c_dict["boundary"] = IdMap("boundary", "boundary")
+        if self.simulate_boundary and "boundary" not in c_dict:
+            boundary_c = IdMap("boundary", "boundary")
 
         # Assign abbreviations to compartments
         for c_name, c in sorted(c_dict.iteritems(), key=_(0)):
             for i in xrange(1, (len(c_name)-1)):
-                short = c_name[0:(0+i)]
+                short = c_name[0]
                 if short not in (v.short for v in c_dict.itervalues()):
                     c.short = short
                     break
 
         mids_set = set()
-        for i, m in enumerate(sorted(metabolites, key=lambda x: x.name), start=1):
-            m_id = "M_" + ("{0:04d}".format(i) if self.metabolite_id == "auto" else m.name)
-            m_suffix = "_" + (c_dict["boundary"].short if m.boundary else mc_dict[m.name].short)
+        for i, m in enumerate(metabolites, start=1):
+            m_id = ("{0:04d}".format(i) if self.metabolite_id == "auto" else m.name)
+            if not m_id.startswith("M_"):
+                m_id = "M_" + m_id
+
+            m_suffix = "_" + (boundary_c.short if m.boundary and self.simulate_boundary else mc_dict[m.name].short)
             abbr = self.compartment_suffix and not m_id.endswith(m_suffix)
             if abbr:
                 m_id += m_suffix
@@ -263,7 +284,16 @@ class Bioopt2SbmlConverter:
             m_id = self.__get_valid_sbml_id(m_id, mids_set)
             mids_set.add(m_id)
 
-            m_dict[m.name] = IdMap(m_id, m.name)
+            m_name2 = re.sub("xtX$", "", m.name)
+            if m.name in self.metabolite_map:
+                m_dict[m.name] = IdMap(m_id, self.metabolite_map[m.name])
+            elif m_name2 in self.metabolite_map:
+                m_dict[m.name] = IdMap(m_id, self.metabolite_map[m_name2])
+            else:
+                if self.metabolite_map:
+                    print "{} couldn't be mapped to metabolite name...".format(m.name)
+                m_dict[m.name] = IdMap(m_id, m.name)
+
             species = model.createSpecies()
             species.setId(m_dict[m.name].id)
             species.setName(m_dict[m.name].name)
@@ -272,8 +302,10 @@ class Bioopt2SbmlConverter:
             species.setInitialAmount(0)
 
         for i, r in enumerate(bioopt_model.reactions, start=1):
-            r_id = self.__get_valid_sbml_id("R_" + ("{0:04d}".format(i) if self.reaction_id == "auto" else r.name),
-                                         r_dict.keys())
+            r_id = self.__get_valid_sbml_id(("{0:04d}".format(i) if self.reaction_id == "auto" else r.name), r_dict.keys())
+            if not r_id.startswith("R_"):
+                r_id = "R_" + r_id
+
             r_dict[r.name] = IdMap(r_id, r.name)
 
             reaction = model.createReaction()
@@ -300,7 +332,6 @@ class Bioopt2SbmlConverter:
 
             r_lb = r.bounds.lb if abs(r.bounds.lb) != Bounds.inf() else math.copysign(self.inf, r.bounds.lb)
             r_ub = r.bounds.ub if abs(r.bounds.ub) != Bounds.inf() else math.copysign(self.inf, r.bounds.ub)
-            # print "{0}: [{1}, {2}]".format(r_id, r_lb, r_ub)
 
             lower_bound = law.createParameter()
             lower_bound.setId("LOWER_BOUND")
@@ -326,3 +357,4 @@ class Bioopt2SbmlConverter:
             flux.setValue(0)
 
         return doc
+
