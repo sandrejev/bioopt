@@ -44,6 +44,8 @@ def blocked(prob, reactions):
         blocked_candidates = list(blocked_candidates_set)
         print "Suspected blocked reactions: {}".format(len(blocked_candidates_set))
 
+    # Now check blocked reactions one by one by setting objective coefficient for each reaction to 1 and then
+    # maximizing and minimizing that reaction
     blocked = []
     m.objective.set_linear([(r_i, 0) for r_i in xrange(len(prob.rxn2i))])
     for i, r_i in enumerate(blocked_candidates):
@@ -51,13 +53,14 @@ def blocked(prob, reactions):
 
         v_min, v_max = 0.0, 0.0
 
-
+        # Set objective coefficient to 1
         m.objective.set_linear(r_i, 1)
         m.objective.set_sense(m.objective.sense.maximize)
         prob.model.solve()
         if cplex_utils.is_optimal(prob.model):
             v_max = m.solution.get_objective_value()
 
+        # If reaction can't have positive flux try to minimize the same reaction
         if v_max == 0:
             m.objective.set_sense(m.objective.sense.minimize)
             m.solve()
@@ -65,18 +68,25 @@ def blocked(prob, reactions):
                 v_min = m.solution.get_objective_value()
 
 
-        if abs(v_min) < 1e-15 and abs(v_max) < 1e-10:
+        # If reaction don't have flux it is blocked!
+        if abs(v_min) < 1e-10 and abs(v_max) < 1e-10:
             blocked.append(r_i)
             print ""
         else:
             print "[{} {}]".format(v_min, v_max)
 
+        # Reset objective equation
         m.objective.set_linear(r_i, 0)
 
     return blocked
 
 
 def bin(val):
+    """
+    Convert boolean value to 0/1 string
+    :param val: Boolean input value
+    :return: String representing input value
+    """
     return "1" if val else "0"
 
 class Edge:
@@ -84,29 +94,31 @@ class Edge:
         self.source = source
         self.destination = destination
         self.constrained = False
-        self.blocked = False
-        self.removed = False
-        self.genesis = False
+        self.blocked = False # Is reaction in this edge blocked
+        self.removed = False # Was any metabolite/reaction in this edge specifically removed by regex filter
+        self.genesis = False # Can reaction in this edge have flux even with [0,0] uptake constraints
 
 class Node:
     def __init__(self, name, type):
         self.name = name
-        self.type = type
-        self.constrained = False
-        self.blocked = False
-        self.removed = False
-        self.genesis = False
+        self.type = type # 'reaction' or 'metabolite'
+        self.constrained = False # Is this reaction blocked (only for type='reaction)
+        self.blocked = False # Is this reaction blocked (only for type='reaction)
+        self.removed = False # Was this metabolite/reaction specificaly removed by regex filter
+        self.genesis = False # Can this reaction (only for type='reaction) have flux even with [0,0] uptake constraints
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Converts moel from bioopt format to optflux format')
     parser.add_argument('bioopt', action='store', help='File containing bioopt model')
     parser.add_argument('output', action='store', help='Output file prefix (.edges and .nodes files are created')
     parser.add_argument('--metabolite-map', dest="metabolite_map", action='store', help="Map metabolite identifiers to names")
-    parser.add_argument('--reaction-map', dest="reaction_map", action='store', help="Map reaction identifiers to names")
     parser.add_argument('--remove-nodes', dest="remove_nodes", action='store', help="Comma separated list of nodes not to be included in the final edges list")
 
     args = parser.parse_args()
 
+    #
+    # Read metabolite_id => metabolite_name conversion file. The file must have at least two columns (first: id, second: name)
+    #
     metabolite_map = {}
     if args.metabolite_map:
         for i, line in enumerate(open(args.metabolite_map)):
@@ -116,21 +128,13 @@ if __name__ == "__main__":
             else:
                 raise RuntimeError("Error on line {} in '{}' file. Map file should have 2 or more columns".format(i, args.metabolite_map))
 
-    reaction_map = {}
-    if args.reaction_map:
-        for i, line in enumerate(open(args.reaction_map)):
-            l = re.split("\t", line.rstrip())
-            if len(l) >= 2:
-                reaction_map[l[0]] = l[1]
-            else:
-                raise RuntimeError("Error on line {} in '{}' file. Map file should have 2 or more columns".format(i, args.metabolite_map))
-
     remove_nodes = re.compile(args.remove_nodes) if args.remove_nodes else None
-
 
     # Read bioopt model
     parser = BiooptParser()
     model = parser.parse_file(args.bioopt)
+
+    # Find boundary reactions
     model_sinks = set(r.name for r in model.reactions if r.products[0].metabolite.boundary or r.reactants[0].metabolite.boundary)
 
     edges = []
@@ -172,13 +176,14 @@ if __name__ == "__main__":
 
     prob = cplex_utils.bioopt2cplex(model)
 
-
+    #
     # Find blocked reactions
+    #
     prob.model.variables.set_lower_bounds([(r_i, -1 if prob.rxn2bounds[rxn].lb < 0 else 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
     prob.model.variables.set_upper_bounds([(r_i, 1 if prob.rxn2bounds[rxn].ub > 0 else 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
     potential_blocked_reactions = [n.name for n in nodes.itervalues() if n.type == "reaction" and not n.blocked and not n.constrained]
-    #blocked_reactions = set(prob.i2rxn[r_i] for r_i in blocked(prob, potential_blocked_reactions))
-    blocked_reactions = set(r.strip() for r in open("/g/patil/Sergej/CancerHeterogeneity/data/model/blocked_reactions.txt"))
+    blocked_reactions = set(prob.i2rxn[r_i] for r_i in blocked(prob, potential_blocked_reactions))
+    #blocked_reactions = set(r.strip() for r in open("/g/patil/Sergej/CancerHeterogeneity/data/model/blocked_reactions.txt"))
     for n in nodes.itervalues():
         if n.type == "reaction":
             n.blocked = n.name in blocked_reactions
@@ -187,13 +192,14 @@ if __name__ == "__main__":
         e.blocked = e.source.blocked or e.destination.blocked
 
 
-
+    #
     # Find infinite flux
+    #
     prob.model.variables.set_lower_bounds([(r_i, 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
     prob.model.variables.set_upper_bounds([(r_i, 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
     potential_gen_reactions = set(n.name for n in nodes.itervalues() if n.type == "reaction" and not n.blocked and not n.constrained)
-    #genesis_reactions = potential_gen_reactions - set(prob.i2rxn[r_i] for r_i in blocked(prob, list(potential_gen_reactions)))
-    genesis_reactions = set(r.strip() for r in open("/g/patil/Sergej/CancerHeterogeneity/data/model/genesis_reactions.txt"))
+    genesis_reactions = potential_gen_reactions - set(prob.i2rxn[r_i] for r_i in blocked(prob, list(potential_gen_reactions)))
+    #genesis_reactions = set(r.strip() for r in open("/g/patil/Sergej/CancerHeterogeneity/data/model/genesis_reactions.txt"))
     for n in nodes.itervalues():
         if n.type == "reaction":
             n.genesis = n.name in genesis_reactions
@@ -202,28 +208,32 @@ if __name__ == "__main__":
         e.genesis = e.source.genesis or e.destination.genesis
 
 
-    # Find genesis metabolites
-    prob.model.variables.set_lower_bounds([(prob.rxn2i[r.name], -1 if r.bounds.lb < 0 else 0) for r in model.reactions])
-    prob.model.variables.set_upper_bounds([(prob.rxn2i[r.name], 1 if r.bounds.ub > 0 else 0) for r in model.reactions])
-    prob.model.variables.set_lower_bounds([(r_i, 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
-    prob.model.variables.set_upper_bounds([(r_i, 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
-    prob.model.objective.set_linear([(r_i, 0) for r_i in prob.i2rxn])
+    #
+    # Find infinie metabolites (unfinished)
+    #
+    if False:
+        prob.model.variables.set_lower_bounds([(prob.rxn2i[r.name], -1 if r.bounds.lb < 0 else 0) for r in model.reactions])
+        prob.model.variables.set_upper_bounds([(prob.rxn2i[r.name], 1 if r.bounds.ub > 0 else 0) for r in model.reactions])
+        prob.model.variables.set_lower_bounds([(r_i, 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
+        prob.model.variables.set_upper_bounds([(r_i, 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in model_sinks])
+        prob.model.objective.set_linear([(r_i, 0) for r_i in prob.i2rxn])
 
-    for c in model.find_metabolites():
-        c_i = prob.cpd2i[c.name]
-        prob.model.variables.add(lb=[0], ub=[1000], names=["MET_EXPORT_TEST"], columns=[cplex.SparsePair([c_i], [-1])], obj=[1])
-        prob.model.solve()
+        for c in model.find_metabolites():
+            c_i = prob.cpd2i[c.name]
+            prob.model.variables.add(lb=[0], ub=[1000], names=["MET_EXPORT_TEST"], columns=[cplex.SparsePair([c_i], [-1])], obj=[1])
+            prob.model.solve()
 
-        status = prob.model.solution.get_status_string()
-        obj = prob.model.solution.get_objective_value() if status.startswith("optimal") else 0
-        if obj > 1e-10:
-            print "{} {}".format(c.name, obj)
+            status = prob.model.solution.get_status_string()
+            obj = prob.model.solution.get_objective_value() if status.startswith("optimal") else 0
+            if obj > 1e-10:
+                print "{} {}".format(c.name, obj)
 
-        prob.model.variables.delete(prob.rxnnum)
-
-
+            prob.model.variables.delete(prob.rxnnum)
 
 
+
+
+    # Write edges file
     with open(args.output + ".edges", 'w') as f_output:
         f_output.writelines("source\tdestination\tconstrained\tremoved\tblocked\tinfinite_flux\n")
         for e in edges:
@@ -231,6 +241,7 @@ if __name__ == "__main__":
 
         print "Created {}.edges file with {} edges".format(args.output + ".edges", len(edges))
 
+    # Write nodes file
     with open(args.output + ".nodes", 'w') as f_output:
         f_output.writelines("node\ttype\tid\tconstrained\tremoved\tblocked\tinfinite_flux\n")
         for id, n in nodes.iteritems():

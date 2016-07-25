@@ -49,8 +49,8 @@
       <file leaf-file-name="bioopt2edges.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bioopt2edges.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="76">
-              <caret line="28" column="88" selection-start-line="28" selection-start-column="88" selection-end-line="28" selection-end-column="88" />
+            <state relative-caret-position="349">
+              <caret line="243" column="17" selection-start-line="243" selection-start-column="17" selection-end-line="243" selection-end-column="17" />
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
               </folding>
@@ -270,7 +270,7 @@
       <recent name="C:\Users\Aleksej\workspace\python\testing\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.bioopt2edges">
+  <component name="RunManager" selected="Python.Generate API docs">
     <configuration default="false" name="bioopt_parser" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -1104,7 +1104,14 @@
       <option name="project" value="LOCAL" />
       <updated>1469454692901</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="bioopt2edges&#10;">
+      <created>1469455109178</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1469455109178</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1142,7 +1149,7 @@
     <frame x="-1" y="0" width="1922" height="1176" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1254632" sideWeight="0.6226054" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2456326" sideWeight="0.6226054" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3284169" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.37462234" sideWeight="0.5" order="13" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45795456" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -1256,7 +1263,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/bioopt2edges.py</url>
-          <line>194</line>
+          <line>200</line>
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
@@ -1661,8 +1668,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bioopt2edges.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="76">
-          <caret line="28" column="88" selection-start-line="28" selection-start-column="88" selection-end-line="28" selection-end-column="88" />
+        <state relative-caret-position="349">
+          <caret line="243" column="17" selection-start-line="243" selection-start-column="17" selection-end-line="243" selection-end-column="17" />
           <folding>
             <element signature="e#0#27#0" expanded="true" />
           </folding>
