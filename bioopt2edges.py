@@ -4,17 +4,29 @@ import cplex_utils
 import cplex
 
 def blocked(prob, reactions):
+    """
+    Find blocked reactions in constraint based model
+    :param prob: Problem instance
+    :param reactions: List of reactions to be checked for "blocked" condition
+    :return: List of blocked reactions
+    """
     m = prob.model
 
+    # Constraint all reactions with [-1, 1] or [0, 1] range (reversible, irreversible)
     reactions_set = set(reactions)
     m.variables.set_lower_bounds([(r_i, -1 if prob.rxn2bounds[rxn].lb < 0 else 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in reactions_set])
     m.variables.set_upper_bounds([(r_i, 1 if prob.rxn2bounds[rxn].ub > 0 else 0) for rxn, r_i in prob.rxn2i.iteritems() if rxn in reactions_set])
+
+    # Optimize sum of all reactions
     m.objective.set_linear([(r_i, 1) for r_i in xrange(len(prob.rxn2i))])
 
+    # Create a list of candidates for being called blocked
     reactions_set = set(reactions)
     blocked_candidates_set = set(r_i for rxn, r_i in prob.rxn2i.iteritems() if rxn in reactions_set)
     blocked_candidates = list(blocked_candidates_set)
 
+    # Maximize (and minimize) sum of all reactions to see which reactions can possibly have flux.
+    # The ones that will have non-zero flux can not possibly be blocked. Repeat N times.
     for p in range(50):
         # MAXIMIZE CANDIDATES
         m.objective.set_linear([(r_i, 0) for r_i in xrange(len(prob.rxn2i))])
