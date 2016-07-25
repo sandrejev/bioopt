@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
 
     with open(args.output + ".edges", 'w') as f_output:
-        f_output.writelines("source\tdestination\tconstrained\tremoved\tblocked\tgenesis\n")
+        f_output.writelines("source\tdestination\tconstrained\tremoved\tblocked\tinfinite_flux\n")
         for e in edges:
             f_output.writelines("{}\t{}\t{}\t{}\t{}\t{}\n".format(e.source.name, e.destination.name, bin(e.constrained), bin(e.removed), bin(e.blocked), bin(n.genesis)))
 
