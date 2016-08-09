@@ -139,6 +139,7 @@ if __name__ == "__main__":
 
     edges = []
     nodes = {}
+
     for r in model.find_reactions():
         r_node = Node(r.name, "reaction")
         r_node.constrained = r.bounds.lb == 0 and r.bounds.ub == 0
@@ -209,7 +210,7 @@ if __name__ == "__main__":
 
 
     #
-    # Find infinie metabolites (unfinished)
+    # Find infinite metabolites (unfinished)
     #
     if False:
         prob.model.variables.set_lower_bounds([(prob.rxn2i[r.name], -1 if r.bounds.lb < 0 else 0) for r in model.reactions])
@@ -237,7 +238,9 @@ if __name__ == "__main__":
     with open(args.output + ".edges", 'w') as f_output:
         f_output.writelines("source\tdestination\tconstrained\tremoved\tblocked\tinfinite_flux\n")
         for e in edges:
-            f_output.writelines("{}\t{}\t{}\t{}\t{}\t{}\n".format(e.source.name, e.destination.name, bin(e.constrained), bin(e.removed), bin(e.blocked), bin(n.genesis)))
+            f_output.writelines("{src}\t{dst}\t{const}\t{removed}\t{blocked}\t{inf}\n".format(
+                src=e.source.name, dst=e.destination.name, const=bin(e.constrained),
+                removed=bin(e.removed), blocked=bin(e.blocked), inf=bin(n.genesis)))
 
         print "Created {}.edges file with {} edges".format(args.output + ".edges", len(edges))
 
@@ -245,7 +248,10 @@ if __name__ == "__main__":
     with open(args.output + ".nodes", 'w') as f_output:
         f_output.writelines("node\ttype\tid\tconstrained\tremoved\tblocked\tinfinite_flux\n")
         for id, n in nodes.iteritems():
-            f_output.writelines("{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(n.name, n.type, id, bin(n.constrained), bin(n.removed), bin(n.blocked), bin(n.genesis)))
+            f_output.writelines("{name}\t{type}\t{id}\t{const}\t{removed}\t{blocked}\t{inf}\n".format(
+                name=n.name, type=n.type, id=id,
+                const=bin(n.constrained), removed=bin(n.removed),
+                blocked=bin(n.blocked), inf=bin(n.genesis)))
 
         print "Created {}.nodes file with {} nodes".format(args.output + ".nodes", len(nodes))
 
