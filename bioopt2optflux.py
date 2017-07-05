@@ -45,13 +45,12 @@ if __name__ == "__main__":
 
             coef = 0
             if m in r_metabolites:
-                coef = r.reactants.find_member(m.name).coefficient
+                coef = -r.reactants.find_member(m.name).coefficient
             elif m in p_metabolites:
                 coef = r.products.find_member(m.name).coefficient
 
             stoich[m_i, r_i] = coef
 
-        #f_matrix.write("\n")
 
     with open(args.optflux + '.stoich', 'w') as f_matrix:
         f_matrix.writelines('\t'.join([str(j) for j in i]) + '\n' for i in stoich)
